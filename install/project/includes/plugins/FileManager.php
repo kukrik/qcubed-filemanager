@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The Filemanager override file. This file gets installed into project/includes/plugins during the initial installation
+ * The FileManager override file. This file gets installed into project/includes/plugins during the initial installation
  * of the plugin. After that, it is not touched. Feel free to modify this file as needed.
  */
 

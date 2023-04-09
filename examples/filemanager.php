@@ -13,7 +13,6 @@ use QCubed\Query\QQ;
 use QCubed\Event\CellClick;
 
 require_once('qcubed.inc.php');
-require_once('../src/FileManager.php');
 
 /**
  * Class SampleForm

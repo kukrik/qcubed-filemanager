@@ -4,9 +4,7 @@ namespace QCubed\Plugin;
 
 use QCubed\Exception\Caller;
 
-require_once('../src/FileManagerBaseGen.php');
-
-class FileManager extends FileManagerBaseGen
+class FileManagerBase extends FileManagerBaseGen
 {
     public function  __construct($objParentObject, $strControlId = null)
     {
