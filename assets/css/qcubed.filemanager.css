@@ -37,6 +37,12 @@ body,  html {
     background-color: #dedede;
 }
 
+.fileupload-buttonbar {
+    margin: 0;
+    padding: 15px 15px 15px 15px;
+    background-color: #dedede;
+}
+
 .panel-title {
     padding: 0;
     font-size: 26px;

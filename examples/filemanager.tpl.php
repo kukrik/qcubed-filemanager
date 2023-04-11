@@ -11,36 +11,49 @@
 <?php $this->RenderBegin(); ?>
 
 <!-- BEGIN CONTENT -->
+
+<?= _r($this->objUpload); ?>
+
 <div class="page-content-wrapper">
     <div class="page-content">
         <div class="row">
             <div class="col-md-12">
                 <div class="content-body">
-                    <div class="files-heading">
+<!--                    <div class="files-heading">
 
                         <div class="row">
                             <div class="col-md-9">
                                 <div class="btn-group" role="group">
-                                    <?= _r($this->btnUpload); ?>
-                                    <?= _r($this->btnAddFolder); ?>
+                                    <?php /*= _r($this->btnUpload); */?>
+                                    <?php /*= _r($this->btnAddFolder); */?>
                                 </div>
                                 &nbsp;
                                 <div class="btn-group" role="group">
-                                    <?= _r($this->btnMove); ?>
-                                    <?= _r($this->btnRename); ?>
-                                    <?= _r($this->btnCopy); ?>
-                                    <?= _r($this->btnDownload); ?>
-                                    <?= _r($this->btnDelete); ?>
+                                    <?php /*= _r($this->btnMove); */?>
+                                    <?php /*= _r($this->btnRename); */?>
+                                    <?php /*= _r($this->btnCopy); */?>
+                                    <?php /*= _r($this->btnDownload); */?>
+                                    <?php /*= _r($this->btnDelete); */?>
                                 </div>
                                 &nbsp;
                                 <div class="btn-group" role="group">
-                                    <?= _r($this->btnListView); ?>
-                                    <?= _r($this->btnGridView); ?>
-                                    <?= _r($this->btnBoxView); ?>
+                                    <?php /*= _r($this->btnListView); */?>
+                                    <?php /*= _r($this->btnGridView); */?>
+                                    <?php /*= _r($this->btnBoxView); */?>
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <?= _r($this->txtFilter); ?>
+                                <?php /*= _r($this->txtFilter); */?>
+                            </div>
+                        </div>
+                    </div>-->
+
+                    <div class="fileupload-buttonbar">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <?= _r($this->btnAddFiles); ?>
+                                <?= _r($this->btnAllStart); ?>
+                                <?= _r($this->btnAllCancel); ?>
                             </div>
                         </div>
                     </div>
@@ -52,6 +65,17 @@
                                 <div class="break-word">
                                     <a href="" class="head">Library</a>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div id="alert-wrapper"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="files"></div>
                             </div>
                         </div>
 

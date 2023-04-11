@@ -19,6 +19,11 @@ require_once('qcubed.inc.php');
  */
 class SampleForm extends Form
 {
+    protected $objUpload;
+    protected $btnAddFiles;
+    protected $btnAllStart;
+    protected $btnAllCancel;
+
     protected $btnUpload;
     protected $btnFolder;
     protected $btnAddFolder;
@@ -56,6 +61,44 @@ class SampleForm extends Form
 
     public function CreateButtons()
     {
+        ////////////////////////////
+
+        $this->btnAddFiles = new Q\Plugin\BsFileControl($this, 'files');
+        $this->btnAddFiles->Text = t('Add files');
+        $this->btnAddFiles->Multiple = true;
+        $this->btnAddFiles->CssClass = 'btn btn-orange fileinput-button';
+        $this->btnAddFiles->UseWrapper = false;
+        // $this->btnAddFiles->addAction(new Q\Event\Click(), new Q\Action\Ajax('fileUpload_Click'));
+
+        $this->btnAllStart = new Bs\Button($this);
+        $this->btnAllStart->Text = t('Start upload');
+        $this->btnAllStart->CssClass = 'btn btn-darkblue all-start disabled';
+        $this->btnAllStart->PrimaryButton = true;
+        $this->btnAllStart->UseWrapper = false;
+        // $this->btnAllStart->addAction(new Q\Event\Click(), new Q\Action\Ajax('fileSave_Click'));
+
+        $this->btnAllCancel = new Bs\Button($this);
+        $this->btnAllCancel->Text = t('Cancel all uploads');
+        $this->btnAllCancel->CssClass = 'btn btn-warning all-cancel disabled';
+        $this->btnAllCancel->UseWrapper = false;
+
+        $this->objUpload = new Q\Plugin\FileUploadHandler($this);
+        //$this->objUpload->Language = 'et'; // Default en
+        //$this->objUpload->ShowIcons = true; // Default false
+        $this->objUpload->AcceptFileTypes = ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'docx', 'mp4']; // Default null
+        //$this->objUpload->MaxNumberOfFiles = 5; // Default null
+        //$this->objUpload->MaxFileSize = 1024 * 1024 * 2; // 2 MB // Default null
+        //$this->objUpload->MinFileSize = 500000; // 500 kb // Default null
+        //$this->objUpload->ChunkUpload = false; // Default true
+        //$this->objUpload->MaxChunkSize = 1024 * 1024 * 10; // 10 MB // Default 5 MB
+        //$this->objUpload->LimitConcurrentUploads = 5; // Default 2
+        $this->objUpload->Url = 'php/'; // Default null
+        //$this->objUpload->PreviewMaxWidth = 120; // Default 80
+        //$this->objUpload->PreviewMaxHeight = 120; // Default 80
+        //$this->objUpload->WithCredentials = true; // Default false
+
+
+
         $this->btnUpload = new Q\Plugin\Control\Button($this);
         $this->btnUpload->Text = t(' Upload');
         $this->btnUpload->Glyph = 'fa fa-upload';
@@ -64,7 +107,7 @@ class SampleForm extends Form
 
         //$this->btnUpload->Display = false;
 
-        $this->btnUpload->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnUpload_Click'));
+        //$this->btnUpload->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnUpload_Click'));
 
         $this->btnAddFolder = new Q\Plugin\Control\Button($this);
         $this->btnAddFolder->Text = t(' Add folder');

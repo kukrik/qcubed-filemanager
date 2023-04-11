@@ -19,7 +19,9 @@ class FileManagerBase extends FileManagerBaseGen
      */
     protected function registerFiles() {
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/qcubed.filemanager.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/qcubed.uploadhandler.js");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/qcubed.filemanager.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/qcubed.uploadhandler.css");
         $this->AddCssFile(QCUBED_BOOTSTRAP_CSS); // make sure they know
     }
 

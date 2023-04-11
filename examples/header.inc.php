@@ -19,7 +19,8 @@ use QCubed as Q;
     <link href="/qcubed-4/vendor/kukrik/bootstrap-filecontrol/assets/css/jquery.fileupload.css" rel="stylesheet" />
     <link href="/qcubed-4/vendor/kukrik/bootstrap-filecontrol/assets/css/jquery.fileupload-ui.css" rel="stylesheet" />
 	<link href="../assets/css/scrollpad.css" rel="stylesheet"/>
-	<link href="../assets/css/filemanager.css" rel="stylesheet"/>
+	<link href="../assets/css/qcubed.filemanager.css" rel="stylesheet"/>
+    <link href="../assets/css/qcubed.uploadhandler.css" rel="stylesheet"/>
 	<link href="../assets/css/awesome-bootstrap-checkbox.css" rel="stylesheet"/>
 
 	<style>
