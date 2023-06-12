@@ -2,7 +2,9 @@
 
 require_once('../qcubed.inc.php');
 
-use QCubed\Plugin\UploadHandler;
+//require ('../../src/FileHandler.php');
+
+use QCubed\Plugin\FileHandler;
 
 $options = array(
     //'ImageResizeQuality' => 75, // Defult 85
@@ -17,7 +19,7 @@ $options = array(
     //'UploadExists' => 'overwrite', // increment || overwrite Default 'increment'
 );
 
-class CustomUploadHandler extends UploadHandler
+class CustomFileUploadHandler extends FileHandler
 {
     protected function uploadInfo()
     {
@@ -25,7 +27,9 @@ class CustomUploadHandler extends UploadHandler
 
         if ($this->options['FileError'] == 0) {
             $obj = new Files();
+            //$obj->setParentId(null);
             $obj->setName(basename($this->options['FileName']));
+            $obj->setType('file');
             $obj->setPath($this->getRelativePath($this->options['FileName']));
             $obj->setDescription(null);
             $obj->setExtension($this->getExtension($this->options['FileName']));
@@ -38,7 +42,7 @@ class CustomUploadHandler extends UploadHandler
     }
 }
 
-$objHandler = new CustomUploadHandler($options);
+$objHandler = new CustomFileUploadHandler($options);
 
 
 

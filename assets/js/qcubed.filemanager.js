@@ -1,28 +1,95 @@
 (function ($) {
-    $.fn.filemanager = function (options) {
+    $.fn.fileManager = function (options) {
         options = $.extend({
-            language: null,
+            language: null
 
         }, options)
-
-
 
         /////////////////////////////////////////
 
         // Get a reference to the form
         const form = document.querySelector("form");
+        const files= document.querySelector(".files");
+        const breadcrumbs= document.querySelector(".breadcrumbs");
+        const file_info_body= document.querySelector(".file-info-body");
 
         /////////////////////////////////////////
 
-        /////////////////////////////////////////
+        //const returnedTarget = Object.assign({}, _c);
+
+        //console.log(returnedTarget);
+
+        // var req = new XMLHttpRequest();
+        // req.onreadystatechange = function () {
+        //     if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+        //         //var s = req.responseText;
+        //         //var users = JSON.parse(s);
+        //         //console.table(s);
+        //     }
+        // }
+        // req.open("get", "http://localhost/qcubed-4/vendor/kukrik/qcubed-filemanager/examples/filemanager.php", true);
+        //
+        // const returnedTarget = Object.assign({}, _c);
+        //
+        // console.log(returnedTarget);
+
+
+
+        // // Get a reference to the button "launch-start"
+        // const launch_start = document.querySelector(".launch-start");
+        //
+        // /////////////////////////////////////////
+        //
+        // // Get a reference to the button "back"
+        // const back = document.querySelector(".back");
+        //
+        // /////////////////////////////////////////
+        //
+        // // Get a reference to div of the files-heading
+        // const files_heading = document.querySelector(".files-heading");
+        //
+        // /////////////////////////////////////////
+        //
+        // // Get a reference to div of the fileupload-buttonbar
+        // const fileupload_buttonbar = document.querySelector(".fileupload-buttonbar");
+        // fileupload_buttonbar.classList.add("hidden");
+        //
+        // /////////////////////////////////////////
+        //
+        // // Get a reference to div of the media-items
+        // const media_items = document.querySelector('[data-control="media-items"]');
+        // media_items.classList.remove("hidden");
+        //
+        // /////////////////////////////////////////
+        //
+        // // Get a reference to div of the table
+        // const files = document.querySelector(".files");
+        //
+        // /////////////////////////////////////////
+        //
+        // // input form handler
+        // launch_start.addEventListener("click", handleUploads);
+        // back.addEventListener("click", cancelUploads);
+
 
         /////////////////////////////////////////
 
-        /////////////////////////////////////////
 
         /////////////////////////////////////////
 
-        /////////////////////////////////////////
+        // function handleUploads() {
+        //     files_heading.classList.add("hidden");
+        //     fileupload_buttonbar.classList.remove("hidden");
+        //     media_items.classList.add("hidden");
+        //     back.classList.remove("disabled");
+        //     back.removeAttribute('disabled');
+        // }
+        //
+        // function cancelUploads() {
+        //     files_heading.classList.remove("hidden");
+        //     fileupload_buttonbar.classList.add("hidden");
+        //     media_items.classList.remove("hidden");
+        // }
 
         //////////////////////////////////////////
 
@@ -147,11 +214,11 @@
 
 $(document).ready(function () {
 
-    $(".control-scrollpad").scrollpad();
+    // $(".control-scrollpad").scrollpad();
 
 
 
-document.onreadystatechange = function() {
+/*document.onreadystatechange = function() {
     if (document.readyState !== "complete") {
         document.querySelector(
             "media-items").style.visibility = "hidden";
@@ -163,7 +230,7 @@ document.onreadystatechange = function() {
         document.querySelector(
             "media-items").style.visibility = "visible";
     }
-};
+};*/
 
 
 });

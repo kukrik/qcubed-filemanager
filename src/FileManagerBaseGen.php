@@ -15,7 +15,7 @@ use QCubed\Type;
 /**
  * Class FileManagerBaseGen
  *
- * @see FileUploadBase
+ * @see FileManagerBase
  * @package QCubed\Plugin
  */
 
@@ -28,26 +28,26 @@ use QCubed\Type;
 class FileManagerBaseGen extends Q\Control\Panel
 {
     /** @var string */
-    // protected $str = null;
+    protected $strLanguage = null;
 
 
     protected function makeJqOptions()
     {
-//        $jqOptions = parent::MakeJqOptions();
-//        if (!is_null($val = $this->Blaa)) {$jqOptions['blaa'] = $val;}
-//
-//        return $jqOptions;
+        $jqOptions = parent::MakeJqOptions();
+        if (!is_null($val = $this->Language)) {$jqOptions['language'] = $val;}
+
+        return $jqOptions;
     }
 
     public function getJqSetupFunction()
     {
-        return 'filemanager';
+        return 'fileManager';
     }
 
     public function __get($strName)
     {
         switch ($strName) {
-            // case 'Language': return $this->strBlaa;
+            case 'Language': return $this->strLanguage;
 
 
             default:
@@ -63,15 +63,15 @@ class FileManagerBaseGen extends Q\Control\Panel
     public function __set($strName, $mixValue)
     {
         switch ($strName) {
-//            case 'Blaa':
-//                try {
-//                    $this->strLanguage = Type::Cast($mixValue, Type::STRING);
-//                    $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'blaa', $this->strLanguage);
-//                    break;
-//                } catch (InvalidCast $objExc) {
-//                    $objExc->incrementOffset();
-//                    throw $objExc;
-//                }
+            case 'Language':
+                try {
+                    $this->strLanguage = Type::Cast($mixValue, Type::STRING);
+                    $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'language', $this->strLanguage);
+                    break;
+                } catch (InvalidCast $objExc) {
+                    $objExc->incrementOffset();
+                    throw $objExc;
+                }
 
 
 

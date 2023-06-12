@@ -211,7 +211,7 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
                     $objExc->IncrementOffset();
                     throw $objExc;
                 }
-            case "FullStoragePath":
+ /*           case "FullStoragePath":
                 try {
                     $this->strFullStoragePath = Type::Cast($mixValue, Type::STRING);
                     $this->blnModified = true;
@@ -219,7 +219,7 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
                 } catch (InvalidCast $objExc) {
                     $objExc->IncrementOffset();
                     throw $objExc;
-                }
+                }*/
 
             default:
                 try {

@@ -1,5 +1,5 @@
 (function ($) {
-    $.fn.uploadHandler = function (options) {
+    $.fn.uploadHandler= function (options) {
         options = $.extend({
             language: null,
             showIcons: false,
@@ -8,7 +8,7 @@
             maxFileSize: null,
             minFileSize: null,
             chunkUpload: true,
-            maxChunkSize: 1024 * 1024 * 5, // Default is set to 5 MB. Optional, the size of the chunked file may be increased under appropriate conditions.
+            maxChunkSize: 1024 * 1024 * 5, // Default is set to 5 MB. Optionally, the size of the chunked file may be increased or decreased under appropriate conditions.
             limitConcurrentUploads: 2, // Limited to 2 simultaneous uploads by default. Can be increased if necessary.
             url: null,
             previewMaxWidth: 80,
@@ -33,6 +33,9 @@
         const storedAcceptFileTypes = []; // data-error_type="1"
         const storedMaxFileSize = []; // data-error_type="2"
         const storedMinFileSize = []; // data-error_type="3"
+
+        // his unit set to an alert array
+        let errorMessages = [];
 
         /////////////////////////////////////////
 
@@ -59,9 +62,10 @@
                 file_transfer_failed_partially_Lbl: 'File transfer failed partially',
                 file_transfer_failed_completely_Lbl: 'File transfer failed completely',
                 upload_cancelled_Lbl: 'Upload cancelled',
-                remove_invalid_inputs_acceptFileTypes_Lbl: 'Please remove invalid inputs! The following file types are allowed: %s',
-                remove_invalid_inputs_maxFileSize_Lbl: 'Please remove invalid inputs! The maximum size allowed for each file is up to %s',
-                remove_invalid_inputs_minFileSize_Lbl: 'Please remove invalid inputs! Each file must exceed the minimum size %s'
+                remove_invalid_inputs_Lbl: 'Please remove invalid inputs!',
+                remove_invalid_inputs_acceptFileTypes_Lbl: 'The following file types are allowed: %s',
+                remove_invalid_inputs_maxFileSize_Lbl: 'The maximum size allowed for each file is up to %s',
+                remove_invalid_inputs_minFileSize_Lbl: 'Each file must exceed the minimum size %s'
             },
             et: {
                 add_files_Lbl: 'Lisa faile',
@@ -80,9 +84,10 @@
                 file_transfer_failed_partially_Lbl: 'Failiedastus ebaõnnestus osaliselt',
                 file_transfer_failed_completely_Lbl: 'Failiedastus ebaõnnestus täielikult',
                 upload_cancelled_Lbl: 'Üleslaadimine tühistati',
-                remove_invalid_inputs_acceptFileTypes_Lbl: 'Eemaldage kehtetud sisendid! Lubatud on järgmised failitüübid: %s',
-                remove_invalid_inputs_maxFileSize_Lbl: 'Eemaldage kehtetud sisendid! Iga faili maksimaalne lubatud suurus on kuni %s',
-                remove_invalid_inputs_minFileSize_Lbl: 'Eemaldage kehtetud sisendid! Iga fail peab ületama minimaalset suurust %s'
+                remove_invalid_inputs_Lbl: 'Eemaldage kehtetud sisendid!',
+                remove_invalid_inputs_acceptFileTypes_Lbl: 'Lubatud on järgmised failitüübid: %s',
+                remove_invalid_inputs_maxFileSize_Lbl: 'Iga faili maksimaalne lubatud suurus on kuni %s',
+                remove_invalid_inputs_minFileSize_Lbl: 'Iga fail peab ületama minimaalset suurust %s'
             },
             ru: {
                 add_files_Lbl: 'Добавить файлы',
@@ -101,9 +106,10 @@
                 file_transfer_failed_partially_Lbl: 'Передача файла не удалась частично',
                 file_transfer_failed_completely_Lbl: 'Передача файла полностью не удалась',
                 upload_cancelled_Lbl: 'Загрузка отменена',
-                remove_invalid_inputs_acceptFileTypes_Lbl: 'Пожалуйста, удалите недопустимые входные данные! Разрешены следующие типы файлов: %s',
-                remove_invalid_inputs_maxFileSize_Lbl: 'Пожалуйста, удалите недопустимые входные данные! Максимально допустимый размер для каждого файла составляет до %s',
-                remove_invalid_inputs_minFileSize_Lbl: 'Пожалуйста, удалите недопустимые входные данные! Каждый файл должен превышать минимальный размер %s'
+                remove_invalid_inputs_Lbl: 'Пожалуйста, удалите неверные данные!',
+                remove_invalid_inputs_acceptFileTypes_Lbl: 'Разрешены следующие типы файлов: %s',
+                remove_invalid_inputs_maxFileSize_Lbl: 'Максимально допустимый размер для каждого файла составляет до %s',
+                remove_invalid_inputs_minFileSize_Lbl: 'Каждый файл должен превышать минимальный размер %s'
             }
         };
 
@@ -114,11 +120,26 @@
 
         /////////////////////////////////////////
 
-        // Get a reference to the 3 buttons
+        // Get a reference to the 6 buttons
         const file_input = document.querySelector(".fileinput-button");
         const input = file_input.querySelector("#files");
         const all_start = document.querySelector(".all-start");
         const all_cancel = document.querySelector(".all-cancel");
+        const launch_start = document.querySelector(".launch-start");
+        const back = document.querySelector(".back");
+        const files_heading = document.querySelector(".files-heading");
+
+        /////////////////////////////////////////
+
+        // Get a reference to div of the fileupload-buttonbar
+        const fileupload_buttonbar = document.querySelector(".fileupload-buttonbar");
+        fileupload_buttonbar.classList.add("hidden");
+
+        /////////////////////////////////////////
+
+        // Get a reference to div of the media-items
+        const media_items = document.querySelector('[data-control="media-items"]');
+        //media_items.classList.remove("hidden");
 
         /////////////////////////////////////////
 
@@ -128,21 +149,30 @@
         all_start.addEventListener("click", handleForm);
         // all_cancel files delete handler
         all_cancel.addEventListener("click", cancelAllUploads);
+        // input form handler
+        launch_start.addEventListener("change", handleFileSelect);
+        // Get a reference to the button "back"
+        back.addEventListener("click", agoHandler);
 
         // Resetting elements
         all_start.classList.add("disabled");
         all_start.setAttribute("disabled", "disabled");
         all_cancel.classList.add("disabled");
+        all_cancel.setAttribute("disabled", "disabled");
 
         /////////////////////////////////////////
 
-        // Get a reference to the alert wrapper
+        // Get a reference to the alert/s wrapper
         const alert_wrapper = document.querySelector("#alert-wrapper");
+        const alert_multi_wrapper = document.querySelector(".alert-multi-wrapper");
 
         /////////////////////////////////////////
 
         // Get a reference to div of the table
         const files = document.querySelector(".files");
+        files.classList.add("hidden");
+        back.classList.add("disabled");
+        back.setAttribute("disabled", "disabled");
 
         /////////////////////////////////////////
 
@@ -191,9 +221,14 @@
 
         function handleFileSelect(e) {
             all_start.classList.remove("disabled");
+            all_start.removeAttribute("disabled");
             all_cancel.classList.remove("disabled");
-            // Clear the alert
+            all_cancel.removeAttribute("disabled");
+            back.classList.add("disabled");
+            back.setAttribute("disabled", "disabled");
+            // Clear the alert/alerts
             alert_wrapper.innerHTML = "";
+            alert_multi_wrapper.innerHTML = "";
 
             const files = e.target.files;
             const filesArr = Array.prototype.slice.call(files);
@@ -242,17 +277,17 @@
                 nameTd.appendChild(nameP);
 
                 const progress_bar = document.createElement("div");
-                progress_bar.setAttribute("data-name", f.name);
+                progress_bar.setAttribute("data-name", cleanFileName(f.name));
                 progress_bar.className = "progress-bar hidden";
 
                 const progress = document.createElement("div");
-                progress.setAttribute("data-name", f.name);
+                progress.setAttribute("data-name", cleanFileName(f.name));
                 progress.className = "progress";
                 progress_bar.appendChild(progress);
                 nameTd.appendChild(progress_bar);
 
                 const text_error = document.createElement("strong");
-                text_error.setAttribute("data-name", f.name);
+                text_error.setAttribute("data-name", cleanFileName(f.name));
                 text_error.className = "error text-error";
                 text_error.innerText = validate(f) ? validate(f) : '';
                 nameTd.appendChild(text_error);
@@ -265,10 +300,10 @@
                 sizeTd.appendChild(sizeSpan);
 
                 const percent_bar = document.createElement("div");
-                percent_bar.setAttribute("data-name", f.name);
+                percent_bar.setAttribute("data-name", cleanFileName(f.name));
                 percent_bar.className = "percent-bar hidden";
                 const percent = document.createElement("span");
-                percent.setAttribute("data-name", f.name);
+                percent.setAttribute("data-name", cleanFileName(f.name));
                 percent.className = "percent";
                 percent_bar.appendChild(percent);
                 sizeTd.appendChild(percent_bar);
@@ -277,7 +312,7 @@
                 const cancel = document.createElement("button");
                 cancel.className = "btn btn-warning cancel";
                 cancel.type = "reset";
-                cancel.setAttribute("data-name", f.name);
+                cancel.setAttribute("data-name", cleanFileName(f.name));
 
                 if (validate(f)) {
                     cancel.setAttribute("data-error", validate(f));
@@ -291,13 +326,13 @@
                 btnTd.appendChild(cancel);
 
                 const readySpan = document.createElement("span");
-                readySpan.setAttribute("data-name", f.name);
+                readySpan.setAttribute("data-name", cleanFileName(f.name));
                 readySpan.className = "ready hidden";
                 readySpan.innerHTML = '<svg viewBox="0 0 56 56" class="svg-file svg-check files-svg"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg>';
                 btnTd.appendChild(readySpan);
 
                 const errorSpan = document.createElement("span");
-                errorSpan.setAttribute("data-name", f.name);
+                errorSpan.setAttribute("data-name", cleanFileName(f.name));
                 errorSpan.className = "error error-bubble hidden";
                 errorSpan.innerHTML = '<svg viewBox="0 0 56 56" class="svg-file svg-error files-svg"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path></svg>';
                 btnTd.appendChild(errorSpan);
@@ -313,6 +348,7 @@
             for (let i = 0, len = children.length; i < len; i++) {
                 children[i].addEventListener("click", removeFile, true);
             }
+            handleUploads();
             errorsExistenceControl();
         }
 
@@ -323,8 +359,9 @@
 
             // Clear the input
             input.value = null;
-            // Clear the alert
+            // Clear the alert/alerts
             alert_wrapper.innerHTML = "";
+            alert_multi_wrapper.innerHTML = "";
 
             // Clear or reset the inputs
             if (storedFiles.length > 0 || (storedFiles.length > 0 && storedErrors.length > 0)) {
@@ -334,6 +371,8 @@
                 all_start.setAttribute('disabled', 'disabled');
                 all_cancel.classList.add("disabled");
                 all_cancel.setAttribute('disabled', 'disabled');
+                back.classList.add("disabled");
+                back.setAttribute('disabled', 'disabled');
 
                 const children = document.querySelectorAll(".cancel");
                 for (let i = 0, len = children.length; i < len; i++) {
@@ -349,6 +388,32 @@
                 return;
             }
             checkQueue();
+        }
+
+        //////////////////////////////////////////
+
+        function handleUploads() {
+            const parent_div = document.querySelector(".files");
+            const child_div = document.querySelector(".preview");
+
+            if (parent_div.contains(child_div)) {
+                files_heading.classList.add("hidden");
+                fileupload_buttonbar.classList.remove("hidden");
+                media_items.classList.add("hidden");
+                files.classList.remove("hidden");
+                //back.classList.remove("disabled");
+                //back.removeAttribute('disabled');
+             }
+        }
+
+        //////////////////////////////////////////
+
+        function agoHandler() {
+            files_heading.classList.remove("hidden");
+            fileupload_buttonbar.classList.add("hidden");
+            files.classList.add("hidden");
+            media_items.classList.remove("hidden");
+            alert_wrapper.innerHTML = "";
         }
 
         //////////////////////////////////////////
@@ -395,9 +460,9 @@
                 data.append("files", f);
                 data.append("chunkEnabled", "false");
 
-                updateProgress(xhr, f.name);
-                uploadFailed(xhr, f.name);
-                uploadComplete(xhr, f.name);
+                updateProgress(xhr, cleanFileName(f.name));
+                uploadFailed(xhr, cleanFileName(f.name));
+                uploadComplete(xhr, cleanFileName(f.name));
                 if (options.url) {
                     xhr.open('POST', options.url, true);
                 } else {
@@ -451,14 +516,14 @@
                 xhr.setRequestHeader("Content-Range", contentRange);
                 xhr.send(data);
 
-                let progress_bar = document.querySelector('.progress-bar[data-name="' + f.name + '"]');
-                let progress = document.querySelector('.progress[data-name="' + f.name + '"]');
-                let percent_bar = document.querySelector('.percent-bar[data-name="' + f.name + '"]');
-                let percent = document.querySelector('.percent[data-name="' + f.name + '"]');
-                let cancel = document.querySelector('.cancel[data-name="' + f.name + '"]');
-                let ready = document.querySelector('.ready[data-name="' + f.name + '"]');
-                let error_bubble = document.querySelector('.error-bubble[data-name="' + f.name + '"]');
-                let text_error = document.querySelector('.text-error[data-name="' + f.name + '"]');
+                let progress_bar = document.querySelector('.progress-bar[data-name="' + cleanFileName(f.name) + '"]');
+                let progress = document.querySelector('.progress[data-name="' + cleanFileName(f.name) + '"]');
+                let percent_bar = document.querySelector('.percent-bar[data-name="' + cleanFileName(f.name) + '"]');
+                let percent = document.querySelector('.percent[data-name="' + cleanFileName(f.name) + '"]');
+                let cancel = document.querySelector('.cancel[data-name="' + cleanFileName(f.name) + '"]');
+                let ready = document.querySelector('.ready[data-name="' + cleanFileName(f.name) + '"]');
+                let error_bubble = document.querySelector('.error-bubble[data-name="' + cleanFileName(f.name) + '"]');
+                let text_error = document.querySelector('.text-error[data-name="' + cleanFileName(f.name) + '"]');
 
                 progress_bar.classList.remove("hidden");
                 percent_bar.classList.remove("hidden");
@@ -495,14 +560,15 @@
                         response.started = true;
                         response.complete = true;
 
-                        let text_error = document.querySelector('.text-error[data-name="' + response.filename + '"]');
-                        let ready = document.querySelector('.ready[data-name="' + response.filename + '"]');
-                        let error_bubble = document.querySelector('.error-bubble[data-name="' + response.filename + '"]');
+                        let text_error = document.querySelector('.text-error[data-name="' + cleanFileName(response.filename) + '"]');
+                        let ready = document.querySelector('.ready[data-name="' + cleanFileName(response.filename) + '"]');
+                        let error_bubble = document.querySelector('.error-bubble[data-name="' + cleanFileName(response.filename) + '"]');
 
                         let output = {
                             "check": response.check,
                             "msg": response.msg,
                             "filename": response.filename,
+                            "type": response.type,
                             "error": response.error,
                         };
 
@@ -511,7 +577,7 @@
                         }
 
                         if (response.check === "true") {
-                            text_error.innerText = response.msg ? response.msg : '';
+                            text_error.innerText = response.msg /*? response.msg : ''*/;
                             ready.classList.add("hidden");
                             error_bubble.classList.remove("hidden");
                             checkedFiles.push(output);
@@ -602,9 +668,9 @@
                             response.started = true;
                             response.complete = true;
 
-                            let text_error = document.querySelector('.text-error[data-name="' + response.filename + '"]');
-                            let ready = document.querySelector('.ready[data-name="' + response.filename + '"]');
-                            let error_bubble = document.querySelector('.error-bubble[data-name="' + response.filename + '"]');
+                            let text_error = document.querySelector('.text-error[data-name="' + cleanFileName(response.filename) + '"]');
+                            let ready = document.querySelector('.ready[data-name="' + cleanFileName(response.filename) + '"]');
+                            let error_bubble = document.querySelector('.error-bubble[data-name="' + cleanFileName(response.filename) + '"]');
 
                             if (response.hasOwnProperty("filename")) {
                                 let output = {
@@ -619,7 +685,7 @@
                                 }
 
                                 if (response.check === "true") {
-                                    text_error.innerText = response.msg ? response.msg : '';
+                                    text_error.innerText = response.msg/* ? response.msg : ''*/;
                                     ready.classList.add("hidden");
                                     error_bubble.classList.remove("hidden");
                                     checkedFiles.push(output);
@@ -631,11 +697,6 @@
                                 checkQueue();
 
                                 uploadResponses(storedFiles, uploadedFiles, interruptedFiles, checkedFiles);
-
-                                console.log("storedFiles: ", storedFiles);
-                                console.log("uploadedFiles: ", uploadedFiles);
-                                console.log("interruptedFiles: ", interruptedFiles);
-                                console.log("checkedFiles: ", checkedFiles);
                             }
                         }
                     }
@@ -698,6 +759,7 @@
 
         function typeError(e) {
             fileExt = e.name.split('.').pop().toLowerCase();
+
             if (options.acceptFileTypes &&
                 (options.acceptFileTypes.includes(fileExt)) === false) {
                 return 1;
@@ -713,6 +775,7 @@
         }
 
         function errorsExistenceControl() {
+
             const Errors = document.querySelectorAll(".text-error");
             for (let i = 0, len = Errors.length; i < len; i++) {
                 if (Errors[i].firstChild) {
@@ -722,48 +785,54 @@
 
             const Error_1 = document.querySelectorAll('.cancel[data-type_error="1"]');
             for (let i = 0, len = Error_1.length; i < len; i++) {
-                if (Error_1[i].dataset["type_error"]) {
+                if (Error_1[i].dataset["type_error"] === "1") {
                     storedAcceptFileTypes.push(Error_1[i].dataset["type_error"]);
                 }
             }
 
             const Error_2 = document.querySelectorAll('.cancel[data-type_error="2"]');
             for (let i = 0, len = Error_2.length; i < len; i++) {
-                if (Error_2[i].dataset["type_error"]) {
+                if (Error_2[i].dataset["type_error"] === "2") {
                     storedMaxFileSize.push(Error_2[i].dataset["type_error"]);
                 }
             }
 
             const Error_3 = document.querySelectorAll('.cancel[data-type_error="3"]');
             for (let i = 0, len = Error_3.length; i < len; i++) {
-                if (Error_3[i].dataset["type_error"]) {
+                if (Error_3[i].dataset["type_error"] === "3") {
                     storedMinFileSize.push(Error_3[i].dataset["type_error"]);
                 }
             }
 
-            if (storedErrors.length > 0) {
-                file_input.classList.add("disabled");
-                input.setAttribute('disabled', 'disabled');
-                all_start.classList.add("disabled");
-                all_start.setAttribute('disabled', 'disabled');
-
-                if (options.acceptFileTypes && storedAcceptFileTypes.length > 0) {
-                    show_alert(sprintf(languages[options.language].remove_invalid_inputs_acceptFileTypes_Lbl, removeSpecialChars(options.acceptFileTypes)), "warning");
-                }
-                if (options.maxFileSize && storedMaxFileSize.length > 0) {
-                    show_alert(sprintf(languages[options.language].remove_invalid_inputs_maxFileSize_Lbl, readableBytes(options.maxFileSize)), "warning");
-                }
-                if (options.minFileSize && storedMinFileSize.length > 0) {
-                    show_alert(sprintf(languages[options.language].remove_invalid_inputs_minFileSize_Lbl, readableBytes(options.minFileSize)), "warning");
-                }
-                if (options.maxNumberOfFiles && options.maxNumberOfFiles < storedFiles.length) {
-                    show_alert(sprintf(languages[options.language].maxNumberOfFiles_Lbl, options.maxNumberOfFiles), "danger");
-                }
+            if (storedErrors.length === 0 && options.maxNumberOfFiles &&
+                options.maxNumberOfFiles < storedFiles.length) {
+                restrictionInfluencing();
+                show_alert(sprintf(languages[options.language].maxNumberOfFiles_Lbl, options.maxNumberOfFiles), "danger");
+                alert_multi_wrapper.innerHTML = "";
             } else {
-                file_input.classList.remove("disabled");
-                input.removeAttribute('disabled');
-                all_start.classList.remove("disabled");
-                all_start.removeAttribute('disabled');
+                restrictionRemoving();
+            }
+
+            if(options.acceptFileTypes && storedAcceptFileTypes.length > 0){
+                errorMessages.push(sprintf(languages[options.language].remove_invalid_inputs_acceptFileTypes_Lbl, removeSpecialChars(options.acceptFileTypes)));
+            }
+
+            if(options.maxFileSize && storedMaxFileSize.length > 0){
+                errorMessages.push(sprintf(languages[options.language].remove_invalid_inputs_maxFileSize_Lbl, readableBytes(options.maxFileSize)));
+            }
+
+            if(options.minFileSize && storedMinFileSize.length > 0){
+                errorMessages.push(sprintf(languages[options.language].remove_invalid_inputs_minFileSize_Lbl, readableBytes(options.minFileSize)));
+            }
+
+            show_multi_alert(errorMessages);
+
+            if (storedErrors.length > 0) {
+                restrictionInfluencing();
+                show_alert(sprintf(languages[options.language].remove_invalid_inputs_Lbl, null), "danger");
+            } else {
+                restrictionRemoving();
+                alert_multi_wrapper.innerHTML = "";
             }
         }
 
@@ -777,6 +846,7 @@
                     storedFiles.pop();
                     storedQueue.pop();
                     storedErrors.pop();
+                    errorMessages.pop();
                 }
                 while (storedErrors.length > 0) {
                     storedErrors.pop();
@@ -791,14 +861,17 @@
                     storedMinFileSize.pop();
                 }
 
-                // Clear or reset the inputs
+                // Clear or reset the inputs and alerts
                 tbody.innerHTML = "";
                 input.value = null;
+                alert_multi_wrapper.innerHTML = "";
                 input.removeAttribute('disabled');
                 file_input.classList.remove("disabled");
                 all_start.classList.add("disabled");
                 all_start.removeAttribute('disabled');
                 all_cancel.classList.add("disabled");
+                back.classList.remove("disabled");
+                back.removeAttribute('disabled');
                 return;
             }
 
@@ -811,12 +884,10 @@
             }
         }
 
-        //////////////////////////////////////////
-
         function removeFile() {
             let dataName = this.getAttribute("data-name");
             for (let i = 0; i < storedFiles.length; i++) {
-                if (storedFiles[i].name === dataName) {
+                if (cleanFileName(storedFiles[i].name) === dataName) {
                     storedFiles.splice(i, 1);
                     storedQueue.splice(i, 1);
                     break;
@@ -839,42 +910,37 @@
                     if (storedAcceptFileTypes[i] === errorType) {
                         storedAcceptFileTypes.splice(i, 1);
                         break;
-                    } else if (storedMaxFileSize[i] === errorType) {
+                    }
+                }
+
+                for (let i = 0; i < storedMaxFileSize.length; i++) {
+                    if (storedMaxFileSize[i] === errorType) {
                         storedMaxFileSize.splice(i, 1);
                         break;
-                    } else if (storedMinFileSize[i] === errorType) {
+                    }
+                }
+
+                for (let i = 0; i < storedMinFileSize.length; i++) {
+                    if (storedMinFileSize[i] === errorType) {
                         storedMinFileSize.splice(i, 1);
                         break;
                     }
                 }
             }
 
-            if (storedErrors && storedErrors.length > 0) {
-                if (options.acceptFileTypes && storedAcceptFileTypes.length > 0) {
-                    show_alert(sprintf(languages[options.language].remove_invalid_inputs_acceptFileTypes_Lbl, removeSpecialChars(options.acceptFileTypes)), "warning");
-                }
-                if (options.maxFileSize && storedMaxFileSize.length > 0) {
-                    show_alert(sprintf(languages[options.language].remove_invalid_inputs_maxFileSize_Lbl, readableBytes(options.maxFileSize)), "warning");
-                }
-                if (options.minFileSize && storedMinFileSize.length > 0) {
-                    show_alert(sprintf(languages[options.language].remove_invalid_inputs_minFileSize_Lbl, readableBytes(options.minFileSize)), "warning");
-                }
-                if (options.maxNumberOfFiles && options.maxNumberOfFiles < storedFiles.length) {
-                    show_alert(sprintf(languages[options.language].maxNumberOfFiles_Lbl, options.maxNumberOfFiles), "danger");
-                }
-
-                setTimeout(function () {
-                    file_input.classList.add("disabled");
-                    input.setAttribute('disabled', 'disabled');
-                    all_start.classList.add("disabled");
-                    all_start.setAttribute('disabled', 'disabled');
-                });
+            if (storedErrors.length === 0 && options.maxNumberOfFiles &&
+                options.maxNumberOfFiles < storedFiles.length) {
+                restrictionInfluencing();
+                alert_multi_wrapper.innerHTML = "";
+                show_alert(sprintf(languages[options.language].maxNumberOfFiles_Lbl, options.maxNumberOfFiles), "danger");
+            } else if (storedErrors.length !== 0) {
+                restrictionInfluencing();
+                show_alert(sprintf(languages[options.language].remove_invalid_inputs_Lbl, null), "danger");
             } else {
-                file_input.classList.remove("disabled");
-                input.removeAttribute('disabled');
-                all_start.classList.remove("disabled");
-                all_start.removeAttribute('disabled');
-                alert_wrapper.innerHTML = "";
+                restrictionRemoving();
+                // Clear alerts and data
+                errorMessages.pop();
+                alert_multi_wrapper.innerHTML = "";
             }
 
             if (storedFiles.length === 0) {
@@ -886,10 +952,28 @@
 
         //////////////////////////////////////////
 
+        function restrictionInfluencing() {
+            file_input.classList.add("disabled");
+            input.setAttribute('disabled', 'disabled');
+            all_start.classList.add("disabled");
+            all_start.setAttribute('disabled', 'disabled');
+        }
+
+        function  restrictionRemoving() {
+            file_input.classList.remove("disabled");
+            input.removeAttribute('disabled');
+            all_start.classList.remove("disabled");
+            all_start.removeAttribute('disabled');
+            alert_wrapper.innerHTML = "";
+        }
+
+        //////////////////////////////////////////
+
         function doneForm() {
-            // Clear or reset the inputs
+            // Clear or reset the inputs and alerts
             file_input.value = null;
             alert_wrapper.innerHTML = "";
+            alert_multi_wrapper.innerHTML = "";
             tbody.innerHTML = "";
 
             file_input.classList.remove("disabled");
@@ -897,6 +981,8 @@
             all_start.removeAttribute('disabled');
             all_cancel.removeAttribute('disabled');
             fileupload_donebar.classList.add("hidden");
+            back.classList.remove("disabled");
+            back.removeAttribute("disabled");
 
             while (storedFiles.length > 0) {
                 storedFiles.pop();
@@ -916,6 +1002,29 @@
       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       ${message}
     </div>`
+        }
+
+        // Function to show alerts
+        function show_multi_alert(messages) {
+            let messageHtml = "";
+            messageHtml += '<div class="alert alert-warning alert-dismissible" role="alert">' +
+                '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+            messageHtml += "<ul>";
+
+            messages.forEach(function (message) {
+                messageHtml += "<li>" + message + "</li>";
+            });
+
+            messageHtml += "</ul>";
+            messageHtml += "</div>";
+
+            alert_multi_wrapper.innerHTML = messageHtml;
+        }
+
+        function cleanFileName(str) {
+            if (str) {
+                return str = str.replace(/(\W+)/gi, '-');
+            }
         }
 
         function removeSpecialChars(str) {

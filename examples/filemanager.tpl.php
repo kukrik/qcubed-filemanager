@@ -13,93 +13,85 @@
 <!-- BEGIN CONTENT -->
 
 <?= _r($this->objUpload); ?>
+<?= _r($this->objManager); ?>
 
 <div class="page-content-wrapper">
     <div class="page-content">
+
         <div class="row">
             <div class="col-md-12">
                 <div class="content-body">
-<!--                    <div class="files-heading">
+                   <div class="files-heading">
 
-                        <div class="row">
-                            <div class="col-md-9">
-                                <div class="btn-group" role="group">
-                                    <?php /*= _r($this->btnUpload); */?>
-                                    <?php /*= _r($this->btnAddFolder); */?>
-                                </div>
-                                &nbsp;
-                                <div class="btn-group" role="group">
-                                    <?php /*= _r($this->btnMove); */?>
-                                    <?php /*= _r($this->btnRename); */?>
-                                    <?php /*= _r($this->btnCopy); */?>
-                                    <?php /*= _r($this->btnDownload); */?>
-                                    <?php /*= _r($this->btnDelete); */?>
-                                </div>
-                                &nbsp;
-                                <div class="btn-group" role="group">
-                                    <?php /*= _r($this->btnListView); */?>
-                                    <?php /*= _r($this->btnGridView); */?>
-                                    <?php /*= _r($this->btnBoxView); */?>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <?php /*= _r($this->txtFilter); */?>
-                            </div>
-                        </div>
-                    </div>-->
+                       <div class="row">
+                           <div class="col-md-9">
+                               <div class="btn-group" role="group">
+                                   <?= _r($this->btnUpload); ?>
+                                   <?= _r($this->btnAddFolder); ?>
+                               </div>
+                               <div class="btn-group" role="group">
+                                   <?= _r($this->btnMove); ?>
+                                   <?= _r($this->btnRename); ?>
+                                   <?= _r($this->btnCopy); ?>
+                                   <?= _r($this->btnDownload); ?>
+                                   <?= _r($this->btnDelete); ?>
+                               </div>
 
-                    <div class="fileupload-buttonbar">
+                               <div class="btn-group" role="group">
+                                   <?= _r($this->btnListView); ?>
+                                   <?= _r($this->btnGridView); ?>
+                                   <?= _r($this->btnBoxView); ?>
+                               </div>
+                           </div>
+
+                           <div class="col-md-3">
+                               <?= _r($this->txtFilter); ?>
+                           </div>
+                       </div>
+                   </div>
+
+                    <div class="fileupload-buttonbar hidden">
                         <div class="row">
                             <div class="col-md-12">
                                 <?= _r($this->btnAddFiles); ?>
                                 <?= _r($this->btnAllStart); ?>
                                 <?= _r($this->btnAllCancel); ?>
+                                <?= _r($this->btnBack); ?>
                             </div>
                         </div>
                     </div>
+<!--                    '--><?php //echo $this->objUpload->RootUrl ?><!--'-->
 
                     <div class="form-body">
-
                         <div class="row">
-                            <div class="col-md-12">
-                                <div class="break-word">
-                                    <a href="" class="head">Library</a>
+                            <div class="col-md-9">
+                                <div class="breadcrumbs break-word">
+                                    <a href="filemanager.php" data-id="1" class="head">Library</a>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div id="alert-wrapper"></div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="files"></div>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-9">
-                                <div data-control="media-items">
+                                <div id="alert-wrapper"></div>
+                                <div class="alert-multi-wrapper"></div>
+                                <div class="files"></div>
+                                <!--<div data-control="media-items">
+
                                     <svg viewBox="0 0 18 18" class="svg-preloader svg-preloader-active preloader-body">
                                         <circle cx="9" cy="9" r="8" pathLength="100" class="svg-preloader-circle"></circle>
                                     </svg>
+
                                     <div class="scrollpad control-scrollpad">
-                                        <div class="scroll-wrapper"> <!-- This element is required for the scrollpad control -->
-                                            <?= _r($this->objManager); ?>
+                                        <div class="scroll-wrapper"
+                                            <?php /*// _r($this->objManager); */?>
                                         </div>
                                     </div>
-
-                                    <div class="" style="padding: 15px 0;"> <!--  border: 1px solid #ccc;  -->
-                                        Full size: 13.38 MB | Files: 24 | Folders: 4
-                                    </div>
-                                </div>
+                                </div>-->
                             </div>
 
                             <div class="col-md-3">
                                 <div class="file-info">
-
                                     <div class="file-info-title">
                                         <div class="caption">File info</div>
                                     </div>
@@ -110,29 +102,21 @@
                                             <p>Nothing is selected</p>
                                         </div>
                                     </div>
-
-
                                 </div>
                             </div>
 
-
-
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="pull-right" style="padding-top: 10px;">
-                                    <button type="submit" class="btn btn-orange" style="display:none">Sisesta</button>
-                                    <button type="submit" class="btn btn-darkblue" style="display:none">Redigeeri</button>
-                                    <button type="submit" class="btn btn-default" style="display:none">Loobu</button>
+<!--                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="pull-right" style="padding-top: 10px; padding-right: 15px;">
+                                        <button type="submit" class="btn btn-orange">Sisesta</button>
+                                        <button type="submit" class="btn btn-darkblue">Redigeeri</button>
+                                        <button type="submit" class="btn btn-default">Loobu</button>
+                                    </div>
                                 </div>
                             </div>
+-->
                         </div>
-
-
                     </div>
-
-
                 </div>
             </div>
         </div>

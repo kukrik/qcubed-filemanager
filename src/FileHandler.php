@@ -3,7 +3,7 @@
 namespace QCubed\Plugin;
 
 /**
- * Class UploadHandler
+ * Class FileUploadHandler
  *
  * Note: the "upload" folder must already exist in /project/assets/ and this folder has 777 permissions.
  *
@@ -77,7 +77,7 @@ namespace QCubed\Plugin;
  * @package QCubed\Plugin
  */
 
-class UploadHandler
+class FileHandler
 {
     protected $options;
     // PHP File Upload error message codes:
@@ -198,13 +198,6 @@ class UploadHandler
             if (!in_array($ext, $allowedFileTypes)) {
                 $this->errorValidity('true', 'accept_file_types', null);
             }
-
-            // extra security: check if image is image
-            if (function_exists('exif_imagetype') &&
-                in_array($ext, ['gif', 'jpeg', 'jpg', 'png', 'psd', 'bmp', 'tif', 'tiff', 'webp']) &&
-                exif_imagetype($this->options['File']) === false) {
-                $this->errorValidity('true', 'invalid_image_type', null);
-            }
         }
 
         // invalid $_FILES["files"]["size"]
@@ -317,6 +310,10 @@ class UploadHandler
         }
 
         $json['filename'] = basename($this->options['FileName']);
+        $json['type'] = $this->options['FileType'];
+
+        //$json['type'] = $this->getMimeType($this->options['FileName']);
+
         $json['error'] = $this->options['FileError'];
         print json_encode($json);
         die();
@@ -498,8 +495,8 @@ class UploadHandler
      */
     protected function resizeImage($path, $newPath, $resizeDimensions)
     {
-        //$json = array();
-        //$json['check'] = 'false';
+        $json = array();
+        $json['check'] = 'false';
 
         if (function_exists('exif_imagetype') && exif_imagetype($path) !== false) {
             // file size

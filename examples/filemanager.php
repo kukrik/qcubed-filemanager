@@ -1,7 +1,13 @@
 <?php
+require_once('qcubed.inc.php');
+
+error_reporting(E_ALL); // Error engine - always ON!
+ini_set('display_errors', TRUE); // Error display - OFF in production env or real server
+ini_set('log_errors', TRUE); // Error logging
 
 use QCubed as Q;
 use QCubed\Bootstrap as Bs;
+use QCubed\Folder;
 use QCubed\Project\Control\ControlBase;
 use QCubed\Project\Control\FormBase as Form;
 use QCubed\Action\ActionParams;
@@ -12,17 +18,21 @@ use QCubed\Query\QQ;
 
 use QCubed\Event\CellClick;
 
-require_once('qcubed.inc.php');
-
 /**
  * Class SampleForm
  */
 class SampleForm extends Form
 {
+    protected $dlgModal1;
+    protected $dlgModal2;
+    protected $dlgModal3;
+    protected $dlgModal4;
+
     protected $objUpload;
     protected $btnAddFiles;
     protected $btnAllStart;
     protected $btnAllCancel;
+    protected $btnBack;
 
     protected $btnUpload;
     protected $btnFolder;
@@ -43,28 +53,80 @@ class SampleForm extends Form
     protected $txtFilter;
 
     protected $objManager;
-
     protected $currentPath;
 
-    protected $strMenuManagerId;
+    protected $txtAddFolder;
+
 
     protected function formCreate()
     {
         parent::formCreate();
 
+        $this->objUpload = new Q\Plugin\FileUploadHandler($this);
+        $this->objUpload->Language = 'et'; // Default en
+        //$this->objUpload->ShowIcons = true; // Default false
+        $this->objUpload->AcceptFileTypes = ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'docx', 'mp4']; // Default null
+        //$this->objUpload->MaxNumberOfFiles = 5; // Default null
+        $this->objUpload->MaxFileSize = 1024 * 1024 * 2; // 2 MB // Default null
+        //$this->objUpload->MinFileSize = 500000; // 500 kb // Default null
+        //$this->objUpload->ChunkUpload = false; // Default true
+        $this->objUpload->MaxChunkSize = 1024 * 1024; // 10 MB // Default 5 MB
+        //$this->objUpload->LimitConcurrentUploads = 5; // Default 2
+        $this->objUpload->Url = 'php/'; // Default null
+        //$this->objUpload->PreviewMaxWidth = 120; // Default 80
+        //$this->objUpload->PreviewMaxHeight = 120; // Default 80
+        //$this->objUpload->WithCredentials = true; // Default false
+
+
         $this->objManager = new Q\Plugin\FileManager($this);
+        $this->objManager->setDataBinder('Data_Bind');
+        $this->objManager->createRenderFolders([$this, 'Folder_Draw']);
+        $this->objManager->Language = 'et';
 
         $this->CreateButtons();
+        $this->createModals();
+        $this->portedTextBoxes();
+
+//        $directory = APP_UPLOADS_DIR . '/uudised 2023';
+//        $scanned_directory = array_diff(scandir($directory), array('..', '.'));
+//        echo '<pre>';
+//        print_r($scanned_directory);
+//        echo '</pre>';
+
+        //echo $this->objManager->RootPath . '<br>'; // APP_UPLOADS_DIR
+//        echo basename(APP_UPLOADS_DIR);
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    protected function Data_Bind()
+    {
+        $this->objManager->DataSource = Folders::loadAll(
+            QQ::expandAsArray(QQN::folders()->FilesAsFolder
+            ));
+    }
+
+    public function Folder_Draw(Folders $objFolders)
+    {
+        $a['id'] = $objFolders->Id;
+        $a['parent_id'] = $objFolders->ParentId;
+        $a['name'] = Q\QString::htmlEntities($objFolders->Name);
+        $a['type'] = $objFolders->Type;
+        $a['path'] = $objFolders->Path;
+        $a['created_date'] = $objFolders->CreatedDate;
+        $a['mtime'] = $objFolders->Mtime;
+        $a['locked_file'] = $objFolders->LockedFile;
+        return $a;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     public function CreateButtons()
     {
-        ////////////////////////////
-
         $this->btnAddFiles = new Q\Plugin\BsFileControl($this, 'files');
-        $this->btnAddFiles->Text = t('Add files');
+        $this->btnAddFiles->Text = t(' Add files');
+        $this->btnAddFiles->Glyph = 'fa fa-upload';
         $this->btnAddFiles->Multiple = true;
         $this->btnAddFiles->CssClass = 'btn btn-orange fileinput-button';
         $this->btnAddFiles->UseWrapper = false;
@@ -82,32 +144,17 @@ class SampleForm extends Form
         $this->btnAllCancel->CssClass = 'btn btn-warning all-cancel disabled';
         $this->btnAllCancel->UseWrapper = false;
 
-        $this->objUpload = new Q\Plugin\FileUploadHandler($this);
-        //$this->objUpload->Language = 'et'; // Default en
-        //$this->objUpload->ShowIcons = true; // Default false
-        $this->objUpload->AcceptFileTypes = ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'docx', 'mp4']; // Default null
-        //$this->objUpload->MaxNumberOfFiles = 5; // Default null
-        //$this->objUpload->MaxFileSize = 1024 * 1024 * 2; // 2 MB // Default null
-        //$this->objUpload->MinFileSize = 500000; // 500 kb // Default null
-        //$this->objUpload->ChunkUpload = false; // Default true
-        //$this->objUpload->MaxChunkSize = 1024 * 1024 * 10; // 10 MB // Default 5 MB
-        //$this->objUpload->LimitConcurrentUploads = 5; // Default 2
-        $this->objUpload->Url = 'php/'; // Default null
-        //$this->objUpload->PreviewMaxWidth = 120; // Default 80
-        //$this->objUpload->PreviewMaxHeight = 120; // Default 80
-        //$this->objUpload->WithCredentials = true; // Default false
+        $this->btnBack = new Bs\Button($this);
+        $this->btnBack->Text = t('Back to file manager');
+        $this->btnBack->CssClass = 'btn btn-default back disabled';
+        $this->btnBack->UseWrapper = false;
 
-
-
-        $this->btnUpload = new Q\Plugin\Control\Button($this);
+        $this->btnUpload = new Q\Plugin\BsFileControl($this);
         $this->btnUpload->Text = t(' Upload');
         $this->btnUpload->Glyph = 'fa fa-upload';
-        $this->btnUpload->CssClass = 'btn btn-orange fileinput-button';
+        $this->btnUpload->Multiple = true;
+        $this->btnUpload->CssClass = 'btn btn-orange launch-start';
         $this->btnUpload->UseWrapper = false;
-
-        //$this->btnUpload->Display = false;
-
-        //$this->btnUpload->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnUpload_Click'));
 
         $this->btnAddFolder = new Q\Plugin\Control\Button($this);
         $this->btnAddFolder->Text = t(' Add folder');
@@ -115,7 +162,7 @@ class SampleForm extends Form
         $this->btnAddFolder->CssClass = 'btn btn-orange';
         $this->btnAddFolder->CausesValidation = false;
         $this->btnAddFolder->UseWrapper = false;
-        //$this->btnAddFolder->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnAddFolder_Click'));
+        $this->btnAddFolder->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnAddFolder_Click'));
 
         //$this->btnRefresh = new Q\Plugin\Control\Button($this);
         //$this->btnRefresh->Glyph = 'fa fa-refresh';
@@ -132,7 +179,6 @@ class SampleForm extends Form
         $this->btnMove->Enabled = false;
         //$this->btnMove->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnMove_Click'));
 
-
         $this->btnRename = new Q\Plugin\Control\Button($this);
         $this->btnRename->Text = t(' Rename');
         $this->btnRename->Glyph = 'fa fa-pencil-square-o';
@@ -141,7 +187,6 @@ class SampleForm extends Form
         $this->btnRename->UseWrapper = false;
         $this->btnRename->Enabled = false;
         //$this->btnRename->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnRename_Click'));
-
 
         $this->btnCopy = new Q\Plugin\Control\Button($this);
         $this->btnCopy->Text = t(' Copy');
@@ -200,167 +245,132 @@ class SampleForm extends Form
         //$this->addFilterActions();
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
-
-//    protected function Manager_Bind()
-//    {
-//        //$this->objManager->DataSource = Folders::loadAll();
-//
-//        print '<pre>';
-//        print_r($this->objManager->DataSource);
-//        print '</pre>';
-//        $this->objManager->refresh();
-//
-//        $intTime = filemtime($this->objManager->RootPath);
-//        $intModified = date($this->objManager->DateTimeFormat, $intTime);
-//
-//        if (count($this->objManager->DataSource) == 0) {
-//            $objFolder = new Folders();
-//            $objFolder->setBasename('Library');
-//            $objFolder->setFilePerms(substr(sprintf('%o', fileperms($this->objManager->RootPath)), -4));
-//            $objFolder->setType('folder');
-//            $objFolder->setSize('Folder');
-//            $objFolder->setMtime($intTime);
-//            $objFolder->setLastModified(date($intModified, $intTime));
-//            $objFolder->setPath($this->objManager->getRootRelative($this->objManager->RootPath));
-//            $objFolder->save(true);
-//        }
-
-
-        //print_r($this->objManager->DataSource);
-//    }
-
-//    public function Folders_Draw(Folders $objFolder)
-//    {
-//        $a['id'] = $objFolder->Id;
-//        $a['basename'] = Q\QString::htmlEntities($objFolder->Basename);
-//        $a['fileperms'] = $objFolder->FilePerms;
-//        $a['type'] = $objFolder->Type;
-//        $a['size'] = $objFolder->Size;
-//        $a['mtime'] = $objFolder->Mtime;
-//        $a['last_modified'] = $objFolder->LastModified;
-//        $a['path'] = $objFolder->Path;
-//        $a['full_size'] = $objFolder->FullSize;
-//        $a['num_files'] = $objFolder->NumFiles;
-//        $a['num_folders'] = $objFolder->NumFolders;
-//        return $a;
-//    }
-
-//    public function Files_Draw(Files $objFile)
-//    {
-//        $a['id'] = $objFile->Id;
-//        $a['folder_id'] = $objFile->FolderId;
-//        $a['basename'] = Q\QString::htmlEntities($objFile->Basename);
-//        $a['fileperms'] = $objFile->FilePerms;
-//        $a['type'] = $objFile->Type;
-//        $a['size'] = $objFile->Size;
-//        $a['mtime'] = $objFile->Mtime;
-//        $a['last_modified'] = $objFile->LastModified;
-//        $a['ext'] = $objFile->Ext;
-//        $a['mime_type'] = $objFile->MimeType;
-//        $a['dimensions'] = $objFile->Dimensions;
-//        $a['path'] = $objFile->Path;
-//        $a['public_url'] = $objFile->PublicUrl;
-//        $a['resized_image_url'] = $objFile->ResizedImageUrl;
-//        $a['locked_file'] = $objFile->LockedFile;
-//        return $a;
-//    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
-
-    protected function objRow_Click(ActionParams $params)
+    public function createModals()
     {
-        /*foreach ($this->objManager->SelectedItems as $key => $selectedItem) {
+        $this->dlgModal1 = new Bs\Modal($this);
+        $this->dlgModal1->AutoRenderChildren = true;
+        $this->dlgModal1->Title = t('Name of new folder');
+        $this->dlgModal1->Size = Bs\Bootstrap::MODAL_SMALL;
+        $this->dlgModal1->HeaderClasses = 'btn-default';
+        $this->dlgModal1->addButton(t("I accept"), null, false, false, null,
+            ['class' => 'btn btn-orange']);
+        $this->dlgModal1->addCloseButton(t("I'll cancel"));
+        $this->dlgModal1->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('AddFolderName_Click'));
 
-            $strItemType = $selectedItem['data-type'];
-            $strPath = $selectedItem['data-path'];
-            $objTitle = $selectedItem['data-title'];
-            $intFileSize = $selectedItem['data-size'];
-            $strMimeType = $selectedItem['data-mime-type'];
-            $strDimensions = $selectedItem['data-dimensions'];
-            $intModified = $selectedItem['data-last-modified'];
-            $strDocumentType = $selectedItem['data-document-type'];
-            $strPublicUrl =  $selectedItem['data-public-url'];
+        $this->dlgModal2 = new Bs\Modal($this);
+        $this->dlgModal2->Title = t('Warning');
+        $this->dlgModal2->Text = t('<p style="margin-top: 15px;">Cannot create a folder with the same name!</p>');
+        $this->dlgModal2->Size = Bs\Bootstrap::MODAL_SMALL;
+        $this->dlgModal2->HeaderClasses = 'btn-danger';
+        $this->dlgModal2->addButton(t("Back"), null, false, false, null,
+            ['class' => 'btn btn-orange']);
+        $this->dlgModal2->addCloseButton(t("I'll cancel"));
+        $this->dlgModal2->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('AddFolderError_Click'));
 
-            $strItems[] = [
-                "data-type" => $strItemType,
-                "data-path" => $strPath,
-                "data-title" => $objTitle,
-                "data-size" => $intFileSize,
-                "data-mime-type" => $strMimeType,
-                "data-dimensions" => $strDimensions,
-                "data-last-modified" => $intModified,
-                "data-document-type" => $strDocumentType,
-                "data-public-url" => $strPublicUrl
-            ];
-        }*/
+        $this->dlgModal3 = new Bs\Modal($this);
+        $this->dlgModal3->Title = t('Warning');
+        $this->dlgModal3->Text = t('<p style="margin-top: 15px;">Folder cannot be created without name!</p>');
+        $this->dlgModal3->Size = Bs\Bootstrap::MODAL_SMALL;
+        $this->dlgModal3->HeaderClasses = 'btn-danger';
+        $this->dlgModal3->addButton(t("Back"), null, false, false, null,
+            ['class' => 'btn btn-orange']);
+        $this->dlgModal3->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('AddFolderNameEmpty_Click'));
 
-//        $ary = json_decode($this->objManager->SelectedItems, true);
-//        $a = count($ary);
-//        //Application::displayAlert($a);
-//
-//        Application::displayAlert($this->objManager->SelectedItems);
-//
-//        $arr = json_decode($this->objManager->SelectedItems, true);
-
-        //if ($arr[0]['data-type'] == "folder") {
-
-            //$this->objManager->FullPath = $this->objManager->RootPath . $arr[0]['data-path'];
-            //$this->objManager->FullPath = $arr[0]['data-path'];
-
-            //$this->objManager->refresh();
-       // }
-
-        //$this->objManager->refresh();
-
-        //Application::displayAlert($this->objManager->FullPath);
-
-
-//        if ($arr[0]['data-type'] !== "folder") {
-//            $this->btnMove->Enabled = true;
-//            $this->btnRename->Enabled = true;
-//            $this->btnCopy->Enabled = true;
-//            $this->btnDownload->Enabled = true;
-//            $this->btnDelete->Enabled = true;
-//        } else {
-//            $this->btnMove->Enabled = false;
-//            $this->btnRename->Enabled = false;
-//            $this->btnCopy->Enabled = false;
-//            $this->btnDownload->Enabled = false;
-//            $this->btnDelete->Enabled = false;
-//        }
-
-
-
+        $this->dlgModal4 = new Bs\Modal($this);
+        $this->dlgModal4->Title = t('Info');
+        $this->dlgModal4->Text = t('<p style="margin-top: 15px;">Failed to create folder! Try again!</p>');
+        $this->dlgModal4->Size = Bs\Bootstrap::MODAL_SMALL;
+        $this->dlgModal4->HeaderClasses = 'btn-darkblue';
+//        $this->dlgModal4->addButton(t("Back"), null, false, false, null,
+//            ['class' => 'btn btn-orange']);
+        $this->dlgModal4->addCloseButton(t("I close the window"));
+        //$this->dlgModal4->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('AddFolderNameEmpty_Click'));
 
     }
 
-    protected function btnUpload_Click(ActionParams $params)
+    public function portedTextBoxes()
     {
+        $this->txtAddFolder = new Bs\TextBox($this->dlgModal1);
+        $this->txtAddFolder->setHtmlAttribute('autocomplete', 'off');
+        $this->txtAddFolder->setCssStyle('margin-top', '15px');
+        $this->txtAddFolder->setCssStyle('margin-bottom', '15px');
+        $this->txtAddFolder->UseWrapper = false;
+    }
 
+    public function btnAddFolder_Click(ActionParams $params)
+    {
+        $this->dlgModal1->showDialogBox();
+        $this->txtAddFolder->Text = '';
+    }
 
-//        $arr = $this->objManager->SelectedItems;
-//        $strItems = json_encode($arr);
-//        Application::displayAlert($strItems);
+    public function AddFolderName_Click(ActionParams $params)
+    {
+        if (!empty(trim($this->txtAddFolder->Text))) {
 
-        /*if ($this->chkCheckBox->Checked) {
-            $this->btnMove->Enabled = true;
-            $this->btnRename->Enabled = true;
-            $this->btnCopy->Enabled = true;
-            $this->btnDownload->Enabled = true;
-            $this->btnDelete->Enabled = true;
+            $scanned_directory = array_diff(scandir($this->objManager->RootPath), array('..', '.'));
+            //DestinationPath'
+
+            if ($this->objManager->RootPath . "/") {
+                $path = $this->objManager->RootPath . "/" . trim($this->txtAddFolder->Text);
+            } else {
+                $path = $this->objManager->RootPath . "/" . trim($this->txtAddFolder->Text);
+            }
+
+            //$path = $this->objManager->RootPath . "/" . trim($this->txtAddFolder->Text);
+
+            if (!in_array($this->txtAddFolder->Text, $scanned_directory)) {
+                Folder::makeDirectory($path, 0777);
+                $this->dlgModal1->hideDialogBox();
+
+                if (file_exists($path) && is_dir($path)) {
+                    $objAddFolder = new Folders();
+                    //$objAddFolder->setParentId();
+                    $objAddFolder->setPath($this->objManager->getRelativePath($path));
+                    $objAddFolder->setName(trim($this->txtAddFolder->Text));
+                    $objAddFolder->setType('dir');
+                    $objAddFolder->setCreatedDate(Q\QDateTime::Now());
+                    $objAddFolder->setMtime(filemtime($path));
+                    $objAddFolder->setLockedFile(0);
+                    $objAddFolder->save();
+
+                    $this->objManager->refresh();
+
+                    $strFullStoragePath = $this->objManager->TempPath . '/' . $this->objManager->StoragePath;
+                    $strCreateDirs = ['/thumbnail', '/medium', '/large'];
+
+                    foreach ($strCreateDirs as $strCreateDir) {
+                        Folder::makeDirectory($strFullStoragePath . $strCreateDir . '/' . trim($this->txtAddFolder->Text), 0777);
+                    }
+                } else {
+                    $this->dlgModal4->showDialogBox();
+                }
+
+            } else {
+                $this->dlgModal1->hideDialogBox();
+                $this->dlgModal2->showDialogBox();
+            }
         } else {
-            $this->btnMove->Enabled = false;
-            $this->btnRename->Enabled = false;
-            $this->btnCopy->Enabled = false;
-            $this->btnDownload->Enabled = false;
-            $this->btnDelete->Enabled = false;
-        }*/
+            $this->dlgModal1->hideDialogBox();
+            $this->dlgModal3->showDialogBox();
+        }
+    }
 
+    public function AddFolderError_Click(ActionParams $params)
+    {
+        $this->dlgModal2->hideDialogBox();
+        $this->dlgModal1->showDialogBox();
+    }
+
+    public function AddFolderNameEmpty_Click(ActionParams $params)
+    {
+        $this->dlgModal3->hideDialogBox();
+        $this->dlgModal1->showDialogBox();
     }
 
 
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
 }
 

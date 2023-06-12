@@ -25,12 +25,12 @@ span.ready {}
 }
 /* Customize container */
 @media (min-width: 768px) {
-    .container {
+    /*.files {
         max-width: 730px;
     }
     .fileupload-buttonbar {
-        /*margin-bottom: 20px;*/
-    }
+        !*margin-bottom: 20px;*!
+    }*/
     .fileupload-donebar {
         display: block;
         border-top: 1px solid #ddd;
@@ -58,9 +58,32 @@ span.ready {}
     direction: ltr;
     cursor: pointer;
 }
+
+.launch-start {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+.launch-start input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    height: 100%;
+    opacity: 0;
+    filter: alpha(opacity=0);
+    font-size: 200px !important;
+    direction: ltr;
+    cursor: pointer;
+}
+
 /* Fixes for IE < 8 */
 @media screen\9 {
     .fileinput-button input {
+        font-size: 150% !important;
+    }
+
+    .launch-start input {
         font-size: 150% !important;
     }
 }
@@ -76,6 +99,9 @@ span.ready {}
 }
 .files button {
     margin-bottom: 5px;
+}
+.alert-multi-wrapper {
+    margin-top: -10px;
 }
 @media (max-width: 767px) {
     .fileupload-buttonbar .btn {
@@ -168,3 +194,6 @@ img, svg {vertical-align: middle;}
     vertical-align: bottom;
     pointer-events: none
 }
+
+/* SVG ICONS STYLES FOR PUTTING BUTTONS INSIDE */
+
