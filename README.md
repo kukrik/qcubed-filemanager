@@ -71,5 +71,7 @@ and
     composer require kukrik/bootstrap
     composer require kukrik/bootstrap-filecontrol
     composer require kukrik/select2
+    composer require kukrik/ckeditor
+    composer require ckeditor/ckeditor
 ```
 
