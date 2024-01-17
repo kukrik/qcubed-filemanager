@@ -1,5 +1,8 @@
 <?php
 require_once('qcubed.inc.php');
+require_once ('../src/FileInfo.php');
+require_once ('../src/DestinationInfo.class.php');
+require_once ('../src/Archive.php');
 
 error_reporting(E_ALL); // Error engine - always ON!
 ini_set('display_errors', TRUE); // Error display - OFF in production env or real server
@@ -10,7 +13,6 @@ use QCubed\Bootstrap as Bs;
 use QCubed\Plugin\UploadHandler;
 use QCubed\Plugin\FileManager;
 use QCuded\Plugin\FileInfo;
-use QCubed\Plugin\Archive;
 use QCubed\QDateTime;
 use QCubed\Folder;
 use QCubed\Project\Control\ControlBase;
