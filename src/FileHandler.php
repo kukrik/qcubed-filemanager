@@ -187,7 +187,7 @@ class FileHandler
         if ($this->options['DestinationPath'] == null) {
             $this->options['FileName'] = $this->options['RootPath'] . '/' . basename($this->options['FileName']);
         } else {
-            $this->options['FileName'] = $this->options['RootPath'] . '/' . $this->options['DestinationPath'] . '/' . basename($this->options['FileName']);
+            $this->options['FileName'] = $this->options['RootPath'] . $this->options['DestinationPath'] . '/' . basename($this->options['FileName']);
         }
 
         // invalid $_FILES["files"]["type"]
@@ -311,9 +311,6 @@ class FileHandler
 
         $json['filename'] = basename($this->options['FileName']);
         $json['type'] = $this->options['FileType'];
-
-        //$json['type'] = $this->getMimeType($this->options['FileName']);
-
         $json['error'] = $this->options['FileError'];
         print json_encode($json);
         die();

@@ -5,9 +5,8 @@ namespace QCubed\Plugin;
 use QCubed\Exception\Caller;
 use QCubed\Exception\InvalidCast;
 use QCubed\Folder;
-//use QCubed\Plugin\UploadHandler;
 use QCubed\Type;
-//use QCubed\Project\Application;
+
 
 /**
  * Class FileUpload
@@ -33,7 +32,7 @@ use QCubed\Type;
 class FileUploadHandlerBase extends FileUploadHandlerBaseGen
 {
     /** @var string[] */
-    protected $strFormAttributes = array('enctype' => 'multipart/form-data');
+    //protected $strFormAttributes = array('enctype' => 'multipart/form-data');
     /** @var string */
     protected $strRootPath = APP_UPLOADS_DIR;
     /** @var string */
@@ -70,12 +69,23 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
     }
 
     /**
+     * Returns the HTML for the control.
+     *
+     * @return string
+     */
+    protected function getControlHtml()
+    {
+        $strHtml = _nl('<div class="files"></div>');
+        return $strHtml;
+    }
+
+    /**
      * @throws Caller
      */
     protected function setup()
     {
         $this->strFullStoragePath = $this->strTempPath . '/' . $this->strStoragePath;
-        $strCreateDirs = ['/thumbnail', '/medium', '/large'];
+        $strCreateDirs = ['/thumbnail', '/medium', '/large', '/zip'];
 
         if (!is_dir($this->strRootPath)) {
             Folder::makeDirectory(QCUBED_PROJECT_DIR . '/assets/upload', 0777);
@@ -211,15 +221,6 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
                     $objExc->IncrementOffset();
                     throw $objExc;
                 }
- /*           case "FullStoragePath":
-                try {
-                    $this->strFullStoragePath = Type::Cast($mixValue, Type::STRING);
-                    $this->blnModified = true;
-                    break;
-                } catch (InvalidCast $objExc) {
-                    $objExc->IncrementOffset();
-                    throw $objExc;
-                }*/
 
             default:
                 try {
@@ -232,17 +233,3 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
         }
     }
 }
-
-
-
-// https://stackoverflow.com/questions/30331322/how-can-i-check-if-a-object-is-an-instance-of-a-specific-class
-
-// https://stackhowto.com/how-to-check-if-an-object-is-an-instance-of-a-specific-class-in-php/
-
-// https://www.php.net/manual/en/language.operators.type.php
-
-// https://www.educative.io/answers/what-is-the-instanceof-keyword-in-php
-
-
-
-

@@ -1,5 +1,5 @@
 (function ($) {
-    $.fn.uploadHandler= function (options) {
+    $.fn.uploadHandler = function (options) {
         options = $.extend({
             language: null,
             showIcons: false,
@@ -123,11 +123,12 @@
         // Get a reference to the 6 buttons
         const file_input = document.querySelector(".fileinput-button");
         const input = file_input.querySelector("#files");
+
         const all_start = document.querySelector(".all-start");
         const all_cancel = document.querySelector(".all-cancel");
-        const launch_start = document.querySelector(".launch-start");
         const back = document.querySelector(".back");
         const files_heading = document.querySelector(".files-heading");
+        const search = document.querySelector("[type='search']");
 
         /////////////////////////////////////////
 
@@ -135,24 +136,19 @@
         const fileupload_buttonbar = document.querySelector(".fileupload-buttonbar");
         fileupload_buttonbar.classList.add("hidden");
 
-        /////////////////////////////////////////
-
-        // Get a reference to div of the media-items
-        const media_items = document.querySelector('[data-control="media-items"]');
-        //media_items.classList.remove("hidden");
+        // Get a reference to div of the scroll-wrapper and dialog-wrapper
+        const scroll_wrapper = document.querySelector(".scroll-wrapper");
+        const dialog_wrapper = document.querySelector(".dialog-wrapper");
 
         /////////////////////////////////////////
 
-        // input form handler
+        // inputs form handler
         input.addEventListener("change", handleFileSelect);
+        //launch_start.addEventListener("change", handleFileSelect);
         // all_start upload handler
         all_start.addEventListener("click", handleForm);
         // all_cancel files delete handler
         all_cancel.addEventListener("click", cancelAllUploads);
-        // input form handler
-        launch_start.addEventListener("change", handleFileSelect);
-        // Get a reference to the button "back"
-        back.addEventListener("click", agoHandler);
 
         // Resetting elements
         all_start.classList.add("disabled");
@@ -170,9 +166,6 @@
 
         // Get a reference to div of the table
         const files = document.querySelector(".files");
-        files.classList.add("hidden");
-        back.classList.add("disabled");
-        back.setAttribute("disabled", "disabled");
 
         /////////////////////////////////////////
 
@@ -201,6 +194,7 @@
         table.appendChild(tbody);
 
         /////////////////////////////////////////
+
         // Prepare own div and button "Done"
         const fileupload_donebar = document.createElement("div");
         fileupload_donebar.className = "fileupload-donebar hidden";
@@ -399,21 +393,10 @@
             if (parent_div.contains(child_div)) {
                 files_heading.classList.add("hidden");
                 fileupload_buttonbar.classList.remove("hidden");
-                media_items.classList.add("hidden");
+                scroll_wrapper.classList.add("hidden");
+                //dialog_wrapper.classList.add("hidden");
                 files.classList.remove("hidden");
-                //back.classList.remove("disabled");
-                //back.removeAttribute('disabled');
              }
-        }
-
-        //////////////////////////////////////////
-
-        function agoHandler() {
-            files_heading.classList.remove("hidden");
-            fileupload_buttonbar.classList.add("hidden");
-            files.classList.add("hidden");
-            media_items.classList.remove("hidden");
-            alert_wrapper.innerHTML = "";
         }
 
         //////////////////////////////////////////
@@ -1081,6 +1064,7 @@
                     break;
                 case 'docx':
                 case 'doc':
+                case 'odt':
                     icon = '<svg class="svg-file svg-word files-svg" viewBox="0 0 56 56"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><g class="svg-file-icon"><path d="M12.5,13h6c0.553,0,1-0.448,1-1s-0.447-1-1-1h-6c-0.553,0-1,0.448-1,1S11.947,13,12.5,13z"></path><path d="M12.5,18h9c0.553,0,1-0.448,1-1s-0.447-1-1-1h-9c-0.553,0-1,0.448-1,1S11.947,18,12.5,18z"></path><path d="M25.5,18c0.26,0,0.52-0.11,0.71-0.29c0.18-0.19,0.29-0.45,0.29-0.71c0-0.26-0.11-0.52-0.29-0.71 c-0.38-0.37-1.04-0.37-1.42,0c-0.181,0.19-0.29,0.44-0.29,0.71s0.109,0.52,0.29,0.71C24.979,17.89,25.24,18,25.5,18z"></path><path d="M29.5,18h8c0.553,0,1-0.448,1-1s-0.447-1-1-1h-8c-0.553,0-1,0.448-1,1S28.947,18,29.5,18z"></path><path d="M11.79,31.29c-0.181,0.19-0.29,0.44-0.29,0.71s0.109,0.52,0.29,0.71 C11.979,32.89,12.229,33,12.5,33c0.27,0,0.52-0.11,0.71-0.29c0.18-0.19,0.29-0.45,0.29-0.71c0-0.26-0.11-0.52-0.29-0.71 C12.84,30.92,12.16,30.92,11.79,31.29z"></path><path d="M24.5,31h-8c-0.553,0-1,0.448-1,1s0.447,1,1,1h8c0.553,0,1-0.448,1-1S25.053,31,24.5,31z"></path><path d="M41.5,18h2c0.553,0,1-0.448,1-1s-0.447-1-1-1h-2c-0.553,0-1,0.448-1,1S40.947,18,41.5,18z"></path><path d="M12.5,23h22c0.553,0,1-0.448,1-1s-0.447-1-1-1h-22c-0.553,0-1,0.448-1,1S11.947,23,12.5,23z"></path><path d="M43.5,21h-6c-0.553,0-1,0.448-1,1s0.447,1,1,1h6c0.553,0,1-0.448,1-1S44.053,21,43.5,21z"></path><path d="M12.5,28h4c0.553,0,1-0.448,1-1s-0.447-1-1-1h-4c-0.553,0-1,0.448-1,1S11.947,28,12.5,28z"></path><path d="M30.5,26h-10c-0.553,0-1,0.448-1,1s0.447,1,1,1h10c0.553,0,1-0.448,1-1S31.053,26,30.5,26z"></path><path d="M43.5,26h-9c-0.553,0-1,0.448-1,1s0.447,1,1,1h9c0.553,0,1-0.448,1-1S44.053,26,43.5,26z"></path></g><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext" x="28" y="51.5">' + ext + '</text></svg>';
                     break;
                 case 'xlsx':
@@ -1115,11 +1099,24 @@
                 case 'cdoc':
                     icon = '<svg viewBox="0 0 56 56" class="svg-file svg-archive files-svg"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><g class="svg-file-icon"><path d="M28.5,24v-2h2v-2h-2v-2h2v-2h-2v-2h2v-2h-2v-2h2V8h-2V6h-2v2h-2v2h2v2h-2v2h2v2h-2v2h2v2h-2v2h2v2 h-4v5c0,2.757,2.243,5,5,5s5-2.243,5-5v-5H28.5z M30.5,29c0,1.654-1.346,3-3,3s-3-1.346-3-3v-3h6V29z"></path><path d="M26.5,30h2c0.552,0,1-0.447,1-1s-0.448-1-1-1h-2c-0.552,0-1,0.447-1,1S25.948,30,26.5,30z"></path></g><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext" x="28" y="51.5">' + ext + '</text></svg>';
                     break;
+
+                case 'php':
+                case 'js':
+                case 'css':
+                case 'json':
+                case 'xml':
+                case 'html':
+                case 'htm':
+                case 'sql':
+                case 'yml':
+                    icon = '<svg viewBox="0 0 56 56" class="svg-file svg-code files-svg"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><g class="svg-file-icon"><path d="M15.5,24c-0.256,0-0.512-0.098-0.707-0.293c-0.391-0.391-0.391-1.023,0-1.414l6-6 c0.391-0.391,1.023-0.391,1.414,0s0.391,1.023,0,1.414l-6,6C16.012,23.902,15.756,24,15.5,24z"></path><path d="M21.5,30c-0.256,0-0.512-0.098-0.707-0.293l-6-6c-0.391-0.391-0.391-1.023,0-1.414 s1.023-0.391,1.414,0l6,6c0.391,0.391,0.391,1.023,0,1.414C22.012,29.902,21.756,30,21.5,30z"></path><path d="M33.5,30c-0.256,0-0.512-0.098-0.707-0.293c-0.391-0.391-0.391-1.023,0-1.414l6-6 c0.391-0.391,1.023-0.391,1.414,0s0.391,1.023,0,1.414l-6,6C34.012,29.902,33.756,30,33.5,30z"></path><path d="M39.5,24c-0.256,0-0.512-0.098-0.707-0.293l-6-6c-0.391-0.391-0.391-1.023,0-1.414 s1.023-0.391,1.414,0l6,6c0.391,0.391,0.391,1.023,0,1.414C40.012,23.902,39.756,24,39.5,24z"></path><path d="M24.5,32c-0.11,0-0.223-0.019-0.333-0.058c-0.521-0.184-0.794-0.755-0.61-1.276l6-17 c0.185-0.521,0.753-0.795,1.276-0.61c0.521,0.184,0.794,0.755,0.61,1.276l-6,17C25.298,31.744,24.912,32,24.5,32z"></path></g><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext" x="28" y="51.5">' + ext + '</text></svg>';
+                    break;
                 default:
                     icon = '<svg viewBox="0 0 56 56" class="svg-file svg-none files-svg"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext f_10" x="28" y="51.5">' + ext + '</text></svg>';
             }
             return icon
         }
+
         return this;
     }
 })(jQuery);
