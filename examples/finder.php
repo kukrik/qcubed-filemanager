@@ -63,6 +63,7 @@ class SampleForm extends Form
     protected $dlgModal32;
     protected $dlgModal33;
     protected $dlgModal34;
+    protected $dlgModal35;
 
     protected $objUpload;
     protected $objManager;
@@ -631,6 +632,16 @@ class SampleForm extends Form
         $this->dlgModal34->Title = t("Warning");
         $this->dlgModal34->HeaderClasses = 'btn-danger';
         $this->dlgModal34->addCloseButton(t("I understand"));
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // INSERT
+
+        $this->dlgModal35 = new Bs\Modal($this);
+        $this->dlgModal35->Title = t('Tip');
+        $this->dlgModal35->Text = t('<p style="margin-top: 15px;">Sorry, be cannot insert into a reserved file!</p>
+                                    <p style="margin-top: 15px;">Select and copy this file to another location, then insert!</p>');
+        $this->dlgModal35->HeaderClasses = 'btn-darkblue';
+        $this->dlgModal35->addCloseButton(t("I close the window"));
     }
 
     public function portedCheckDestination()
@@ -2647,28 +2658,33 @@ class SampleForm extends Form
 
     public function btnInsert_Click(ActionParams $params)
     {
-        $fileId = $this->arrSomeArray[0]["data-id"];
+        if ($this->arrSomeArray[0]["data-activities-locked"] == 1) {
+            $this->dlgModal35->showDialogBox(); // Sorry, be cannot insert into a reserved file! ...
+        } else {
 
-        if ($this->arrSomeArray[0]["data-id"]) {
-            $objFiles = Files::loadById($this->arrSomeArray[0]["data-id"]);
-            $objFiles->setLockedFile($objFiles->getLockedFile() + 1);
-            $objFiles->save();
+            $fileId = $this->arrSomeArray[0]["data-id"];
 
-            $this->objManager->refresh();
-        }
+            if ($this->arrSomeArray[0]["data-id"]) {
+                $objFiles = Files::loadById($this->arrSomeArray[0]["data-id"]);
+                $objFiles->setLockedFile($objFiles->getLockedFile() + 1);
+                $objFiles->save();
 
-        $params = [
-            "id" => $this->arrSomeArray[0]["data-id"],
-            "name" => $this->arrSomeArray[0]["data-name"],
-            "path" => $this->arrSomeArray[0]["data-path"]
-        ];
-        $data = json_encode($params);
+                $this->objManager->refresh();
+            }
 
-        // Simulate user action of selecting a file to be returned to MediaFinder.
-        Application::executeJavaScript("
+            $params = [
+                "id" => $this->arrSomeArray[0]["data-id"],
+                "name" => $this->arrSomeArray[0]["data-name"],
+                "path" => $this->arrSomeArray[0]["data-path"]
+            ];
+            $data = json_encode($params);
+
+            // Simulate user action of selecting a file to be returned to MediaFinder.
+            Application::executeJavaScript("
             window.parent.opener.getDataParams('$data');
             window.close();
         ");
+        }
     }
 
     public function btnCancel_Click(ActionParams $params)

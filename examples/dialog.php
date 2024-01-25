@@ -62,6 +62,7 @@ class SampleForm extends Form
     protected $dlgModal32;
     protected $dlgModal33;
     protected $dlgModal34;
+    protected $dlgModal35;
 
     protected $objUpload;
     protected $objManager;
@@ -636,6 +637,16 @@ class SampleForm extends Form
         $this->dlgModal34->Title = t("Warning");
         $this->dlgModal34->HeaderClasses = 'btn-danger';
         $this->dlgModal34->addCloseButton(t("I understand"));
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // INSERT
+
+        $this->dlgModal35 = new Bs\Modal($this);
+        $this->dlgModal35->Title = t('Tip');
+        $this->dlgModal35->Text = t('<p style="margin-top: 15px;">Sorry, be cannot insert into a reserved file!</p>
+                                    <p style="margin-top: 15px;">Select and copy this file to another location, then insert!</p>');
+        $this->dlgModal35->HeaderClasses = 'btn-darkblue';
+        $this->dlgModal35->addCloseButton(t("I close the window"));
     }
 
     public function portedCheckDestination()
@@ -2652,50 +2663,55 @@ class SampleForm extends Form
 
     public function btnInsert_Click(ActionParams $params)
     {
-        $fileId = $fullPath = $this->arrSomeArray[0]["data-id"];
-
-        $fullPath = $this->objManager->RootPath . $this->arrSomeArray[0]["data-path"];
-        $file = $this->objInfo->RootUrl . $this->arrSomeArray[0]["data-path"];
-        $ext = pathinfo($fullPath, PATHINFO_EXTENSION);
-
-        if (in_array(strtolower($ext), $this->arrAllowed)) {
-            $fileUrl = $this->objInfo->TempUrl . "/" . $this->lstSize->SelectedValue . $this->arrSomeArray[0]["data-path"];
+        if ($this->arrSomeArray[0]["data-activities-locked"] == 1) {
+            $this->dlgModal35->showDialogBox(); // Sorry, be cannot insert into a reserved file! ...
         } else {
-            $fileUrl = $file;
-        }
 
-        // The code provided below is taken from this link:
-        // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_file_browser_api.html
+            $fileId = $fullPath = $this->arrSomeArray[0]["data-id"];
 
-        // Simulate user action of selecting a file to be returned to CKEditor.
-        Application::executeJavaScript("
-            var funcNum = getUrlParam('CKEditorFuncNum');
-            var fileUrl = '{$fileUrl}';
-            window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl, function() {
-                // Get the reference to a dialog window.
-                var dialog = this.getDialog();
-            
-                // Check if this is the Image Properties dialog window.
-                if (dialog.getName() == 'image') {
-                // Get the reference to a text field that stores the 'id' attribute.
-                    var element = dialog.getContentElement('advanced', 'linkId');
-                    // Assign the new value.
-                    if (element) 
-                        element.setValue('{$fileId}');
-                } else {
-                    // Check if this is the Link Properties dialog window.
-                    if (dialog.getName() == 'link') {
-                        // Get the reference to a text field that stores the 'id' attribute.
-                        var element = dialog.getContentElement('advanced', 'advId');
+            $fullPath = $this->objManager->RootPath . $this->arrSomeArray[0]["data-path"];
+            $file = $this->objInfo->RootUrl . $this->arrSomeArray[0]["data-path"];
+            $ext = pathinfo($fullPath, PATHINFO_EXTENSION);
+
+            if (in_array(strtolower($ext), $this->arrAllowed)) {
+                $fileUrl = $this->objInfo->TempUrl . "/" . $this->lstSize->SelectedValue . $this->arrSomeArray[0]["data-path"];
+            } else {
+                $fileUrl = $file;
+            }
+
+            // The code provided below is taken from this link:
+            // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_file_browser_api.html
+
+            // Simulate user action of selecting a file to be returned to CKEditor.
+            Application::executeJavaScript("
+                var funcNum = getUrlParam('CKEditorFuncNum');
+                var fileUrl = '{$fileUrl}';
+                window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl, function() {
+                    // Get the reference to a dialog window.
+                    var dialog = this.getDialog();
+                
+                    // Check if this is the Image Properties dialog window.
+                    if (dialog.getName() == 'image') {
+                    // Get the reference to a text field that stores the 'id' attribute.
+                        var element = dialog.getContentElement('advanced', 'linkId');
                         // Assign the new value.
-                        if (element)
+                        if (element) 
                             element.setValue('{$fileId}');
-                        }
-                }
-            });
-            
-            window.close();
-        ");
+                    } else {
+                        // Check if this is the Link Properties dialog window.
+                        if (dialog.getName() == 'link') {
+                            // Get the reference to a text field that stores the 'id' attribute.
+                            var element = dialog.getContentElement('advanced', 'advId');
+                            // Assign the new value.
+                            if (element)
+                                element.setValue('{$fileId}');
+                            }
+                    }
+                });
+                
+                window.close();
+            ");
+        }
     }
 
     public function btnCancel_Click(ActionParams $params)
