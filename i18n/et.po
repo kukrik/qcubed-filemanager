@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: FileHandler translation\n"
-"POT-Creation-Date: 2024-01-25 12:21+0200\n"
-"PO-Revision-Date: 2024-01-25 12:23+0200\n"
+"POT-Creation-Date: 2024-03-04 17:18+0200\n"
+"PO-Revision-Date: 2024-03-04 17:18+0200\n"
 "Last-Translator: Tiit Papp <tiit.papp@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -481,80 +481,80 @@ msgstr ""
 "                                     <p style=“margin-top: 15px;”>Vali ja "
 "kopeeri see fail teise asukohta, seejärel lisa!</p>"
 
-#: examples/dialog.php:661 examples/filemanager.php:648 examples/finder.php:656
+#: examples/dialog.php:661 examples/filemanager.php:647 examples/finder.php:656
 msgid "Folder cannot be created without name!"
 msgstr "Kausta ei saa ilma nimeta luua!"
 
-#: examples/dialog.php:669 examples/filemanager.php:656 examples/finder.php:664
+#: examples/dialog.php:669 examples/filemanager.php:655 examples/finder.php:664
 msgid "Cannot create a folder with the same name!"
 msgstr "Sama nimega kausta ei saa luua!"
 
-#: examples/dialog.php:688 examples/filemanager.php:675 examples/finder.php:683
+#: examples/dialog.php:688 examples/filemanager.php:674 examples/finder.php:683
 msgid "The name of the main directory cannot be changed!"
 msgstr "Peakataloogi nime ei saa muuta!"
 
-#: examples/dialog.php:695 examples/filemanager.php:682 examples/finder.php:690
+#: examples/dialog.php:695 examples/filemanager.php:681 examples/finder.php:690
 msgid "Cannot rename a folder or file without a name!"
 msgstr "Ilma nimeta kausta või faili ei saa ümber nimetada!"
 
-#: examples/dialog.php:703 examples/filemanager.php:690 examples/finder.php:698
+#: examples/dialog.php:703 examples/filemanager.php:689 examples/finder.php:698
 msgid "This name cannot be used because it is already in use!"
 msgstr "Seda nime ei saa kasutada, kuna see on juba kasutusel!"
 
-#: examples/dialog.php:722 examples/dialog.php:839 examples/filemanager.php:709
-#: examples/filemanager.php:826 examples/finder.php:717 examples/finder.php:834
+#: examples/dialog.php:722 examples/dialog.php:839 examples/filemanager.php:708
+#: examples/filemanager.php:825 examples/finder.php:717 examples/finder.php:834
 msgid "Please select a destination folder!"
 msgstr "Palun vali sihtkaust!"
 
-#: examples/dialog.php:731 examples/dialog.php:847 examples/filemanager.php:718
-#: examples/filemanager.php:834 examples/finder.php:726 examples/finder.php:842
+#: examples/dialog.php:731 examples/dialog.php:847 examples/filemanager.php:717
+#: examples/filemanager.php:833 examples/finder.php:726 examples/finder.php:842
 msgid "Source folder: "
 msgstr "Lähtekaust: "
 
-#: examples/dialog.php:748 examples/dialog.php:862 examples/filemanager.php:735
-#: examples/filemanager.php:849 examples/finder.php:743 examples/finder.php:857
+#: examples/dialog.php:748 examples/dialog.php:862 examples/filemanager.php:734
+#: examples/filemanager.php:848 examples/finder.php:743 examples/finder.php:857
 msgid "Destination folder: "
 msgstr "Sihtkaust: "
 
 #: examples/dialog.php:759 examples/dialog.php:873 examples/dialog.php:1664
 #: examples/dialog.php:2197 examples/dialog.php:2253
-#: examples/filemanager.php:746 examples/filemanager.php:860
-#: examples/filemanager.php:1651 examples/filemanager.php:2184
-#: examples/filemanager.php:2372 examples/finder.php:754
+#: examples/filemanager.php:745 examples/filemanager.php:859
+#: examples/filemanager.php:1650 examples/filemanager.php:2183
+#: examples/filemanager.php:2371 examples/finder.php:754
 #: examples/finder.php:868 examples/finder.php:1659 examples/finder.php:2192
 #: examples/finder.php:2248
 msgid "- Select One -"
 msgstr "- Vali üks -"
 
-#: examples/dialog.php:768 examples/filemanager.php:755 examples/finder.php:763
+#: examples/dialog.php:768 examples/filemanager.php:754 examples/finder.php:763
 msgid "Are you sure you want to permanently delete these files and folders?"
 msgstr "Kas oled kindel, et soovid need failid ja kaustad jäädavalt kustutada?"
 
-#: examples/dialog.php:777 examples/filemanager.php:764 examples/finder.php:772
+#: examples/dialog.php:777 examples/filemanager.php:763 examples/finder.php:772
 msgid "Can\\'t undo it afterwards!"
 msgstr "Seda ei saa hiljem tagasi võtta!"
 
-#: examples/dialog.php:786 examples/filemanager.php:773 examples/finder.php:781
+#: examples/dialog.php:786 examples/filemanager.php:772 examples/finder.php:781
 msgid "Files are locked or cannot be deleted together with folders!"
 msgstr "Failid on lukus või neid ei saa koos kaustadega kustutada!"
 
-#: examples/dialog.php:795 examples/filemanager.php:782 examples/finder.php:790
+#: examples/dialog.php:795 examples/filemanager.php:781 examples/finder.php:790
 msgid "Unlocked files can be deleted!"
 msgstr "Lukustamata faile saab kustutada!"
 
-#: examples/dialog.php:804 examples/filemanager.php:791 examples/finder.php:799
+#: examples/dialog.php:804 examples/filemanager.php:790 examples/finder.php:799
 msgid "Files and folders to be deleted: "
 msgstr "Kustutavad failid ja kaustad: "
 
-#: examples/dialog.php:821 examples/filemanager.php:808 examples/finder.php:816
+#: examples/dialog.php:821 examples/filemanager.php:807 examples/finder.php:816
 msgid "Files are locked or cannot be moved together  with folders!"
 msgstr "Failid on lukus või neid ei saa koos kaustadega teisaldada!"
 
-#: examples/dialog.php:830 examples/filemanager.php:817 examples/finder.php:825
+#: examples/dialog.php:830 examples/filemanager.php:816 examples/finder.php:825
 msgid "Unlocked files can be moved!"
 msgstr "Lukustamata faile saab teisaldada!"
 
-#: examples/dialog.php:1614 examples/filemanager.php:1601
+#: examples/dialog.php:1614 examples/filemanager.php:1600
 #: examples/finder.php:1609
 msgid "It is not possible to copy the main directory!"
 msgstr "Peakataloogi pole võimalik kopeerida!"
@@ -675,8 +675,8 @@ msgid "Failed to resize image"
 msgstr "Pildi suuruse muutmine ebaõnnestus"
 
 #: src/FileHandler.php:130
-msgid "imagejpeg() failed to create and resize the image"
-msgstr "imagejpeg() ei suutnud pilti luua ja selle suurust muuta"
+msgid "The resizeImage() function failed to create and resize the image"
+msgstr "Funktsioon resizeImage()) ei suutnud pilti luua ja selle suurust muuta"
 
 #: src/FileHandler.php:131
 msgid "Failed to open stream: No such directory to put into"
@@ -689,3 +689,7 @@ msgstr "Väljundvoo avamine ebaõnnestus"
 #: src/FileHandler.php:133
 msgid "Failed to open input stream"
 msgstr "Sisendvoo avamine ebaõnnestus"
+
+#: src/FileHandler.php:555
+msgid "Unable to deal with image type"
+msgstr "Pilditüübiga ei saa hakkama"

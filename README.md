@@ -52,7 +52,8 @@ table in the database. This way, you can't delete, rename, or move these images 
 has exclusive rights. Other services can still use gallery images. If you want to use a gallery image in an article, 
 news, or elsewhere, it is advisable to copy the image to another location and use it there.
   
-    * To create a gallery plugin, you can use, for example, the FileUpload and UploadHandler plugins and enhance it with other necessary components: https://github.com/kukrik/qcubed-fileupload.
+    * <strike>To create a gallery plugin, you can use, for example, the FileUpload and UploadHandler plugins and enhance it with other necessary components: https://github.com/kukrik/qcubed-fileupload. </strike> 
+Here is an example that you can refer to and use: https://github.com/kukrik/qcubed-gallery/tree/master
 
 **NOTE! For FileManager to function correctly and display accurate information, the codes in "filehandler.php," "mediafinder.php," and "ckeditor3.php" are equipped with comments or instructions. These comments/guidelines will help keep you on the right track.**
 

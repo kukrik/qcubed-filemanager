@@ -633,7 +633,6 @@ class SampleForm extends Form
         $this->dlgModal39->addCloseButton(t("I close the window"));
 
         ///////////////////////////////////////////////////////////////////////////////////////////
-
     }
 
     public function portedCheckDestination()
@@ -2453,9 +2452,8 @@ class SampleForm extends Form
      */
     protected function fullScanIds($parentId)
     {
-        $descendantIds = [];
-
         $objFolders = Folders::loadAll();
+        $descendantIds = [];
 
         foreach ($objFolders as $objFolder) {
             if ($objFolder->ParentId == $parentId) {
