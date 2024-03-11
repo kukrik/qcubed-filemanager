@@ -581,6 +581,10 @@
                     img.src = options.tempUrl + '/_files/thumbnail' + e.path;
                     img.alt = e.name;
                     previewDiv.appendChild(img);
+                } else if ("svg" == div.getAttribute("data-extension")) {
+                    const svg = document.createElement("img");
+                    svg.src = options.rootUrl + e.path;
+                    previewDiv.appendChild(svg);
                 } else {
                     previewDiv.innerHTML = getFileIconExtension(extension);
                 }
@@ -880,6 +884,10 @@
                     img.src = options.tempUrl + '/_files/thumbnail' + e.path;
                     img.alt = e.name;
                     preview.appendChild(img);
+                } else if ("svg" == files_blocks.getAttribute("data-extension")) {
+                    const svg = document.createElement("img");
+                    svg.src = options.rootUrl + e.path;
+                    preview.appendChild(svg);
                 } else {
                     preview.innerHTML = getFileIconExtension(extension);
                 }
@@ -1097,6 +1105,7 @@
                 case 'jpc':
                 case 'png':
                 case 'bmp':
+                case 'svg':
                     icon = '<svg viewBox="0 0 24 24" class="svg-icon svg-image"><path class="svg-path-image" d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"</path></svg>';
                     break;
                 case 'pdf':

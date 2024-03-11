@@ -10,6 +10,8 @@ use QCubed\Event\Click;
 use QCubed\Action\Ajax;
 use QCubed\Action\ActionParams;
 
+use QCubed\Project\Application;
+
 /**
  * Class SampleForm3
  *
@@ -85,7 +87,7 @@ class SampleForm3 extends Form
     // This function referenceValidation(), which checks and ensures that the data is up-to-date both when adding and
     // deleting a file. Everything is commented in the code.
 
-    private function referenceValidation()
+    protected function referenceValidation()
     {
         $objExample = Example::loadById(2);
         $references = $objExample->getFilesIds();

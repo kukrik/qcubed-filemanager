@@ -2666,7 +2666,6 @@ class SampleForm extends Form
         if ($this->arrSomeArray[0]["data-activities-locked"] == 1) {
             $this->dlgModal35->showDialogBox(); // Sorry, be cannot insert into a reserved file! ...
         } else {
-
             $fileId = $fullPath = $this->arrSomeArray[0]["data-id"];
 
             $fullPath = $this->objManager->RootPath . $this->arrSomeArray[0]["data-path"];

@@ -146,14 +146,14 @@ class SampleForm extends Form
         parent::formCreate();
 
         $this->objUpload = new Q\Plugin\FileUploadHandler($this);
-        //$this->objUpload->Language = "et"; // Default en
+        $this->objUpload->Language = "et"; // Default en
         //$this->objUpload->ShowIcons = true; // Default false
         //$this->objUpload->AcceptFileTypes = ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'ppt', 'docx', 'mp4']; // Default null
         //$this->objUpload->MaxNumberOfFiles = 5; // Default null
         //$this->objUpload->MaxFileSize = 1024 * 1024 * 2; // 2 MB // Default null
         //$this->objUpload->MinFileSize = 500000; // 500 kb // Default null
         //$this->objUpload->ChunkUpload = false; // Default true
-        $this->objUpload->MaxChunkSize = 1024 * 1024; // 10 MB // Default 5 MB
+        $this->objUpload->MaxChunkSize = 1024 * 1024; // Default 5 MB
         //$this->objUpload->LimitConcurrentUploads = 5; // Default 2
         $this->objUpload->Url = 'php/'; // Default null
         //$this->objUpload->PreviewMaxWidth = 120; // Default 80

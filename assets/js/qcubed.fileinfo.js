@@ -197,7 +197,7 @@
             const dimension = document.querySelector("td.dimension");
             const modified = document.querySelector("td.modified");
 
-            const imageExt = ['jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif'];
+            const imageExt = ['jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif', 'svg'];
             const videoExt = ['mov', 'mpeg', 'mpg', 'mp4', 'm4v'];
             const audioExt = ['wav', 'mp3', 'mp2',  'm4a', 'aac'];
             const txtExt = ['pdf', 'docx', 'doc', 'odt', 'xlsx',  'xls', 'pptx',  'ppt', 'rtf',  'txt',  'zip', 'rar', 'asice', 'cdoc', 'php', 'js', 'css',  'json',  'xml', 'html',  'htm', 'sql', 'yml'];
@@ -214,17 +214,23 @@
                     file_info_wrapper.classList.add("hidden");
                 } else if (e[0]['data-item-type'] === "file") {
                     if (imageExt.includes(e[0]['data-extension'])) {
-                        img.src = options.tempUrl + '/_files/thumbnail' + e[0]['data-path'];
+                        if (e[0]['data-extension'] !== 'svg') {
+                            img.src = options.tempUrl + '/_files/thumbnail' + e[0]['data-path'];
+                            dimension.innerText = e[0]['data-dimensions'];
+                            info_dimension.classList.remove("hidden");
+                        } else {
+                            img.src = options.rootUrl + e[0]['data-path'];
+                            info_dimension.classList.add("hidden");
+                        }
+
                         name.innerText = e[0]['data-name'];
                         extension.innerHTML = getFileIconExtension(e[0]['data-extension']);
                         size.innerText = e[0]['data-size'];
                         mime.innerText = e[0]['data-mimetype'];
-                        dimension.innerText = e[0]['data-dimensions'];
                         modified.innerText = e[0]['data-date'];
 
                         image_wrapper.classList.remove("hidden");
                         file_info_wrapper.classList.remove("hidden");
-                        info_dimension.classList.remove("hidden");
                         dimension.classList.remove("hidden");
                         video_wrapper.classList.add("hidden");
                         audio_wrapper.classList.add("hidden");
@@ -419,6 +425,7 @@
                 case 'jpc':
                 case 'png':
                 case 'bmp':
+                case 'svg':
                     icon = '<svg viewBox="0 0 24 24" class="svg-icon svg-image"><path class="svg-path-image" d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"</path></svg>';
                     break;
                 case 'pdf':

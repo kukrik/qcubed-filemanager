@@ -2,6 +2,8 @@
 
 namespace QCubed\Plugin;
 
+use QCubed\Project\Application;
+
 /**
  * Class FileHandler
  *
@@ -256,7 +258,12 @@ class FileHandler
 
         clearstatcache();
 
-        $this->resizeImageProcess($this->options['FileName']);
+        $ext = strtolower(pathinfo($this->options['FileName'], PATHINFO_EXTENSION));
+
+        if (in_array($ext, self::getImageExtensions())) {
+            $this->resizeImageProcess($this->options['FileName']);
+        }
+
         $this->uploadInfo();
     }
 
@@ -287,7 +294,13 @@ class FileHandler
 
         if ($this->chunk == $this->chunks) {
             rename($this->options['FileName'] . ".part", $this->options['FileName']);
-            $this->resizeImageProcess($this->options['FileName']);
+
+            $ext = strtolower(pathinfo($this->options['FileName'], PATHINFO_EXTENSION));
+
+            if (in_array($ext, self::getImageExtensions())) {
+                $this->resizeImageProcess($this->options['FileName']);
+            }
+
             $this->uploadInfo();
         }
     }
