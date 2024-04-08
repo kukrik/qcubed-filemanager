@@ -73,6 +73,8 @@ class FileManagerBase extends FileManagerBaseGen
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/jquery.slimscroll.js");
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/custom.js");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/qcubed.filemanager.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/jquery.fileupload.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/jquery.fileupload-ui.css");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/qcubed.uploadhandler.css");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom.css");
         $this->AddCssFile(QCUBED_BOOTSTRAP_CSS); // make sure they know
@@ -298,7 +300,7 @@ jQuery('#{$this->ControlId}').on("selectablestop", function (event, ui) {
     
     qcubed.getFileInfo(result);
     const str = JSON.stringify(result);
-    console.log(str);
+    //console.log(str);
     qcubed.recordControlModification("$this->ControlId", "_SelectedItems", str);
 })
 FUNC;

@@ -532,6 +532,8 @@
                             all_start.setAttribute('disabled', 'disabled');
                             all_cancel.classList.add("disabled");
                             all_cancel.setAttribute('disabled', 'disabled');
+                            back.classList.remove("disabled");
+                            back.removeAttribute('disabled', 'disabled');
                         }
                     }
                 }
@@ -929,6 +931,8 @@
             if (storedFiles.length === 0) {
                 all_start.classList.add("disabled");
                 all_cancel.classList.add("disabled");
+                back.classList.remove("disabled");
+                back.removeAttribute('disabled');
             }
             this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);
         }

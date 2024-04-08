@@ -28,6 +28,7 @@ use QCubed\Type;
 
 class MediaFinder extends MediaFinderGen
 {
+    /** @var string */
     protected $intItem = null;
     /** @var string */
     protected $strTempUrl = APP_UPLOADS_TEMP_URL;

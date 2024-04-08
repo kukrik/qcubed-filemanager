@@ -144,7 +144,6 @@ i {
     -webkit-box-shadow: none;
     box-shadow: none;
     opacity: .65;
-    pointer-events: none;
 }
 .btn-darkblue.disabled, .btn-darkblue[disabled] {
     color: #d2d2d2;

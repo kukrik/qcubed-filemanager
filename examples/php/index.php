@@ -37,6 +37,8 @@ class CustomFileUploadHandler extends FileHandler
             $obj->setSize($this->options['FileSize']);
             $obj->setMtime(filemtime($this->options['FileName']));
             $obj->setDimensions($this->getDimensions($this->options['FileName']));
+            $obj->setWidth($this->getImageWidth($this->options['FileName']));
+            $obj->setHeight($this->getImageHeight($this->options['FileName']));
             $obj->save(true);
         }
 

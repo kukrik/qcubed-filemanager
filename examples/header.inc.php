@@ -20,8 +20,6 @@ use QCubed as Q;
 	<link href="<?= QCUBED_PROJECT_CSS_URL ?>/font-awesome.min.css" rel="stylesheet"/>
     <link href="../assets/css/awesome-bootstrap-checkbox.css" rel="stylesheet"/>
     <link href="<?= QCUBED_BOOTSTRAP_CSS ?>" rel="stylesheet"/>
-
-<!--	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>-->
     <link href="/qcubed-4/vendor/kukrik/bootstrap-filecontrol/assets/css/jquery.fileupload.css" rel="stylesheet" />
     <link href="/qcubed-4/vendor/kukrik/bootstrap-filecontrol/assets/css/jquery.fileupload-ui.css" rel="stylesheet" />
     <link href="../assets/css/custom.css" rel="stylesheet"/>

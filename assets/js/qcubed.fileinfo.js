@@ -217,9 +217,12 @@
                         if (e[0]['data-extension'] !== 'svg') {
                             img.src = options.tempUrl + '/_files/thumbnail' + e[0]['data-path'];
                             dimension.innerText = e[0]['data-dimensions'];
+                            dimension.classList.remove("hidden");
                             info_dimension.classList.remove("hidden");
                         } else {
                             img.src = options.rootUrl + e[0]['data-path'];
+                            dimension.innerText = e[0]['data-dimensions'];
+                            dimension.classList.add("hidden");
                             info_dimension.classList.add("hidden");
                         }
 
@@ -231,7 +234,6 @@
 
                         image_wrapper.classList.remove("hidden");
                         file_info_wrapper.classList.remove("hidden");
-                        dimension.classList.remove("hidden");
                         video_wrapper.classList.add("hidden");
                         audio_wrapper.classList.add("hidden");
                         ico_wrapper.classList.add("hidden");
