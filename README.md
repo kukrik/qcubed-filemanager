@@ -27,7 +27,7 @@ https://github.com/qcubed-4/application/blob/master/install/project/includes/con
 
 ### FileManager Usage Options:
 
-* Upload, add folder, refresh page, rename, copy, delete, move, download
+* Upload, add folder, refresh page, rename, crop (added new functionality), copy, delete, move, download
 * 3 different views: ImageListView, ListView, BoxView
 * Breadcrumbs for quick navigation
 * Quick search
