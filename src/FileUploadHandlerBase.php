@@ -65,6 +65,8 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
     protected function registerFiles() {
         $this->AddJavascriptFile(QCUBED_FILEUPLOAD_HANDLER_ASSETS_URL . "/js/qcubed.uploadhandler.js");
         $this->addCssFile(QCUBED_FILEUPLOAD_HANDLER_ASSETS_URL . "/css/qcubed.uploadhandler.css");
+        $this->addCssFile(QCUBED_FILEUPLOAD_HANDLER_ASSETS_URL . "/css/custom-svg-icons.css");
+        $this->addCssFile(QCUBED_FILEUPLOAD_HANDLER_ASSETS_URL . "/css/vauu-table.css");
         $this->AddCssFile(QCUBED_BOOTSTRAP_CSS); // make sure they know
     }
 

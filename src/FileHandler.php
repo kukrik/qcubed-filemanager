@@ -361,8 +361,6 @@ class FileHandler
             'size' => $this->options['FileSize'],
             'mtime' => filemtime($this->options['FileName']),
             'dimensions' => $this->getDimensions($this->options['FileName']),
-            'width' => $this->getImageWidth($this->options['FileName']),
-            'height' => $this->getImageHeight($this->options['FileName'])
         ));
     }
 
@@ -419,39 +417,6 @@ class FileHandler
             return $dimensions;
         }
     }
-
-    /**
-     * Get width of an image
-     * @param string $path
-     * @return mixed|string
-     */
-    public static function getImageWidth($path)
-    {
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $ImageSize = getimagesize($path);
-
-        if (in_array($ext, self::getImageExtensions())) {
-            $width = (isset($ImageSize[0]) ? $ImageSize[0] : '0');
-            return $width;
-        }
-    }
-
-    /**
-     * Get height of an image
-     * @param string $path
-     * @return mixed|string
-     */
-    public static function getImageHeight($path)
-    {
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $ImageSize = getimagesize($path);
-
-        if (in_array($ext, self::getImageExtensions())) {
-            $height = (isset($ImageSize[1]) ? $ImageSize[1] : '0');
-            return $height;
-        }
-    }
-
 
     /**
      * Get image files extensions

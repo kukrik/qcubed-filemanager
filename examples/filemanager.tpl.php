@@ -19,7 +19,7 @@
                         </div>
                         <div class="btn-group" role="group">
                             <?= _r($this->btnRename); ?>
-                            <?php // _r($this->btnChange); ?>
+                            <?= _r($this->btnCrop); ?>
                             <?= _r($this->btnCopy); ?>
                             <?= _r($this->btnDelete); ?>
                             <?= _r($this->btnMove); ?>

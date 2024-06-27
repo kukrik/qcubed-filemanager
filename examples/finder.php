@@ -65,8 +65,15 @@ class SampleForm extends Form
     protected $dlgModal34;
     protected $dlgModal35;
 
+    protected $dlgModal40;
+    protected $dlgModal41;
+    protected $dlgModal42;
+    protected $dlgModal43;
+    protected $dlgModal44;
+
     protected $objUpload;
     protected $objManager;
+    protected $dlgPopup;
     protected $objInfo;
     protected $lblSearch;
     protected $objHomeLink;
@@ -80,6 +87,7 @@ class SampleForm extends Form
     protected $btnAddFolder;
     protected $btnRefresh;
     protected $btnRename;
+    protected $btnCrop;
     protected $btnCopy;
     protected $btnDelete;
     protected $btnMove;
@@ -135,6 +143,7 @@ class SampleForm extends Form
     protected $intStoredChecks = 0;
     protected $arrAllowed = array('jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif');
     protected $tempFolders = ['thumbnail', 'medium', 'large'];
+    protected $arrCroppieTypes = array('jpg', 'jpeg', 'png');
 
     protected $blnMove = false;
 
@@ -169,6 +178,21 @@ class SampleForm extends Form
         //$this->objManager->LockedImages = true;
         $this->objManager->UseWrapper = false;
         $this->objManager->addAction(new SelectableStop(), new Ajax ('selectable_stop'));
+
+        $this->dlgPopup = new Q\Plugin\PopupCroppie($this);
+        $this->dlgPopup->Url = "php/crop_upload.php";
+        $this->dlgPopup->Language = "et";
+        $this->dlgPopup->TranslatePlaceholder = t("- Select a destination -");
+        $this->dlgPopup->Theme = "web-vauu";
+        $this->dlgPopup->HeaderTitle = t("Crop image");
+        $this->dlgPopup->SaveText = t("Crop and save");
+        $this->dlgPopup->CancelText = t("Cancel");
+
+        $this->dlgPopup->addAction(new Q\Plugin\Event\ChangeObject(), new \QCubed\Action\Ajax('objManagerRefresh_Click'));
+
+        if ($this->dlgPopup->Language) {
+            $this->dlgPopup->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/i18n/". $this->dlgPopup->Language . ".js");
+        }
 
         $this->objInfo = new Q\Plugin\FileInfo($this);
         $this->objInfo->RootUrl = APP_UPLOADS_URL;
@@ -300,6 +324,14 @@ class SampleForm extends Form
         $this->btnRename->CausesValidation = false;
         $this->btnRename->UseWrapper = false;
         $this->btnRename->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnRename_Click'));
+
+        $this->btnCrop = new Q\Plugin\Button($this);
+        $this->btnCrop->Text = t(' Crop');
+        $this->btnCrop->Glyph = 'fa fa-crop';
+        $this->btnCrop->CssClass = 'btn btn-darkblue';
+        $this->btnCrop->CausesValidation = false;
+        $this->btnCrop->UseWrapper = false;
+        $this->btnCrop->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnCrop_Click'));
 
         $this->btnCopy = new Q\Plugin\Button($this);
         $this->btnCopy->Text = t(' Copy');
@@ -642,6 +674,41 @@ class SampleForm extends Form
                                     <p style="margin-top: 15px;">Select and copy this file to another location, then insert!</p>');
         $this->dlgModal35->HeaderClasses = 'btn-darkblue';
         $this->dlgModal35->addCloseButton(t("I close the window"));
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // CROP
+
+        $this->dlgModal40 = new Bs\Modal($this);
+        $this->dlgModal40->Title = t('Tip');
+        $this->dlgModal40->Text = t('<p style="margin-top: 15px;">Please select a image!</p>');
+        $this->dlgModal40->HeaderClasses = 'btn-darkblue';
+        $this->dlgModal40->addCloseButton(t("I close the window"));
+
+        $this->dlgModal41 = new Bs\Modal($this);
+        $this->dlgModal41->Title = t('Tip');
+        $this->dlgModal41->Text = t('<p style="margin-top: 15px;">Please select only one image to crop!</p>
+                                    <p style="margin-top: 15px;">Allowed file types: jpg, jpeg, png.</p>');
+        $this->dlgModal41->HeaderClasses = 'btn-darkblue';
+        $this->dlgModal41->addCloseButton(t("I close the window"));
+
+        $this->dlgModal42 = new Bs\Modal($this);
+        $this->dlgModal42->Title = t('Tip');
+        $this->dlgModal42->Text = t('<p style="margin-top: 15px;">Please select only one image to crop!</p>');
+        $this->dlgModal42->HeaderClasses = 'btn-darkblue';
+        $this->dlgModal42->addCloseButton(t("I close the window"));
+
+        $this->dlgModal43 = new Bs\Modal($this);
+        $this->dlgModal43->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">Image cropping succeeded!</p>');
+        $this->dlgModal43->Title = t("Success");
+        $this->dlgModal43->HeaderClasses = 'btn-success';
+        $this->dlgModal43->addCloseButton(t("I close the window"));
+
+        $this->dlgModal44 = new Bs\Modal($this);
+        $this->dlgModal44->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">Image cropping failed!</p>');
+        $this->dlgModal44->Title = t("Warning");
+        $this->dlgModal44->HeaderClasses = 'btn-danger';
+        $this->dlgModal44->addCloseButton(t("I understand"));
+
     }
 
     public function portedCheckDestination()
@@ -1435,6 +1502,70 @@ class SampleForm extends Form
         if (count($this->arrSomeArray) === 1) {
             Application::executeJavaScript(sprintf("$('.breadcrumbs').empty()"));
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // CROP
+
+    public function btnCrop_Click(ActionParams $params)
+    {
+        clearstatcache();
+
+        if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
+            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            return;
+        }
+
+        if (!$this->arrSomeArray) {
+            $this->dlgModal40->showDialogBox(); // Please select a image!
+            return;
+        }
+
+        if ($this->arrSomeArray[0]['data-item-type'] == 'file' &&
+            !in_array(strtolower($this->arrSomeArray[0]['data-extension']), $this->arrCroppieTypes)) {
+            $this->dlgModal41->showDialogBox(); // Please select only one image to crop! Allowed file types: jpg, jpeg, png.
+            return;
+        }
+
+        if (count($this->arrSomeArray) !== 1 || $this->arrSomeArray[0]['data-item-type'] !== 'file') {
+            $this->dlgModal42->showDialogBox(); // Please select only one image to crop!
+            return;
+        }
+
+        $this->strDataPath = $this->arrSomeArray[0]["data-path"];
+        //$this->dlgPopup->SelectedImage = $this->objManager->TempUrl  . "/_files/large" .  $this->strDataPath;
+        $this->dlgPopup->SelectedImage = $this->objManager->RootUrl .  $this->strDataPath;
+
+        $scanFolders = $this->scanForSelect();
+        $folderData = [];
+
+        foreach ($scanFolders as $folder) {
+            if ($folder['activities_locked'] !== 1) {
+                $level = $folder['depth'];
+                if ($this->checkString($folder['path'])) {
+                    $level = 0;
+                }
+                $folderData[] = [
+                    'id' => $folder['path'],
+                    'text' => $folder['name'],
+                    'level' => $level,
+                    'folderId' => $folder['id']
+                ];
+            }
+        }
+        $this->dlgPopup->showDialogBox();
+        $this->dlgPopup->Data = $folderData;
+    }
+
+    public function objManagerRefresh_Click(ActionParams $params)
+    {
+        if (file_exists($this->objManager->RootPath . $this->dlgPopup->FinalPath)) {
+            $this->dlgModal43->showDialogBox(); // Image cropping succeeded!
+        } else {
+            $this->dlgModal44->showDialogBox(); // Image cropping failed!
+        }
+
+        $this->objManager->refresh();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -2373,6 +2504,17 @@ class SampleForm extends Form
         array_multisort($sortedNames, SORT_ASC, $folderData);
 
         return $folderData;
+    }
+
+    protected function checkString($str) {
+        // Remove leading and trailing spaces
+        $str = trim($str);
+
+        // Split the string based on the slashes
+        $parts = explode('/', $str);
+
+        // We check if there are more parts after the first element
+        return count($parts) <= 2 && empty($parts[1]);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace QCubed\Plugin;
 
 use QCubed as Q;
+use QCubed\Bootstrap\Bootstrap;
 use QCubed\Control\FormBase;
 use QCubed\Control\ControlBase;
 use QCubed\Exception\InvalidCast;
@@ -72,11 +73,22 @@ class FileManagerBase extends FileManagerBaseGen
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/qcubed.uploadhandler.js");
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/jquery.slimscroll.js");
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/custom.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/popup-croppie.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/croppie.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/exif.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/select2.js");
+        Bootstrap::loadJS($this);
+
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/qcubed.filemanager.css");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/jquery.fileupload.css");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/jquery.fileupload-ui.css");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/qcubed.uploadhandler.css");
-        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom-buttons-inputs.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/font-awesome.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom-switch.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/select2.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/select2-bootstrap.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/select2-web-vauu.css");
         $this->AddCssFile(QCUBED_BOOTSTRAP_CSS); // make sure they know
     }
 
