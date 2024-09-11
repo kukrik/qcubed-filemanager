@@ -62,7 +62,7 @@ class SampleForm3 extends Form
 
     // Approximate example below:
 
-    /*protected function delete_Click(ActionParams $params)
+    protected function delete_Click(ActionParams $params)
     {
         $objExample = Example::loadById(2);
         $references = $objExample->getFilesIds();
@@ -82,7 +82,7 @@ class SampleForm3 extends Form
         }
 
         $objExample->delete();
-    }*/
+    }
 
     // This function referenceValidation(), which checks and ensures that the data is up-to-date both when adding and
     // deleting a file. Everything is commented in the code.

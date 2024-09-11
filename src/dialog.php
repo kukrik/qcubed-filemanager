@@ -1,7 +1,7 @@
 <?php
-require_once('qcubed.inc.php');
-require_once ('../src/FileInfo.php');
-require_once ('../src/DestinationInfo.class.php');
+require_once('../../../../qcubed.inc.php');
+require_once ('FileInfo.php');
+require_once ('DestinationInfo.class.php');
 
 error_reporting(E_ALL); // Error engine - always ON!
 ini_set('display_errors', TRUE); // Error display - OFF in production env or real server
@@ -81,6 +81,7 @@ class SampleForm extends Form
     protected $btnAllStart;
     protected $btnAllCancel;
     protected $btnBack;
+    protected $btnDone;
 
     protected $btnUploadStart;
     protected $btnAddFolder;
@@ -161,7 +162,7 @@ class SampleForm extends Form
         //$this->objUpload->ChunkUpload = false; // Default true
         $this->objUpload->MaxChunkSize = 1024 * 1024; // 10 MB // Default 5 MB
         //$this->objUpload->LimitConcurrentUploads = 5; // Default 2
-        $this->objUpload->Url = 'php/'; // Default null
+        $this->objUpload->Url = '../examples/php/upload.php'; // Default null
         //$this->objUpload->PreviewMaxWidth = 120; // Default 80
         //$this->objUpload->PreviewMaxHeight = 120; // Default 80
         //$this->objUpload->WithCredentials = true; // Default false
@@ -178,7 +179,7 @@ class SampleForm extends Form
         $this->objManager->addAction(new SelectableStop(), new Ajax ('selectable_stop'));
 
         $this->dlgPopup = new Q\Plugin\PopupCroppie($this);
-        $this->dlgPopup->Url = "php/crop_upload.php";
+        $this->dlgPopup->Url = "../examples/php/crop_upload.php";
         $this->dlgPopup->Language = "et";
         $this->dlgPopup->TranslatePlaceholder = t("- Select a destination -");
         $this->dlgPopup->Theme = "web-vauu";
@@ -292,6 +293,12 @@ class SampleForm extends Form
         $this->btnBack->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnBack_Click'));
         $this->btnBack->addAction(new Q\Event\Click(), new Q\Action\Ajax('dataClearing_Click'));
 
+        $this->btnDone = new Bs\Button($this);
+        $this->btnDone->Text = t('Done');
+        $this->btnDone->CssClass = 'btn btn-success pull-right done';
+        $this->btnDone->UseWrapper = false;
+        $this->btnDone->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnDone_Click'));
+
         $this->btnUploadStart = new Q\Plugin\Button($this);
         $this->btnUploadStart->Text = t(' Upload');
         $this->btnUploadStart->Glyph = 'fa fa-upload';
@@ -401,7 +408,7 @@ class SampleForm extends Form
         $this->lstSize->addItems(['_files/thumbnail' => t('Small'), '_files/medium' => t('Medium'), '_files/large' => t('Large')]);
         $this->lstSize->SelectedValue = '_files/thumbnail';
         $this->lstSize->addCssClass('size');
-        $this->lstSize->ButtonGroupClass = 'radio radio-orange radio-inline';
+        $this->lstSize->ButtonGroupClass = 'radio radio-inline radio-orange';
         $this->lstSize->UseWrapper = false;
         $this->lstSize->Enabled = false;
     }
@@ -1028,15 +1035,18 @@ class SampleForm extends Form
     {
         $script = "
             $('.fileupload-buttonbar').removeClass('hidden');
-            $('.dialog-upload-wrapper').removeClass('hidden');
+            $('.upload-wrapper').removeClass('hidden');
+            $('.fileupload-donebar').addClass('hidden');
             $('body').removeClass('no-scroll');
+            $('.head').addClass('hidden');
             $('.files-heading').addClass('hidden');
             $('.dialog-wrapper').addClass('hidden');
+            $('.alert').remove();
         ";
 
         Application::executeJavaScript($script);
 
-        $this->dlgModal5->hideDialogBox(); // Palun kontrolli, kas sihtkoht on õige!
+        $this->dlgModal5->hideDialogBox(); // Please check if the destination is correct!
     }
 
     public function confirmParent_Click(ActionParams $params)
@@ -1061,14 +1071,33 @@ class SampleForm extends Form
     {
         $script = "
             $('.fileupload-buttonbar').addClass('hidden');
-            $('.dialog-upload-wrapper').addClass('hidden');
+            $('.upload-wrapper').addClass('hidden');
             $('body').addClass('no-scroll');
+            $('.head').removeClass('hidden');
             $('.files-heading').removeClass('hidden');
-            $('.dialog-wrapper').removeClass('hidden');
+            $('.sdialog-wrapper').removeClass('hidden');
             $('.alert').remove();
         ";
 
         Application::executeJavaScript($script);
+
+        $this->objManager->refresh();
+    }
+
+    protected function btnDone_Click(ActionParams $params)
+    {
+        unset($_SESSION['folderId']);
+        unset($_SESSION['filePath']);
+
+        Application::executeJavaScript("
+            $('.fileupload-buttonbar').addClass('hidden');
+            $('.upload-wrapper').addClass('hidden');
+            $('body').addClass('no-scroll');
+            $('.head').removeClass('hidden');
+            $('.files-heading').removeClass('hidden');
+            $('.dialog-wrapper').removeClass('hidden');
+            $('.alert').remove();
+        ");
 
         $this->objManager->refresh();
     }
@@ -1975,7 +2004,7 @@ class SampleForm extends Form
                     }
 
                     // Here have to check whether the files are locked
-                    if ($objFile->getLockedFile() == 1) {
+                    if ($objFile->getLockedFile() > 0) {
                         $this->objLockedFiles++;
                     }
                 }

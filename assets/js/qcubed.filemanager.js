@@ -28,9 +28,8 @@
 
         // Get a reference to the buttons
         const launch_start = document.querySelector(".launch-start");
-        const all_start = document.querySelector(".all-start");
-        const all_cancel = document.querySelector(".all-cancel");
         const back = document.querySelector(".back");
+
         const btn_image_list= document.querySelector(".btn-imageList");
         const btn_list= document.querySelector(".btn-list");
         const btn_box= document.querySelector(".btn-box");
@@ -54,14 +53,6 @@
         const search_results = document.querySelector(".search-results");
         const head = document.querySelector(".head a");
         const homelink = document.querySelector(".homelink");
-
-        /////////////////////////////////////////
-
-        // Resetting elements
-        all_start.classList.add("disabled");
-        all_start.setAttribute("disabled", "disabled");
-        all_cancel.classList.add("disabled");
-        all_cancel.setAttribute("disabled", "disabled");
 
         /////////////////////////////////////////
 
@@ -648,7 +639,7 @@
 
         function appendToList(e)
         {
-            const allowedExt = ['jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif', 'svg'];
+            const allowedExt = ['jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif'];
             const extension = e.name.split('.').pop().toLowerCase();
 
             if (e.type === "dir") {
@@ -1164,6 +1155,6 @@
             }
             return icon
         }
-    return this;
-}
+        return this;
+    }
 })(jQuery);

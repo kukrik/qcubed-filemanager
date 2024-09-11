@@ -1,5 +1,5 @@
 (function ($) {
-    $.fn.popupCroppie = function (options) {
+    $.fn.croppieHandler = function (options) {
         options = $.extend({
             url: null,
             language: null,
@@ -11,8 +11,10 @@
             show: false
         }, options)
 
+        // Use document.querySelector directly without a jQuery wrapper
         var modalElement = document.querySelector(".modal");
-        var id = $('#' + modalElement.id);
+        var id  = $('#' + modalElement.id);
+        var elementId = modalElement.id;
 
         $('.btn-crop').attr('disabled','disabled');
 
@@ -222,7 +224,10 @@
 
         // Initialize the cropper when the modal is shown
         id.on('shown.bs.modal', function () {
-            qcubed.recordControlModification(id, "_IsOpen", true);
+
+            //console.log("ELEMENT: ", elementId + "_ctl")
+
+            qcubed.recordControlModification(elementId + "_ctl", "_IsOpen", true);
 
             var viewportWidth = parseInt($('#viewportWidth').val());
             var viewportHeight = parseInt($('#viewportHeight').val());
@@ -267,7 +272,7 @@
 
         // Optional: Destroy the cropper when the modal is hidden to clean up
         id.on('hidden.bs.modal', function () {
-            qcubed.recordControlModification(id, "_IsOpen", false);
+            qcubed.recordControlModification(elementId + "_ctl", "_IsOpen", false);
 
             var cropper = $('#cropImage');
             if (cropper) {
@@ -296,13 +301,14 @@
         var finalPath = null;
 
         $('.btn-crop').on('click', function () {
+            var btnCrop = $(this); // A reference to a button
+
             $('#cropImage').croppie('result', {
                 type: 'canvas',
                 format: 'png',
                 size: 'original'
             }).then(function (resp) {
                 id.modal('hide');
-                //$('#confirm-img').attr('src', resp);
 
                 var pathSplit = options.selectedImage.split('\\').pop().split('/').pop();
                 var fileName = pathSplit.substr(0, pathSplit.lastIndexOf("."));
@@ -310,36 +316,32 @@
                 var xhr = new XMLHttpRequest();
                 var data = new FormData();
 
-                // Get folderId based on the selected value
                 var folderId = getFolderIdById(parsedData, selectedValue);
 
                 data.append("cropImage", resp);
                 data.append("fileName", fileName);
                 data.append("relativePath", selectedValue);
-                data.append("folderId", folderId); // Add folderId to the form data
+                data.append("folderId", folderId);
                 xhr.open('POST', options.url, true);
 
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === 4 && xhr.status === 200) {
                         var response = JSON.parse(xhr.responseText);
-                        finalPath = response.path; // Save the final path
+                        finalPath = response.path;
 
                         if (finalPath) {
-                            // Record the control modification in QCubed
-                            qcubed.recordControlModification(id, "_finalPath", finalPath);
+                            qcubed.recordControlModification(elementId, "_finalPath", finalPath);
                         }
 
-                        $(this).data('event', true);
-                        changeObject();
+                        btnCrop.data('event', true); // Change the event correctly
+                        changeObject(btnCrop); // Pass the button to the function
                     }
                 };
 
                 xhr.send(data);
             });
 
-            function changeObject() {
-                var btnCrop = $(".btn-crop");
-
+            function changeObject(btnCrop) {
                 if (btnCrop.data('event') === true) {
                     qcubed.recordControlModification(btnCrop, "_IsChangeObject", true);
                 }
@@ -347,8 +349,9 @@
                 var ChangeObjectEvent = $.Event("changeobject");
                 btnCrop.trigger(ChangeObjectEvent);
             }
-
         });
+
+
         return this;
     }
 })(jQuery);

@@ -36,9 +36,6 @@ use QCubed\Type;
  * @property string $Url Default: null. If necessary, you can refer to the file processing php
  * @property integer $PreviewMaxWidth Default: '80' (maximum preview width limit)
  * @property integer $PreviewMaxHeight Default: '80' (maximum preview height limit)
- * @property boolean $WithCredentials Default: false. XMLHttpRequest can make cross-origin requests, using the same CORS
- *                                    policy as fetch. Just like fetch, it doesn’t send cookies and HTTP-authorization
- *                                    to another origin by default. To enable them, set xhr.withCredentials to true
  *
  * @package QCubed\Plugin
  */
@@ -71,8 +68,6 @@ class FileUploadHandlerBaseGen extends Q\Control\Panel
     protected $intPreviewMaxWidth = null;
     /** @var string */
     protected $intPreviewMaxHeight = null;
-    /** @var boolean */
-    protected $blnWithCredentials = null;
 
     protected function makeJqOptions()
     {
@@ -90,7 +85,6 @@ class FileUploadHandlerBaseGen extends Q\Control\Panel
         if (!is_null($val = $this->Url)) {$jqOptions['url'] = $val;}
         if (!is_null($val = $this->PreviewMaxWidth)) {$jqOptions['previewMaxWidth'] = $val;}
         if (!is_null($val = $this->PreviewMaxHeight)) {$jqOptions['previewMaxHeight'] = $val;}
-        if (!is_null($val = $this->WithCredentials)) {$jqOptions['withCredentials'] = $val;}
         return $jqOptions;
     }
 
@@ -115,7 +109,6 @@ class FileUploadHandlerBaseGen extends Q\Control\Panel
             case 'Url': return $this->strUrl;
             case 'PreviewMaxWidth': return $this->intPreviewMaxWidth;
             case 'PreviewMaxHeight': return $this->intPreviewMaxHeight;
-            case 'WithCredentials': return $this->blnWithCredentials;
 
             default:
                 try {
@@ -254,16 +247,6 @@ class FileUploadHandlerBaseGen extends Q\Control\Panel
                 try {
                     $this->intPreviewMaxHeight = Type::Cast($mixValue, Type::INTEGER);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'previewMaxHeight', $this->intPreviewMaxHeight);
-                    break;
-                } catch (InvalidCast $objExc) {
-                    $objExc->incrementOffset();
-                    throw $objExc;
-                }
-
-            case 'WithCredentials':
-                try {
-                    $this->blnWithCredentials = Type::Cast($mixValue, Type::BOOLEAN);
-                    $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'withCredentials', $this->blnWithCredentials);
                     break;
                 } catch (InvalidCast $objExc) {
                     $objExc->incrementOffset();

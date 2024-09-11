@@ -87,7 +87,7 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
     protected function setup()
     {
         $this->strFullStoragePath = $this->strTempPath . '/' . $this->strStoragePath;
-        $strCreateDirs = ['/thumbnail', '/medium', '/large', '/zip'];
+        $strCreateDirs = ['/thumbnail', '/medium', '/large', '/zip', '/temp'];
 
         if (!is_dir($this->strRootPath)) {
             Folder::makeDirectory(QCUBED_PROJECT_DIR . '/assets/upload', 0777);

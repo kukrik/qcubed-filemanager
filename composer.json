@@ -11,6 +11,6 @@
       "psr-4": {"QCubed\\Plugin\\": "src/"}
     },
     "extra": {
-        "examples": ["filemanager.php", "ckeditor3.php", "mediafinder.php"]
+        "examples": ["filemanager.php", "folders_checking.php", "ckeditor3.php", "mediafinder.php"]
     }
 }

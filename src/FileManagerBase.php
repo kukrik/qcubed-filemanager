@@ -73,8 +73,7 @@ class FileManagerBase extends FileManagerBaseGen
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/qcubed.uploadhandler.js");
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/jquery.slimscroll.js");
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/custom.js");
-        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/popup-croppie.js");
-        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/croppie.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/qcubed.croppie.js");
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/exif.js");
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/select2.js");
         Bootstrap::loadJS($this);

@@ -10,7 +10,7 @@ ini_set('log_errors', TRUE); // Error logging
 
 use QCubed as Q;
 use QCubed\Bootstrap as Bs;
-use QCubed\Plugin\UploadHandler;
+use QCubed\Plugin\FileHandler;
 use QCubed\Plugin\FileManager;
 use QCuded\Plugin\FileInfo;
 use QCubed\QDateTime;
@@ -87,6 +87,7 @@ class SampleForm extends Form
     protected $btnAllStart;
     protected $btnAllCancel;
     protected $btnBack;
+    protected $btnDone;
 
     protected $btnUploadStart;
     protected $btnAddFolder;
@@ -167,7 +168,7 @@ class SampleForm extends Form
         $this->objUpload->Url = 'php/upload.php'; // Default null
         //$this->objUpload->PreviewMaxWidth = 120; // Default 80
         //$this->objUpload->PreviewMaxHeight = 120; // Default 80
-        //$this->objUpload->WithCredentials = true; // Default false
+
         $this->objUpload->UseWrapper = false;
 
         $this->objManager = new Q\Plugin\FileManager($this);
@@ -263,6 +264,12 @@ class SampleForm extends Form
         $this->btnBack->UseWrapper = false;
         $this->btnBack->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnBack_Click'));
         $this->btnBack->addAction(new Q\Event\Click(), new Q\Action\Ajax('dataClearing_Click'));
+
+        $this->btnDone = new Bs\Button($this);
+        $this->btnDone->Text = t('Done');
+        $this->btnDone->CssClass = 'btn btn-success pull-right done';
+        $this->btnDone->UseWrapper = false;
+        $this->btnDone->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnDone_Click'));
 
         /////////////////////////////////////////////////////////////////////
 
@@ -940,6 +947,8 @@ class SampleForm extends Form
     {
         clearstatcache();
 
+        Application::executeJavaScript("$('.alert').remove();");
+
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
             $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
@@ -1011,9 +1020,12 @@ class SampleForm extends Form
         $script = "
             $('.fileupload-buttonbar').removeClass('hidden');
             $('.upload-wrapper').removeClass('hidden');
+            $('.fileupload-donebar').addClass('hidden');
             $('body').removeClass('no-scroll');
+            $('.head').addClass('hidden');
             $('.files-heading').addClass('hidden');
             $('.scroll-wrapper').addClass('hidden');
+            $('.alert').remove();
         ";
 
         Application::executeJavaScript($script);
@@ -1045,12 +1057,31 @@ class SampleForm extends Form
             $('.fileupload-buttonbar').addClass('hidden');
             $('.upload-wrapper').addClass('hidden');
             $('body').addClass('no-scroll');
+            $('.head').removeClass('hidden');
             $('.files-heading').removeClass('hidden');
             $('.scroll-wrapper').removeClass('hidden');
             $('.alert').remove();
         ";
 
         Application::executeJavaScript($script);
+
+        $this->objManager->refresh();
+    }
+
+    protected function btnDone_Click(ActionParams $params)
+    {
+        unset($_SESSION['folderId']);
+        unset($_SESSION['filePath']);
+
+        Application::executeJavaScript("
+            $('.fileupload-buttonbar').addClass('hidden');
+            $('.upload-wrapper').addClass('hidden');
+            $('body').addClass('no-scroll');
+            $('.head').removeClass('hidden');
+            $('.files-heading').removeClass('hidden');
+            $('.scroll-wrapper').removeClass('hidden');
+            $('.alert').remove();
+        ");
 
         $this->objManager->refresh();
     }
@@ -1518,10 +1549,6 @@ class SampleForm extends Form
             return;
         }
 
-        $this->strDataPath = $this->arrSomeArray[0]["data-path"];
-        //$this->dlgPopup->SelectedImage = $this->objManager->TempUrl  . "/_files/large" .  $this->strDataPath;
-        $this->dlgPopup->SelectedImage = $this->objManager->RootUrl .  $this->strDataPath;
-
         $scanFolders = $this->scanForSelect();
         $folderData = [];
 
@@ -1539,6 +1566,10 @@ class SampleForm extends Form
                 ];
             }
         }
+
+        $this->strDataPath = $this->arrSomeArray[0]["data-path"];
+        $this->dlgPopup->SelectedImage = $this->objManager->RootUrl .  $this->strDataPath;
+
         $this->dlgPopup->showDialogBox();
         $this->dlgPopup->Data = $folderData;
     }
@@ -1914,7 +1945,7 @@ class SampleForm extends Form
         foreach ($objFiles as $objFile) {
             foreach ($dataFiles as $dataFile) {
                 if ($objFile->getId() == $dataFile) {
-                    if ($objFile->getLockedFile() == 1) {
+                    if ($objFile->getLockedFile() === 1) {
                         $this->objLockedFiles++;
                     }
                 }
@@ -1952,12 +1983,14 @@ class SampleForm extends Form
         foreach ($objFiles as $objFile) {
             foreach ($dataFiles as $dataFile) {
                 if ($objFile->getId() == $dataFile) {
+
+
+
                     if ($objFile->getId() == $dataFile) {
                         $this->tempItems[] = $objFile->getPath();
                     }
-
                     // Here have to check whether the files are locked
-                    if ($objFile->getLockedFile() == 1) {
+                    if ($objFile->getLockedFile() > 0) {
                         $this->objLockedFiles++;
                     }
                 }

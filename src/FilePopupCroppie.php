@@ -29,7 +29,7 @@ use QCubed\Type;
  * @package QCubed\Plugin
  */
 
-class PopupCroppie extends PopupCroppieGen
+class FilePopupCroppie extends FilePopupCroppieGen
 {
     /** @var bool make sure the popupCroppie gets rendered */
     protected $blnAutoRender = true;
@@ -82,18 +82,18 @@ class PopupCroppie extends PopupCroppieGen
      * @throws Caller
      */
     protected function registerFiles() {
-        $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/croppie.css");
-        $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/custom-switch.css");
-        $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/custom.css");
-        $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/font-awesome.css");
-        $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/awesome-bootstrap-checkbox.css");
-        $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/select2.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/croppie.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom-switch.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/font-awesome.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/awesome-bootstrap-checkbox.css");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/select2.css");
         $this->addCssFile(QCUBED_BOOTSTRAP_CSS);
-        $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/select2-web-vauu.css");
-        $this->AddJavascriptFile(QCUBED_CROPPIE_ASSETS_URL . "/js/popup-croppie.js");
-        $this->AddJavascriptFile(QCUBED_CROPPIE_ASSETS_URL . "/js/croppie.js");
-        $this->AddJavascriptFile(QCUBED_CROPPIE_ASSETS_URL . "/js/exif.js");
-        $this->AddJavascriptFile(QCUBED_CROPPIE_ASSETS_URL . "/js/select2.js");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/select2-web-vauu.css");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/qcubed.croppie.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/croppie.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/exif.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/select2.js");
         Bootstrap::loadJS($this);
     }
 

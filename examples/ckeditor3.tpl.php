@@ -4,11 +4,12 @@
 // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_file_browse_upload.html
 ?>
 	<script>
+        var dialogPath = <?= json_encode(QCUBED_FILEMANAGER_URL, JSON_UNESCAPED_UNICODE); ?>;
 		ckConfig = {
 			skin: 'moono',
             extraPlugins: 'colorbutton,font,justify,print,tableresize,pastefromword,liststyle',
-            filebrowserImageBrowseUrl: 'dialog.php',
-            filebrowserBrowseUrl: 'dialog.php',
+            filebrowserImageBrowseUrl: dialogPath + '/src/dialog.php',
+            filebrowserBrowseUrl: dialogPath + '/src/dialog.php',
             filebrowserWindowWidth: '95%',
             filebrowserWindowHeight: '95%',
 			//language: 'en',

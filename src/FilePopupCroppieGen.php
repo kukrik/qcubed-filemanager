@@ -33,7 +33,7 @@ use QCubed\Type;
  * @package QCubed\Plugin
  */
 
-class PopupCroppieGen extends Q\Control\Panel
+class FilePopupCroppieGen extends Q\Control\Panel
 {
     /** @var string */
     protected $strUrl = null;
@@ -64,18 +64,9 @@ class PopupCroppieGen extends Q\Control\Panel
         return $jqOptions;
     }
 
-    /**
-     * Returns the control id for purposes of attaching events.
-     * @return string
-     */
-    public function getJqControlId()
-    {
-        return $this->ControlId . '_ctl';
-    }
-
     public function getJqSetupFunction()
     {
-        return 'popupCroppie';
+        return 'croppieHandler';
     }
 
     /**

@@ -47,7 +47,7 @@ class SampleForm4 extends Form
 
         $this->objMediaFinder = new Q\Plugin\MediaFinder($this);
         $this->objMediaFinder->TempUrl = APP_UPLOADS_TEMP_URL . "/_files/thumbnail";
-        $this->objMediaFinder->PopupUrl = "finder.php";
+        $this->objMediaFinder->PopupUrl = QCUBED_FILEMANAGER_URL . "/src/finder.php";
         $this->objMediaFinder->EmptyImageAlt = t("Choose a picture");
         $this->objMediaFinder->SelectedImageAlt = t("Selected picture");
 
@@ -111,8 +111,13 @@ class SampleForm4 extends Form
         $objExample = Example::load(1);
 
         $objFiles = Files::loadById($objExample->getPictureId());
-        $objFiles->setLockedFile($objFiles->getLockedFile() - 1);
-        $objFiles->save();
+
+        Application::displayAlert(json_encode($objFiles));
+
+        if ($objFiles->getLockedFile() !== 0) {
+            $objFiles->setLockedFile($objFiles->getLockedFile() - 1);
+            $objFiles->save();
+        }
 
         // Here, in the "example" table, report that this image no longer exists
 

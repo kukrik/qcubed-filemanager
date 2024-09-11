@@ -12,8 +12,7 @@
             limitConcurrentUploads: 2, // Limited to 2 simultaneous uploads by default. Can be increased if necessary.
             url: null,
             previewMaxWidth: 80,
-            previewMaxHeight: 80,
-            withCredentials: false
+            previewMaxHeight: 80
         }, options)
 
         // This unit set to a new array
@@ -26,8 +25,6 @@
         const uploadedFiles = [];
         // This unit is set to the number of interrupted upload files
         let interruptedFiles = 0;
-        // This unit set to an checked files array
-        const checkedFiles = [];
 
         // Arrays for indexing invalid inputs
         const storedAcceptFileTypes = []; // data-error_type="1"
@@ -120,13 +117,15 @@
 
         /////////////////////////////////////////
 
-        // Get a reference to the 6 buttons
+        // Get a reference to the 8 buttons
         const file_input = document.querySelector(".fileinput-button");
         const input = file_input.querySelector("#files");
 
         const all_start = document.querySelector(".all-start");
         const all_cancel = document.querySelector(".all-cancel");
         const back = document.querySelector(".back");
+        const fileupload_donebar = document.querySelector(".fileupload-donebar");
+        const done_button = document.querySelector(".done");
         const files_heading = document.querySelector(".files-heading");
         const search = document.querySelector("[type='search']");
 
@@ -136,7 +135,9 @@
         const fileupload_buttonbar = document.querySelector(".fileupload-buttonbar");
         fileupload_buttonbar.classList.add("hidden");
 
-        // Get a reference to div of the scroll-wrapper and dialog-wrapper
+        // Get the div references
+        const body = document.querySelector("body");
+        const upload_wrapper = document.querySelector(".upload-wrapper");
         const scroll_wrapper = document.querySelector(".scroll-wrapper");
         const dialog_wrapper = document.querySelector(".dialog-wrapper");
 
@@ -149,6 +150,8 @@
         all_start.addEventListener("click", handleForm);
         // all_cancel files delete handler
         all_cancel.addEventListener("click", cancelAllUploads);
+        // finished result handler
+        done_button.addEventListener("click", doneForm);
 
         // Resetting elements
         all_start.classList.add("disabled");
@@ -195,24 +198,6 @@
 
         /////////////////////////////////////////
 
-        // Prepare own div and button "Done"
-        const fileupload_donebar = document.createElement("div");
-        fileupload_donebar.className = "fileupload-donebar hidden";
-        const done_button = document.createElement("button");
-        done_button.className = "btn btn-success pull-right done";
-        done_button.type = "reset";
-        const done_span = document.createElement("span");
-        done_span.innerText = languages[options.language].done_Lbl;
-
-        files.appendChild(fileupload_donebar);
-        fileupload_donebar.appendChild(done_button);
-        done_button.appendChild(done_span);
-
-        // finished result handler
-        done_button.addEventListener("click", doneForm);
-
-        /////////////////////////////////////////
-
         function handleFileSelect(e) {
             all_start.classList.remove("disabled");
             all_start.removeAttribute("disabled");
@@ -225,8 +210,10 @@
             alert_multi_wrapper.innerHTML = "";
 
             const files = e.target.files;
-            const filesArr = Array.prototype.slice.call(files);
-            filesArr.forEach(function (f) {
+            for (var i = 0; i < files.length; i++) {
+                const f = files[i];
+                const url = URL.createObjectURL(f);
+
                 f.started = false;
                 f.complete = false;
                 storedFiles.push(f);
@@ -250,12 +237,10 @@
                 if (options.showIcons) {
                     previewSpan.innerHTML = getFileIconExtension(ext);
                 } else if (f.type.match("image.*")) {
-                    img.src = URL.createObjectURL(f);
+
+                    img.src = url;
                     img.width = options.previewMaxWidth;
                     img.height = options.previewMaxHeight;
-                    img.onload = function () {
-                        URL.revokeObjectURL(this.src);
-                    }
                     previewSpan.appendChild(img);
                 } else {
                     previewSpan.innerHTML = getFileIconExtension(ext);
@@ -336,7 +321,7 @@
                 list.appendChild(nameTd);
                 list.appendChild(sizeTd);
                 list.appendChild(btnTd);
-            });
+            };
 
             const children = document.querySelectorAll(".cancel");
             for (let i = 0, len = children.length; i < len; i++) {
@@ -393,8 +378,6 @@
             if (parent_div.contains(child_div)) {
                 files_heading.classList.add("hidden");
                 fileupload_buttonbar.classList.remove("hidden");
-                scroll_wrapper.classList.add("hidden");
-                //dialog_wrapper.classList.add("hidden");
                 files.classList.remove("hidden");
              }
         }
@@ -437,7 +420,6 @@
             } else {
                 const xhr = new XMLHttpRequest();
                 let data = new FormData();
-                xhr.withCredentials = options.withCredentials;
 
                 f.started = true;
                 data.append("files", f);
@@ -473,11 +455,11 @@
                 const chunk = f.slice(start, chunkEnd);
 
                 const data = new FormData();
-
                 data.append("chunkEnabled", "true");
                 data.append('files', chunk, f.name);
                 data.append('chunk', chunkCounter);
-                data.append('chunks', numberOfChunks);
+                data.append('index', start);
+                data.append('count', numberOfChunks);
 
                 //created the chunk, now upload it
                 uploadChunk(data, start, chunkEnd);
@@ -485,7 +467,6 @@
 
             function uploadChunk(data, start, chunkEnd) {
                 const xhr = new XMLHttpRequest();
-                xhr.withCredentials = options.withCredentials;
 
                 if (options.url) {
                     xhr.open('POST', options.url, true);
@@ -495,8 +476,6 @@
                 xhr.upload.addEventListener("progress", updateProgress);
 
                 const blobEnd = chunkEnd - 1;
-                const contentRange = "bytes " + start + "-" + blobEnd + "/" + f.size;
-                xhr.setRequestHeader("Content-Range", contentRange);
                 xhr.send(data);
 
                 let progress_bar = document.querySelector('.progress-bar[data-name="' + cleanFileName(f.name) + '"]');
@@ -522,18 +501,35 @@
                             percent.innerText = `${Math.floor(totalPercentComplete) + "%"}`;
                         }
 
-                        if (chunkCounter === numberOfChunks) {
+                        if (this.response) {
+                            const response = JSON.parse(this.response);
+
+                            response.started = true;
+                            response.complete = false;
+
+                            let output = {
+                                "filename": response.filename,
+                                "error": response.error,
+                            }
+
+                            if (response.error) {
+                                text_error.innerText = response.error;
+                                error_bubble.classList.remove("hidden");
+
+                                progress_bar.classList.add("hidden");
+                                percent_bar.classList.add("hidden");
+                                cancel.classList.add("hidden");
+                                ready.classList.add("hidden");
+                            }
+                        } else if (chunkCounter === numberOfChunks) {
                             progress_bar.classList.add("hidden");
                             percent_bar.classList.add("hidden");
                             cancel.classList.add("hidden");
                             ready.classList.remove("hidden");
 
                             all_start.classList.add("disabled");
-                            all_start.setAttribute('disabled', 'disabled');
                             all_cancel.classList.add("disabled");
-                            all_cancel.setAttribute('disabled', 'disabled');
-                            back.classList.remove("disabled");
-                            back.removeAttribute('disabled', 'disabled');
+                            fileupload_donebar.classList.remove("hidden");
                         }
                     }
                 }
@@ -545,30 +541,18 @@
                         response.started = true;
                         response.complete = true;
 
-                        let text_error = document.querySelector('.text-error[data-name="' + cleanFileName(response.filename) + '"]');
-                        let ready = document.querySelector('.ready[data-name="' + cleanFileName(response.filename) + '"]');
-                        let error_bubble = document.querySelector('.error-bubble[data-name="' + cleanFileName(response.filename) + '"]');
-
                         let output = {
-                            "check": response.check,
-                            "msg": response.msg,
                             "filename": response.filename,
-                            "type": response.type,
                             "error": response.error,
-                        };
-
-                        if (response.check === "false" && response.msg !== null) {
-                            text_error.innerText = response.msg;
                         }
 
-                        if (response.check === "true") {
-                            text_error.innerText = response.msg /*? response.msg : ''*/;
-                            ready.classList.add("hidden");
-                            error_bubble.classList.remove("hidden");
-                            checkedFiles.push(output);
+                        if (response.error) {
+                            text_error.innerText = response.error;
+                            interruptedFiles++;
                         }
 
                         uploadedFiles.push(output);
+                        storedQueue.shift(output);
                     }
 
                     //We start one chunk in, as we have uploaded the first one.
@@ -581,8 +565,8 @@
                     } else {
                         f.complete = true;
                         checkQueue();
-                        uploadResponses(storedFiles, uploadedFiles, interruptedFiles, checkedFiles);
                     }
+                    uploadResponses(storedFiles, uploadedFiles, interruptedFiles);
                 }
 
                 xhr.onerror = function (e) {
@@ -593,7 +577,7 @@
                     cancel.classList.add("hidden");
                     error_bubble.classList.remove("hidden");
                     interruptedFiles++;
-                };
+                }
             }
         }
 
@@ -606,50 +590,71 @@
             let percent = document.querySelector('.percent[data-name="' + i + '"]');
             let cancel = document.querySelector('.cancel[data-name="' + i + '"]');
             let ready = document.querySelector('.ready[data-name="' + i + '"]');
+            let error_bubble = document.querySelector('.error-bubble[data-name="' + i + '"]');
+            let text_error = document.querySelector('.text-error[data-name="' + i + '"]');
 
             progress_bar.classList.remove("hidden");
             percent_bar.classList.remove("hidden");
 
             xhr.upload.addEventListener("progress", function (e) {
                 if (e.lengthComputable) {
-                    if (xhr) {
-                        // Get the loaded amount and total filesize (bytes)
-                        let loaded = e.loaded;
-                        let total = e.total
+                    // Calculate percent uploaded
+                    let percent_complete = (e.loaded / e.total) * 100;
 
-                        // Calculate percent uploaded
-                        let percent_complete = loaded / total * 100;
+                    // Update the progress text and progress bar
+                    progress.setAttribute("style", `width: ${Math.floor(percent_complete) + "%"}`);
+                    percent.innerText = `${Math.floor(percent_complete) + "%"}`;
 
-                        // Update the progress text and progress bar
-                        progress.setAttribute("style", `width: ${Math.floor(percent_complete) + "%"}`);
+                    if (e.loaded === e.total) {
+                        progress_bar.classList.add("hidden");
+                        percent_bar.classList.add("hidden");
+                        cancel.classList.add("hidden");
+                        ready.classList.remove("hidden");
 
-                        if (percent_complete > 0) {
-                            percent.innerText = `${Math.floor(percent_complete) + "%"}`;
-                        }
-
-                        if (loaded === total) {
-                            progress_bar.classList.add("hidden");
-                            percent_bar.classList.add("hidden");
-                            cancel.classList.add("hidden");
-                            ready.classList.remove("hidden");
-
-                            all_start.classList.add("disabled");
-                            all_start.setAttribute('disabled', 'disabled');
-                            all_cancel.classList.add("disabled");
-                            all_cancel.setAttribute('disabled', 'disabled');
-                        }
+                        all_start.classList.add("disabled");
+                        all_start.setAttribute('disabled', 'disabled');
+                        all_cancel.classList.add("disabled");
+                        all_cancel.setAttribute('disabled', 'disabled');
+                        fileupload_donebar.classList.remove("hidden");
                     }
                 }
             });
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    const response = JSON.parse(xhr.responseText);
+
+                    if (response.error) {
+                        text_error.innerText = response.error;
+                        ready.classList.add("hidden");
+                        error_bubble.classList.remove("hidden");
+
+                        progress_bar.classList.add("hidden");
+                        percent_bar.classList.add("hidden");
+                        cancel.classList.add("hidden");
+                        interruptedFiles++;
+                    }
+                } else {
+                    text_error.innerText = response.error;
+                    error_bubble.classList.remove("hidden");
+                }
+            }
+
+            uploadResponses(storedFiles, uploadedFiles, interruptedFiles);
+
+            xhr.onerror = function () {
+                text_error.innerText = "An error occurred during the upload.";
+                error_bubble.classList.remove("hidden");
+            };
         }
 
         // xhr load handler (transfer complete)
         function uploadComplete(xhr, i) {
             xhr.upload.addEventListener("load", function () {
-                xhr.onreadystatechange = function () {
-                    if (this.readyState === 4 && this.status === 200) {
-                        if (this.response) {
-                            const response = JSON.parse(this.response);
+                xhr.onload = function () { // Määra onload otse siia
+                    if (xhr.status === 200) { // Vaid siis, kui üleslaadimine on edukas
+                        if (xhr.response) {
+                            const response = JSON.parse(xhr.response);
                             response.started = true;
                             response.complete = true;
 
@@ -659,33 +664,33 @@
 
                             if (response.hasOwnProperty("filename")) {
                                 let output = {
-                                    "check": response.check,
-                                    "msg": response.msg,
                                     "filename": response.filename,
                                     "error": response.error,
                                 };
 
-                                if (response.check === "false" && response.msg !== null) {
-                                    text_error.innerText = response.msg;
+                                if (response.error) {
+                                    text_error.innerText = response.error;
                                 }
 
-                                if (response.check === "true") {
-                                    text_error.innerText = response.msg/* ? response.msg : ''*/;
+                                if (response.error) {
+                                    text_error.innerText = response.error;
                                     ready.classList.add("hidden");
                                     error_bubble.classList.remove("hidden");
-                                    checkedFiles.push(output);
+                                    interruptedFiles++;
                                 }
 
                                 uploadedFiles.push(output);
                                 storedQueue.shift(output);
                                 i.complete = true;
                                 checkQueue();
-
-                                uploadResponses(storedFiles, uploadedFiles, interruptedFiles, checkedFiles);
                             }
+
+                            uploadResponses(storedFiles, uploadedFiles, interruptedFiles);
                         }
+                    } else {
+                        console.error('Upload failed with status:', xhr.status);
                     }
-                }
+                };
             });
         }
 
@@ -707,20 +712,24 @@
                 error_bubble.classList.remove("hidden");
                 interruptedFiles++;
             });
+
+            uploadResponses(storedFiles, uploadedFiles, interruptedFiles);
         }
 
         //////////////////////////////////////////
 
-        function uploadResponses(s, u, i, c) {
-            if (s.length === u.length && i === 0 && c.length === 0) {
-                show_alert(languages[options.language].file_transfer_completed_successfully_Lbl, "success");
-                fileupload_donebar.classList.remove("hidden");
-            } else if ((s.length === u.length + i) && u.length === c.length) {
-                show_alert(languages[options.language].file_transfer_failed_completely_Lbl, "warning");
-                fileupload_donebar.classList.remove("hidden");
-            } else if ((s.length === u.length + i) && (u.length !== c.length)) {
-                show_alert(languages[options.language].file_transfer_failed_partially_Lbl, "warning");
-                fileupload_donebar.classList.remove("hidden");
+        function uploadResponses(s, u, i) {
+            if (s.length === u.length) {
+                if ((s.length === u.length) && i === 0) {
+                    show_alert(languages[options.language].file_transfer_completed_successfully_Lbl, "success");
+                    fileupload_donebar.classList.remove("hidden");
+                } else if (u.length === u.length && u.length === i) {
+                    show_alert(languages[options.language].file_transfer_failed_completely_Lbl, "danger");
+                    fileupload_donebar.classList.remove("hidden");
+                } else if ((s.length === u.length) && u.length !== i) {
+                    show_alert(languages[options.language].file_transfer_failed_partially_Lbl, "warning");
+                    fileupload_donebar.classList.remove("hidden");
+                }
             }
         }
 
@@ -967,15 +976,14 @@
             input.removeAttribute('disabled');
             all_start.removeAttribute('disabled');
             all_cancel.removeAttribute('disabled');
-            fileupload_donebar.classList.add("hidden");
             back.classList.remove("disabled");
             back.removeAttribute("disabled");
+            scroll_wrapper.classList.remove("hidden");
 
             while (storedFiles.length > 0) {
                 storedFiles.pop();
                 storedQueue.pop();
                 uploadedFiles.pop();
-                checkedFiles.pop();
             }
         }
 
@@ -1021,8 +1029,8 @@
         }
 
         function readableBytes(bytes) {
-            const i = Math.floor(Math.log(bytes) / Math.log(1024)),
-                sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
             return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
         }
 

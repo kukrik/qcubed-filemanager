@@ -50,11 +50,11 @@
                 <div class="form-body">
                     <div class="row"> <!-- BREADCRUMBS-->
                         <div class="col-md-9">
-                            <div class="break-word">
-                                <div class="head">
+                            <div class="head">
+                                <div class="break-word">
                                     <?= _r($this->lblSearch); ?>
                                     <?= _r($this->objHomeLink); ?>
-                                </div>&nbsp;
+                                </div>&nbsp;&nbsp;&nbsp;
                                 <div class="breadcrumbs"></div>
                             </div>
                         </div>
@@ -62,10 +62,13 @@
                     </div>
                     <div class="row equal">
                         <div class="col-md-9">
-                            <div id="alert-wrapper"></div>
-                            <div class="alert-multi-wrapper"></div>
-                            <div class="dialog-upload-wrapper hidden">
+                            <div class="upload-wrapper hidden">
+                                <div id="alert-wrapper"></div>
+                                <div class="alert-multi-wrapper"></div>
                                 <?= _r($this->objUpload); ?>
+                                <div class="fileupload-donebar hidden">
+                                    <?= _r($this->btnDone); ?>
+                                </div>
                             </div>
                             <div class="dialog-wrapper"> <!-- This element is required for the scrollpad control -->
                                 <div class="control-scrollpad">
@@ -77,9 +80,6 @@
                             <div class="file-info active-buttons">
                                 <?= _r($this->objInfo); ?>
                                 <div class="file-info-buttons">
-                                    <div class="form-group">
-                                        <?= _r($this->lstSize); ?>
-                                    </div>
                                     <div class="form-group" style="padding-top: 15px;">
                                         <?= _r($this->btnInsert); ?>
                                         <?= _r($this->btnCancel); ?>

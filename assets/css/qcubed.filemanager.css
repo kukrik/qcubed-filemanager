@@ -60,6 +60,27 @@ body, html {
     padding: 15px;
     background-color: #dedede;
 }
+.vauu-title-3 {
+    padding: 0;
+    font-size: 18px;
+    letter-spacing: -1px;
+    display: inline-block;
+    color: #000;
+    margin: 0;
+    font-weight: 600 !important;
+    font-family: 'Open Sans', sans-serif;
+}
+.form-actions {
+    padding: 20px 10px;
+    margin-top: 20px;
+    margin-left: -5px;
+    margin-right: -5px;
+    background-color: #f5f5f5;
+    /*border: 1px solid #e5e5e5;*/
+    border-radius: 4px;
+    *zoom: 1;
+}
+
 .form-body {
     padding: 15px;
     margin-right: auto;
@@ -132,6 +153,8 @@ a:focus, a:hover, a:active {
 .breadcrumbs {
     display: block;
     float: left;
+    padding-top: 2px;
+    padding-left: 4px;
     color: #405261;
     font-size: 14px;
 }

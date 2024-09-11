@@ -1,7 +1,7 @@
 <?php
-require_once('qcubed.inc.php');
-require_once ('../src/FileInfo.php');
-require_once ('../src/DestinationInfo.class.php');
+require_once('../../../../qcubed.inc.php');
+require_once ('FileInfo.php');
+require_once ('DestinationInfo.class.php');
 
 error_reporting(E_ALL); // Error engine - always ON!
 ini_set('display_errors', TRUE); // Error display - OFF in production env or real server
@@ -82,6 +82,7 @@ class SampleForm extends Form
     protected $btnAllStart;
     protected $btnAllCancel;
     protected $btnBack;
+    protected $btnDone;
 
     protected $btnUploadStart;
     protected $btnAddFolder;
@@ -294,6 +295,12 @@ class SampleForm extends Form
         $this->btnBack->UseWrapper = false;
         $this->btnBack->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnBack_Click'));
         $this->btnBack->addAction(new Q\Event\Click(), new Q\Action\Ajax('dataClearing_Click'));
+
+        $this->btnDone = new Bs\Button($this);
+        $this->btnDone->Text = t('Done');
+        $this->btnDone->CssClass = 'btn btn-success pull-right done';
+        $this->btnDone->UseWrapper = false;
+        $this->btnDone->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnDone_Click'));
 
         $this->btnUploadStart = new Q\Plugin\Button($this);
         $this->btnUploadStart->Text = t(' Upload');
@@ -1024,15 +1031,18 @@ class SampleForm extends Form
     {
         $script = "
             $('.fileupload-buttonbar').removeClass('hidden');
-            $('.dialog-upload-wrapper').removeClass('hidden');
+            $('.upload-wrapper').removeClass('hidden');
+            $('.fileupload-donebar').addClass('hidden');
             $('body').removeClass('no-scroll');
+            $('.head').addClass('hidden');
             $('.files-heading').addClass('hidden');
-            $('.dialog-wrapper').addClass('hidden');
+            $('.scroll-wrapper').addClass('hidden');
+            $('.alert').remove();
         ";
 
         Application::executeJavaScript($script);
 
-        $this->dlgModal5->hideDialogBox(); // Palun kontrolli, kas sihtkoht on õige!
+        $this->dlgModal5->hideDialogBox(); // Please check if the destination is correct!
     }
 
     public function confirmParent_Click(ActionParams $params)
@@ -1057,14 +1067,33 @@ class SampleForm extends Form
     {
         $script = "
             $('.fileupload-buttonbar').addClass('hidden');
-            $('.dialog-upload-wrapper').addClass('hidden');
+            $('.upload-wrapper').addClass('hidden');
             $('body').addClass('no-scroll');
+            $('.head').removeClass('hidden');
             $('.files-heading').removeClass('hidden');
-            $('.dialog-wrapper').removeClass('hidden');
+            $('.scroll-wrapper').removeClass('hidden');
             $('.alert').remove();
         ";
 
         Application::executeJavaScript($script);
+
+        $this->objManager->refresh();
+    }
+
+    protected function btnDone_Click(ActionParams $params)
+    {
+        unset($_SESSION['folderId']);
+        unset($_SESSION['filePath']);
+
+        Application::executeJavaScript("
+            $('.fileupload-buttonbar').addClass('hidden');
+            $('.upload-wrapper').addClass('hidden');
+            $('body').addClass('no-scroll');
+            $('.head').removeClass('hidden');
+            $('.files-heading').removeClass('hidden');
+            $('.scroll-wrapper').removeClass('hidden');
+            $('.alert').remove();
+        ");
 
         $this->objManager->refresh();
     }
@@ -1971,7 +2000,7 @@ class SampleForm extends Form
                     }
 
                     // Here have to check whether the files are locked
-                    if ($objFile->getLockedFile() == 1) {
+                    if ($objFile->getLockedFile() > 0) {
                         $this->objLockedFiles++;
                     }
                 }
