@@ -1,6 +1,7 @@
 <?php
 
 require_once('../qcubed.inc.php');
+require_once ('../../src/FileHandler.php');
 
 use QCubed\Plugin\FileHandler;
 use QCubed\Project\Application;
@@ -12,7 +13,7 @@ $options = array(
     //'TempFolders' =>  ['thumbnail', 'medium', 'large'], // Please read the UploadHandler description and manual
     //'ResizeDimensions' => [320, 480, 1500], // Please read the UploadHandler description and manual
     //'DestinationPath' => null, // Please read the UploadHandler description and manual
-    //'AcceptFileTypes' => ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'ppt', 'docx', 'xlsx', 'txt', 'mp4'], // Default null
+    'AcceptFileTypes' => ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'ppt', 'docx', 'xlsx', 'txt', 'mp4', 'mov'], // Default null
     'DestinationPath' => !empty($_SESSION["filePath"]) ? $_SESSION["filePath"] : null, // Default null
     //'MaxFileSize' => 1024 * 1024 * 2 // 2 MB // Default null
     //'UploadExists' => 'overwrite', // increment || overwrite Default 'increment'

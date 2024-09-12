@@ -112,8 +112,6 @@ class SampleForm4 extends Form
 
         $objFiles = Files::loadById($objExample->getPictureId());
 
-        Application::displayAlert(json_encode($objFiles));
-
         if ($objFiles->getLockedFile() !== 0) {
             $objFiles->setLockedFile($objFiles->getLockedFile() - 1);
             $objFiles->save();

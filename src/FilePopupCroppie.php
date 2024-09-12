@@ -54,6 +54,8 @@ class FilePopupCroppie extends FilePopupCroppieGen
     protected $strCancelClass = 'btn-default';
     /** @var string */
     protected $strCancelText = 'Cancel';
+    /** @var string */
+    protected $strFinalPath = null;
 
     /**
      * @param $objParentObject

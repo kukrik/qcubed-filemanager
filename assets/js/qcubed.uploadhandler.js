@@ -108,7 +108,7 @@
                 remove_invalid_inputs_maxFileSize_Lbl: 'Максимально допустимый размер для каждого файла составляет до %s',
                 remove_invalid_inputs_minFileSize_Lbl: 'Каждый файл должен превышать минимальный размер %s'
             }
-        };
+        }
 
         // The default language is English (en) unless another language is selected
         options.language = options.language ? options.language : 'en';
@@ -690,8 +690,8 @@
                     } else {
                         console.error('Upload failed with status:', xhr.status);
                     }
-                };
-            });
+                }
+            })
         }
 
         // xhr error handler
@@ -979,6 +979,7 @@
             back.classList.remove("disabled");
             back.removeAttribute("disabled");
             scroll_wrapper.classList.remove("hidden");
+            dialog_wrapper.classList.remove("hidden");
 
             while (storedFiles.length > 0) {
                 storedFiles.pop();

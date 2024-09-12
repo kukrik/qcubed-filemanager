@@ -91,6 +91,7 @@ class FileHandler
     // https://www.php.net/manual/en/features.file-upload.errors.php
     protected $uploadErrors;
     protected $index;
+    protected $chunk;
     protected $count;
     protected $counter = 0;
 
@@ -182,6 +183,7 @@ class FileHandler
 
         $chunkEnabled = isset($_REQUEST['chunkEnabled']) ? $_REQUEST['chunkEnabled'] : "false";
         $this->index = isset($_REQUEST['index']) ? intval($_REQUEST['index']) : 0;
+        $this->chunk = isset($_REQUEST['chunk']) ? intval($_REQUEST['chunk']) : 0;
         $this->count = isset($_REQUEST['count']) ? intval($_REQUEST['count']) : 0;
 
         $this->options['FileName'] = $this->options['RootPath'] . '/' . $_FILES["files"]["name"];
@@ -310,7 +312,7 @@ class FileHandler
         $chunkFile = $this->options['ChunkPath'] . '/' . basename($file);
 
         // Move the file to a temporary location
-        if (!move_uploaded_file($uploadedFile, $chunkFile . '.part' . $this->index)) {
+        if (!move_uploaded_file($uploadedFile, $chunkFile . '.part' . $this->chunk)) {
             $this->handleError($this->getErrorMessage('failed_to_move_uploaded_file'), $file);
             return;
         }
@@ -319,10 +321,11 @@ class FileHandler
 
         $filePath = $chunkFile . '.part*';
         $fileParts = glob($filePath);
+        sort($fileParts, SORT_NATURAL);
         $_SESSION['parts'] = $fileParts; // We keep the parts in the session
 
         // Merge chunks
-        $finalFile = fopen($chunkFile, 'w');
+        $finalFile = fopen($chunkFile, 'wb');
 
         foreach ($fileParts as $filePart) {
             $chunk = file_get_contents($filePart);

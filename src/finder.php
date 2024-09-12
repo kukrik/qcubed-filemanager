@@ -70,6 +70,7 @@ class SampleForm extends Form
     protected $dlgModal42;
     protected $dlgModal43;
     protected $dlgModal44;
+    protected $dlgModal45;
 
     protected $objUpload;
     protected $objManager;
@@ -180,8 +181,8 @@ class SampleForm extends Form
         $this->objManager->UseWrapper = false;
         $this->objManager->addAction(new SelectableStop(), new Ajax ('selectable_stop'));
 
-        $this->dlgPopup = new Q\Plugin\PopupCroppie($this);
-        $this->dlgPopup->Url = "php/crop_upload.php";
+        $this->dlgPopup = new Q\Plugin\FilePopupCroppie($this);
+        $this->dlgPopup->Url = "../examples/php/crop_upload.php";
         $this->dlgPopup->Language = "et";
         $this->dlgPopup->TranslatePlaceholder = t("- Select a destination -");
         $this->dlgPopup->Theme = "web-vauu";
@@ -716,6 +717,12 @@ class SampleForm extends Form
         $this->dlgModal44->HeaderClasses = 'btn-danger';
         $this->dlgModal44->addCloseButton(t("I understand"));
 
+        $this->dlgModal45 = new Bs\Modal($this);
+        $this->dlgModal45->Text = t('<p style="margin-top: 15px;">The image is invalid for cropping!</p>
+                                    <p style="margin-top: 15px;">It is recommended to delete this image and upload it again!</p>');
+        $this->dlgModal45->Title = t("Warning");
+        $this->dlgModal45->HeaderClasses = 'btn-danger';
+        $this->dlgModal45->addCloseButton(t("I understand"));
     }
 
     public function portedCheckDestination()
@@ -1540,6 +1547,9 @@ class SampleForm extends Form
     {
         clearstatcache();
 
+        $this->strDataPath = $this->arrSomeArray[0]["data-path"];
+        $fullFilePath = $this->objManager->RootUrl . $this->strDataPath;
+
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
             $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
@@ -1561,9 +1571,11 @@ class SampleForm extends Form
             return;
         }
 
-        $this->strDataPath = $this->arrSomeArray[0]["data-path"];
-        //$this->dlgPopup->SelectedImage = $this->objManager->TempUrl  . "/_files/large" .  $this->strDataPath;
-        $this->dlgPopup->SelectedImage = $this->objManager->RootUrl .  $this->strDataPath;
+        // Check if the file exists and its size is 0 bytes
+        if (file_exists($fullFilePath) && filesize($fullFilePath) === 0) {
+            $this->dlgModal45->showDialogBox(); // The image is invalid for cropping! It is recommended to delete this image and upload it again!
+            return;
+        }
 
         $scanFolders = $this->scanForSelect();
         $folderData = [];
@@ -1582,7 +1594,10 @@ class SampleForm extends Form
                 ];
             }
         }
+
         $this->dlgPopup->showDialogBox();
+
+        $this->dlgPopup->SelectedImage = $fullFilePath;
         $this->dlgPopup->Data = $folderData;
     }
 
