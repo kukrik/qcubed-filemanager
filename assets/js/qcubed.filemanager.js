@@ -573,12 +573,15 @@
                         div.classList.add("locked");
                     }
                 }
-
                 const previewDiv = document.createElement("div");
                 previewDiv.className = "preview";
                 if (allowedExt.includes(extension)) {
                     const img = document.createElement("img");
-                    img.src = options.tempUrl + '/_files/thumbnail' + e.path;
+                    if (extension !== 'svg') {
+                        img.src = options.tempUrl + '/_files/thumbnail' + e.path;
+                    } else {
+                        img.src = options.rootUrl + e.path;
+                    }
                     img.alt = e.name;
                     previewDiv.appendChild(img);
                 } else {
@@ -603,7 +606,7 @@
                 status_y.style = "color:#e6a91a";
                 const dimensions = document.createElement("span");
                 dimensions.className = "dimensions";
-                if (allowedExt.includes(extension)) {
+                if (allowedExt.includes(extension) && extension !== 'svg') {
                     dimensions.innerText = e.dimensions;
                 } else {
                     dimensions.innerText = String.fromCharCode(160);
@@ -639,7 +642,7 @@
 
         function appendToList(e)
         {
-            const allowedExt = ['jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif'];
+            const allowedExt = ['jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif', 'svg'];
             const extension = e.name.split('.').pop().toLowerCase();
 
             if (e.type === "dir") {
@@ -755,7 +758,8 @@
                 status_y.style = "color:#e6a91a";
                 const dimensions = document.createElement("span");
                 dimensions.className = "dimensions";
-                if (allowedExt.includes(extension)) {
+
+                if (allowedExt.includes(extension) && extension !== 'svg') {
                     dimensions.innerText = e.dimensions;
                 } else {
                     dimensions.innerText = String.fromCharCode(160);
@@ -877,7 +881,11 @@
                 preview.className = "preview";
                 if (allowedExt.includes(extension)) {
                     const img = document.createElement("img");
-                    img.src = options.tempUrl + '/_files/thumbnail' + e.path;
+                    if (extension !== 'svg') {
+                        img.src = options.tempUrl + '/_files/thumbnail' + e.path;
+                    } else {
+                        img.src = options.rootUrl + e.path;
+                    }
                     img.alt = e.name;
                     preview.appendChild(img);
                 } else {
@@ -923,6 +931,7 @@
                 }
             }
         }
+
         /////////////////////////////////////////
 
         function fileHandler()
@@ -1029,6 +1038,7 @@
                 case 'jpc':
                 case 'png':
                 case 'bmp':
+                case 'svg':
                     icon = '<svg class="svg-file svg-image files-svg" viewBox="0 0 56 56"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><g class="svg-file-icon"><circle cx="18.931" cy="14.431" r="4.569" style="fill:#f3d55b"></circle><polygon points="6.5,39 17.5,39 49.5,39 49.5,28 39.5,18.5 29,30 23.517,24.517" style="fill:#88c057"></polygon></g><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext" x="28" y="51.5">' + ext + '</text></svg>';
                     break;
                 case 'pdf':
@@ -1097,6 +1107,7 @@
                 case 'jpc':
                 case 'png':
                 case 'bmp':
+                case 'svg':
                     icon = '<svg viewBox="0 0 24 24" class="svg-icon svg-image"><path class="svg-path-image" d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"</path></svg>';
                     break;
                 case 'pdf':
