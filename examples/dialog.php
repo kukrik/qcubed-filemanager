@@ -1,7 +1,7 @@
 <?php
-require_once('../../../../qcubed.inc.php');
-require_once ('FileInfo.php');
-require_once ('DestinationInfo.class.php');
+require_once('qcubed.inc.php');
+require_once ('../src/FileInfo.php');
+require_once ('../src/DestinationInfo.class.php');
 
 error_reporting(E_ALL); // Error engine - always ON!
 ini_set('display_errors', TRUE); // Error display - OFF in production env or real server
@@ -18,8 +18,8 @@ use QCubed\Project\Control\ControlBase;
 use QCubed\Project\Control\FormBase as Form;
 use QCubed\Action\ActionParams;
 use QCubed\Project\Application;
-use QCubed\Js;
 use QCubed\Html;
+use QCubed\QString;
 use QCubed\Query\QQ;
 use QCubed\Action\Ajax;
 use QCubed\Jqui\Event\SelectableStop;
@@ -71,6 +71,7 @@ class SampleForm extends Form
     protected $dlgModal43;
     protected $dlgModal44;
     protected $dlgModal45;
+    protected $dlgModal46;
 
     protected $objUpload;
     protected $objManager;
@@ -100,6 +101,7 @@ class SampleForm extends Form
 
     protected $btnInsert;
     protected $btnCancel;
+    protected $lstSize;
 
     protected $txtAddFolder;
     protected $lblError;
@@ -163,7 +165,7 @@ class SampleForm extends Form
         //$this->objUpload->ChunkUpload = false; // Default true
         $this->objUpload->MaxChunkSize = 1024 * 1024; // 10 MB // Default 5 MB
         //$this->objUpload->LimitConcurrentUploads = 5; // Default 2
-        $this->objUpload->Url = 'php/'; // Default null
+        $this->objUpload->Url = 'php/upload.php'; // Default 'php/upload.php'
         //$this->objUpload->PreviewMaxWidth = 120; // Default 80
         //$this->objUpload->PreviewMaxHeight = 120; // Default 80
         //$this->objUpload->WithCredentials = true; // Default false
@@ -176,13 +178,11 @@ class SampleForm extends Form
         $this->objManager->TempPath = APP_UPLOADS_TEMP_DIR;
         $this->objManager->TempUrl = APP_UPLOADS_TEMP_URL;
         $this->objManager->DateTimeFormat = 'DD.MM.YYYY HH:mm:ss';
-        $this->objManager->LockedDocuments = true;
-        //$this->objManager->LockedImages = true;
         $this->objManager->UseWrapper = false;
         $this->objManager->addAction(new SelectableStop(), new Ajax ('selectable_stop'));
 
         $this->dlgPopup = new Q\Plugin\FilePopupCroppie($this);
-        $this->dlgPopup->Url = "../examples/php/crop_upload.php";
+        $this->dlgPopup->Url = "php/crop_upload.php";
         $this->dlgPopup->Language = "et";
         $this->dlgPopup->TranslatePlaceholder = t("- Select a destination -");
         $this->dlgPopup->Theme = "web-vauu";
@@ -212,7 +212,7 @@ class SampleForm extends Form
         $this->objHomeLink->addCssClass('homelink');
         $this->objHomeLink->setCssStyle('font-weight', 600);
         $this->objHomeLink->setCssStyle('font-size', '14px;');
-        $this->objHomeLink->Text = Q\Html::renderLink("finder.php#/", "Repository", ["data-lang" => "repository"]);
+        $this->objHomeLink->Text = Q\Html::renderLink("dialog.php#/", "Repository", ["data-lang" => "repository"]);
         $this->objHomeLink->HtmlEntities = false;
         $this->objHomeLink->addAction(new Q\Event\Click(), new Q\Action\Ajax('appendData_Click'));
 
@@ -236,33 +236,32 @@ class SampleForm extends Form
         // Here comes a small check that when you select a file, the "Insert" button becomes active or not.
         Application::executeJavaScript("
             const insert = document.querySelector('.insert');
-            const allowedExtensions = ['jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif'];
-
-            if ('{$this->arrSomeArray[0]["data-item-type"]}' === 'dir') {
-                insert.setAttribute('disabled', 'disabled');
-            } else {
-                insert.removeAttribute('disabled', 'disabled');
+            const size = document.querySelector('.size');
+            const radios = document.querySelectorAll('[type=radio]');
+        
+            // Check if the first radio input is checked
+            if (radios[0].checked == false) {
+                // Assign the checked status to the second radio input
+                 radios[0].checked = true;
             }
             
-            if ('{$this->objManager->LockedImages}') {
-                if ('{$this->arrSomeArray[0]["data-item-type"]}' === 'file') {
-                    if (allowedExtensions.includes('{$this->arrSomeArray[0]["data-extension"]}')) {
-                        insert.setAttribute('disabled', 'disabled');
-                    } else {
-                        insert.removeAttribute('disabled', 'disabled');
-                    } 
-                }
-           } 
-            
-           if ('{$this->objManager->LockedDocuments}') {
-                if ('{$this->arrSomeArray[0]["data-item-type"]}' === 'file') {
-                    if (!allowedExtensions.includes('{$this->arrSomeArray[0]["data-extension"]}')) {
-                        insert.setAttribute('disabled', 'disabled');
-                    } else {
-                        insert.removeAttribute('disabled', 'disabled');
-                    }
-                }
-           } 
+            if ('{$this->arrSomeArray[0]["data-item-type"]}' === 'file' ) {
+                insert.removeAttribute('disabled', 'disabled');
+            } else {
+                insert.setAttribute('disabled', 'disabled');
+            } 
+
+            if (isFileExtensionAllowed('{$this->arrSomeArray[0]["data-name"]}')) {
+                size.removeAttribute('disabled', 'disabled');
+                radios.forEach(function (radio) {
+                    radio.removeAttribute('disabled', 'disabled');
+                });
+            } else {
+                size.setAttribute('disabled', 'disabled');
+                radios.forEach(function (radio) {
+                    radio.setAttribute('disabled', 'disabled');
+                });
+            }
         ");
 
         return $this->arrSomeArray;
@@ -407,6 +406,14 @@ class SampleForm extends Form
         $this->btnCancel->CausesValidation = false;
         $this->btnCancel->UseWrapper = false;
         $this->btnCancel->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnCancel_Click'));
+
+        $this->lstSize = new Q\Plugin\RadioList($this);
+        $this->lstSize->addItems(['_files/thumbnail' => t('Small'), '_files/medium' => t('Medium'), '_files/large' => t('Large')]);
+        $this->lstSize->SelectedValue = '_files/thumbnail';
+        $this->lstSize->addCssClass('size');
+        $this->lstSize->ButtonGroupClass = 'radio radio-inline radio-orange';
+        $this->lstSize->UseWrapper = false;
+        $this->lstSize->Enabled = false;
     }
 
     public function createModals()
@@ -723,6 +730,15 @@ class SampleForm extends Form
         $this->dlgModal45->Title = t("Warning");
         $this->dlgModal45->HeaderClasses = 'btn-danger';
         $this->dlgModal45->addCloseButton(t("I understand"));
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // CSRF PROTECTION
+
+        $this->dlgModal46 = new Bs\Modal($this);
+        $this->dlgModal46->Text = t('<p style="margin-top: 15px;">CSRF Token is invalid! The request was aborted.</p>');
+        $this->dlgModal46->Title = t("Warning");
+        $this->dlgModal46->HeaderClasses = 'btn-danger';
+        $this->dlgModal46->addCloseButton(t("I understand"));
     }
 
     public function portedCheckDestination()
@@ -1043,7 +1059,7 @@ class SampleForm extends Form
             $('body').removeClass('no-scroll');
             $('.head').addClass('hidden');
             $('.files-heading').addClass('hidden');
-            $('.scroll-wrapper').addClass('hidden');
+            $('.dialog-wrapper').addClass('hidden');
             $('.alert').remove();
         ";
 
@@ -1054,6 +1070,12 @@ class SampleForm extends Form
 
     public function confirmParent_Click(ActionParams $params)
     {
+        if (!Application::verifyCsrfToken()) {
+            $this->dlgModal46->showDialogBox();
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            return;
+        }
+
         $path = $this->objManager->RootPath . $this->strDataPath;
 
         $folderId = isset($_SESSION['folderId']) ? $_SESSION['folderId'] : null;
@@ -1078,7 +1100,7 @@ class SampleForm extends Form
             $('body').addClass('no-scroll');
             $('.head').removeClass('hidden');
             $('.files-heading').removeClass('hidden');
-            $('.scroll-wrapper').removeClass('hidden');
+            $('.sdialog-wrapper').removeClass('hidden');
             $('.alert').remove();
         ";
 
@@ -1098,7 +1120,7 @@ class SampleForm extends Form
             $('body').addClass('no-scroll');
             $('.head').removeClass('hidden');
             $('.files-heading').removeClass('hidden');
-            $('.scroll-wrapper').removeClass('hidden');
+            $('.dialog-wrapper').removeClass('hidden');
             $('.alert').remove();
         ");
 
@@ -1149,6 +1171,12 @@ class SampleForm extends Form
 
     public function startAddFolderProcess_Click(ActionParams $params)
     {
+        if (!Application::verifyCsrfToken()) {
+            $this->dlgModal46->showDialogBox();
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            return;
+        }
+
         $_SESSION['fileId'] = $this->intDataId;
         $_SESSION['filePath'] = $this->strDataPath;
 
@@ -1181,6 +1209,12 @@ class SampleForm extends Form
 
     public function addFolderName_Click(ActionParams $params)
     {
+        if (!Application::verifyCsrfToken()) {
+            $this->dlgModal46->showDialogBox();
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            return;
+        }
+
         $path = $this->objManager->RootPath . $_SESSION['filePath'];
         $scanned_directory = array_diff(scandir($path), array('..', '.'));
 
@@ -1222,7 +1256,7 @@ class SampleForm extends Form
     {
         clearstatcache();
 
-        $fullPath = $path . "/" . trim($text);
+        $fullPath = $path . "/" . trim(QString::sanitizeForUrl($text));
         $relativePath = $this->objManager->getRelativePath($fullPath);
 
         Folder::makeDirectory($fullPath, 0777);
@@ -1274,7 +1308,7 @@ class SampleForm extends Form
         clearstatcache();
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Rikutud tabel "folders" andmebaasis  või kausta "upload" failisüsteem! ...
+            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
         }
 
@@ -1296,11 +1330,13 @@ class SampleForm extends Form
         }
 
         $this->intDataId = $this->arrSomeArray[0]["data-id"];
+        $this->strDataName = $this->arrSomeArray[0]["data-name"];
         $this->strDataPath = $this->arrSomeArray[0]["data-path"];
         $this->strDataType = $this->arrSomeArray[0]["data-item-type"];
         $this->intDataLocked = $this->arrSomeArray[0]["data-locked"];
 
-        $this->txtRename->Text = pathinfo($this->objManager->RootPath . $this->strDataPath, PATHINFO_FILENAME);
+        $this->txtRename->Text = $this->strDataName;
+
         $this->dlgModal15->showDialogBox();
 
         if ($this->txtRename->Text == "upload") {
@@ -1346,6 +1382,12 @@ class SampleForm extends Form
 
     public function renameName_Click(ActionParams $params)
     {
+        if (!Application::verifyCsrfToken()) {
+            $this->dlgModal46->showDialogBox();
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            return;
+        }
+
         $path = $this->objManager->RootPath . $this->strDataPath;
 
         // Check conditions preventing renaming
@@ -1395,14 +1437,24 @@ class SampleForm extends Form
 
         $path = $this->objManager->RootPath . $this->strDataPath;
         $parts = pathinfo($path);
+        $sanitizedName = QString::sanitizeForUrl(trim($this->txtRename->Text));
+        $this->strNewPath = $parts['dirname'] . '/' . $sanitizedName;
+
         $objFolders = Folders::loadAll();
         $objFiles = Files::loadAll();
 
         // If the folder does not contain subfolders and files, renaming the folder is easy. If this folder contains
         // subfolders and files, all names and paths in descending order must be renamed according to the same logic
-        if ($this->intDataLocked === 0) {
+        if ($this->intDataLocked == 0) {
+            // If there are no subfolders or files in a folder, renaming is easy.
             if (is_dir($path)) {
-                $this->strNewPath = $parts['dirname'] . '/' . trim($this->txtRename->Text);
+                // We will immediately update the database accordingly.
+                $objFolder = Folders::loadById($this->intDataId);
+                $objFolder->Name = trim($this->txtRename->Text);
+                $objFolder->Path = $this->objManager->getRelativePath($this->strNewPath);
+                $objFolder->Mtime = time();
+                $objFolder->save();
+
                 $this->objManager->rename($path, $this->strNewPath);
             }
 
@@ -1413,23 +1465,23 @@ class SampleForm extends Form
                 }
             }
 
-            $objFolder = Folders::loadById($this->intDataId);
-            $objFolder->Name = basename($this->strNewPath);
-            $objFolder->Path = $this->objManager->getRelativePath($this->strNewPath);
-            $objFolder->Mtime = time();
-            $objFolder->save();
-
             $this->handleResult();
-
         } else {
-
+            // If there are subfolders and files in the folder, they must also be renamed.
             $this->tempItems = $this->fullScanIds($this->intDataId);
             $arrUpdatehash = [];
+
+            if ($this->intDataId) {
+                $obj = Folders::loadById($this->intDataId);
+                $obj->Name = trim($this->txtRename->Text);
+                $obj->Mtime = time();
+                $obj->save();
+            }
 
             foreach ($objFolders as $objFolder) {
                 foreach ($this->tempItems as $temp) {
                     if ($temp == $objFolder->getId()) {
-                        $newPath = str_replace(basename($this->strDataPath), trim($this->txtRename->Text), $objFolder->Path);
+                        $newPath = str_replace(basename($this->strDataPath), $sanitizedName, $objFolder->Path);
                         $this->strNewPath = $this->objManager->RootPath . $newPath;
 
                         $arrUpdatehash[] = $newPath;
@@ -1447,7 +1499,6 @@ class SampleForm extends Form
 
                         if ($this->intDataLocked !== 0) {
                             $obj = Folders::loadById($objFolder->getId());
-                            $obj->Name = basename($this->strNewPath);
                             $obj->Path = $this->objManager->getRelativePath($this->strNewPath);
                             $obj->Mtime = time();
                             $obj->save();
@@ -1460,7 +1511,7 @@ class SampleForm extends Form
             foreach ($objFiles as $objFile) {
                 foreach ($this->tempItems as $temp) {
                     if ($temp == $objFile->getFolderId()) {
-                        $newPath = str_replace(basename($this->strDataPath), trim($this->txtRename->Text), $objFile->Path);
+                        $newPath = str_replace(basename($this->strDataPath), $sanitizedName, $objFile->Path);
                         $this->strNewPath = $this->objManager->RootPath . $newPath;
 
                         if (is_file($this->objManager->RootPath . $objFile->getPath())) {
@@ -1545,6 +1596,12 @@ class SampleForm extends Form
 
     public function btnCrop_Click(ActionParams $params)
     {
+        if (!Application::verifyCsrfToken()) {
+            $this->dlgModal46->showDialogBox();
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            return;
+        }
+
         clearstatcache();
 
         $this->strDataPath = $this->arrSomeArray[0]["data-path"];
@@ -1617,6 +1674,12 @@ class SampleForm extends Form
 
     public function btnCopy_Click(ActionParams $params)
     {
+        if (!Application::verifyCsrfToken()) {
+            $this->dlgModal46->showDialogBox();
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            return;
+        }
+
         $objFolders = Folders::loadAll();
         $objFiles = Files::loadAll();
 
@@ -1877,6 +1940,12 @@ class SampleForm extends Form
 
     public function btnDelete_Click(ActionParams $params)
     {
+        if (!Application::verifyCsrfToken()) {
+            $this->dlgModal46->showDialogBox();
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            return;
+        }
+
         clearstatcache();
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
@@ -2101,6 +2170,12 @@ class SampleForm extends Form
 
     public function btnMove_Click(ActionParams $params)
     {
+        if (!Application::verifyCsrfToken()) {
+            $this->dlgModal46->showDialogBox();
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            return;
+        }
+
         $objFolders = Folders::loadAll();
         $objFiles = Files::loadAll();
 
@@ -2847,29 +2922,50 @@ class SampleForm extends Form
         if ($this->arrSomeArray[0]["data-activities-locked"] == 1) {
             $this->dlgModal35->showDialogBox(); // Sorry, be cannot insert into a reserved file! ...
         } else {
+            $fileId = $fullPath = $this->arrSomeArray[0]["data-id"];
 
-            $fileId = $this->arrSomeArray[0]["data-id"];
+            $fullPath = $this->objManager->RootPath . $this->arrSomeArray[0]["data-path"];
+            $file = $this->objInfo->RootUrl . $this->arrSomeArray[0]["data-path"];
+            $ext = pathinfo($fullPath, PATHINFO_EXTENSION);
 
-            if ($this->arrSomeArray[0]["data-id"]) {
-                $objFiles = Files::loadById($this->arrSomeArray[0]["data-id"]);
-                $objFiles->setLockedFile($objFiles->getLockedFile() + 1);
-                $objFiles->save();
-
-                $this->objManager->refresh();
+            if (in_array(strtolower($ext), $this->arrAllowed)) {
+                $fileUrl = $this->objInfo->TempUrl . "/" . $this->lstSize->SelectedValue . $this->arrSomeArray[0]["data-path"];
+            } else {
+                $fileUrl = $file;
             }
 
-            $params = [
-                "id" => $this->arrSomeArray[0]["data-id"],
-                "name" => $this->arrSomeArray[0]["data-name"],
-                "path" => $this->arrSomeArray[0]["data-path"]
-            ];
-            $data = json_encode($params);
+            // The code provided below is taken from this link:
+            // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_file_browser_api.html
 
-            // Simulate user action of selecting a file to be returned to MediaFinder.
+            // Simulate user action of selecting a file to be returned to CKEditor.
             Application::executeJavaScript("
-            window.parent.opener.getDataParams('$data');
-            window.close();
-        ");
+                var funcNum = getUrlParam('CKEditorFuncNum');
+                var fileUrl = '{$fileUrl}';
+                window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl, function() {
+                    // Get the reference to a dialog window.
+                    var dialog = this.getDialog();
+                
+                    // Check if this is the Image Properties dialog window.
+                    if (dialog.getName() == 'image') {
+                    // Get the reference to a text field that stores the 'id' attribute.
+                        var element = dialog.getContentElement('advanced', 'linkId');
+                        // Assign the new value.
+                        if (element) 
+                            element.setValue('{$fileId}');
+                    } else {
+                        // Check if this is the Link Properties dialog window.
+                        if (dialog.getName() == 'link') {
+                            // Get the reference to a text field that stores the 'id' attribute.
+                            var element = dialog.getContentElement('advanced', 'advId');
+                            // Assign the new value.
+                            if (element)
+                                element.setValue('{$fileId}');
+                            }
+                    }
+                });
+                
+                window.close();
+            ");
         }
     }
 
@@ -2877,6 +2973,7 @@ class SampleForm extends Form
     {
         Application::executeJavaScript("window.close();");
     }
+
 }
 
 SampleForm::run('SampleForm');

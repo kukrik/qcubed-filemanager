@@ -8,8 +8,8 @@
 		ckConfig = {
 			skin: 'moono',
             extraPlugins: 'colorbutton,font,justify,print,tableresize,pastefromword,liststyle',
-            filebrowserImageBrowseUrl: dialogPath + '/src/dialog.php',
-            filebrowserBrowseUrl: dialogPath + '/src/dialog.php',
+            filebrowserImageBrowseUrl: dialogPath + '/examples/dialog.php',
+            filebrowserBrowseUrl: dialogPath + '/examples/dialog.php',
             filebrowserWindowWidth: '95%',
             filebrowserWindowHeight: '95%',
 			//language: 'en',

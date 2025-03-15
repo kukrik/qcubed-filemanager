@@ -22,7 +22,7 @@ class CustomCroppieHandler extends CroppieHandler
             $obj->setFolderId($this->options['FolderId']);
             $obj->setName(basename($this->options['OriginalImageName']));
             $obj->setType('file');
-            $obj->setPath($this->getRelativePath($this->options['OriginalImageName']));
+            $obj->setPath($this->getRelativePath($this->replaceDoubleSlashWithSlash($this->options['OriginalImageName'])));
             $obj->setDescription(null);
             $obj->setExtension($this->getExtension($this->options['OriginalImageName']));
             $obj->setMimeType($this->getMimeType($this->options['OriginalImageName']));

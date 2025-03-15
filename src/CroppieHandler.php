@@ -2,6 +2,8 @@
 
 namespace QCubed\Plugin;
 
+use QCubed\Project\Application;
+
 /**
  * Class CroppieHandler
  *
@@ -87,9 +89,8 @@ class CroppieHandler
             'RootPath' => APP_UPLOADS_DIR,
             'TempPath' => APP_UPLOADS_TEMP_DIR,
             'StoragePath' => '_files',
-            'TempFolders' =>  ['thumbnail', 'medium', 'large'],
+            'TempFolders' => ['thumbnail', 'medium', 'large'],
             'ResizeDimensions' => [320, 480, 1500],
-
 
             'Data' => null,
             'FileName' => null,
@@ -112,11 +113,11 @@ class CroppieHandler
     }
 
     /**
+     * Set HTTP headers to prevent caching.
      * @return void
      */
     protected function header()
     {
-        // Make sure file is not cached (as it happens for example on iOS devices)
         header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
         header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
         header("Cache-Control: no-store, no-cache, must-revalidate");
@@ -125,72 +126,96 @@ class CroppieHandler
         header('Content-Type: application/json');
     }
 
+    /**
+     * Main upload process.
+     */
     public function upload()
     {
-        $json = array();
-
         if (isset($_POST["cropImage"])) {
             $this->options['Data'] = $_POST['cropImage'];
             $this->options['Name'] = $_POST["fileName"];
             $this->options['RelativePath'] = $_POST["relativePath"];
             $this->options['FolderId'] = $_POST["folderId"];
 
+            $path = $_POST["relativePath"];
+
             $associatedParameters = array_combine($this->options['TempFolders'], $this->options['ResizeDimensions']);
 
+            // Decode the base64 image data
             list($type, $this->options['Data']) = explode(';', $this->options['Data']);
             list(, $this->options['Data']) = explode(',', $this->options['Data']);
-
             $this->options['Data'] = base64_decode($this->options['Data']);
 
-            $this->options['OriginalImageName'] = $this->options['RootPath'] .  $this->options['RelativePath'] . '/' .  'crop_' .  $this->options['Name'] . '.png';
+            // Generate the original file name and path
+            $this->options['OriginalImageName'] = $this->options['RootPath'] . $this->options['RelativePath'] . '/' . 'crop_' . $this->options['Name'] . '.png';
 
+            // Handle duplicate file names
             if (file_exists($this->options['OriginalImageName'])) {
                 $inc = 1;
-                while (file_exists($this->options['RootPath'] .  $this->options['RelativePath'] . '/' . 'crop_' .  $this->options['Name'] . '-' . $inc . '.' . 'png')) $inc++;
-                $this->options['OriginalImageName'] = $this->options['RootPath'] .  $this->options['RelativePath'] . '/' . 'crop_' .  $this->options['Name'] . '-' . $inc . '.' . 'png';
+                $basePath = $this->options['RootPath'] . $this->options['RelativePath'];
+                while (file_exists($basePath . '/' . 'crop_' . $this->options['Name'] . '-' . $inc . '.png')) $inc++;
+                $this->options['OriginalImageName'] = $basePath . '/' . 'crop_' . $this->options['Name'] . '-' . $inc . '.png';
             }
 
+            // Save the original file
             file_put_contents($this->options['OriginalImageName'], $this->options['Data']);
 
-            // We create images of different sizes
+            // Generate resized images
             foreach ($associatedParameters as $tempFolder => $resizeDimension) {
-                if ($this->options['RelativePath'] == null) {
-                    $newPath = $this->options['FullStoragePath'] . '/' . $tempFolder . '/' . basename($this->options['OriginalImageName']);
-                } else {
-                    $newPath = $this->options['FullStoragePath']. '/' . $tempFolder . $this->options['RelativePath'] . '/' . basename($this->options['OriginalImageName']);
-                }
-                $this->resizeImage($this->options['OriginalImageName'], $resizeDimension,  $newPath);
+                $relativePath = $this->options['RelativePath'];
+                $newPath = $this->options['FullStoragePath'] . '/' . $tempFolder . ($relativePath ? $relativePath : '') . '/' . basename($this->options['OriginalImageName']);
+                $this->resizeImage($this->options['OriginalImageName'], $resizeDimension, $newPath);
             }
 
             $this->uploadInfo();
         }
     }
 
-    // A function that creates images of different sizes
-    protected function resizeImage($file, $width, $output) {
+    /**
+     * Resize an image and save it.
+     *
+     * @param string $file
+     * @param int $width
+     * @param string $output
+     * @return void
+     * @throws \Exception
+     */
+    protected function resizeImage($file, $width, $output)
+    {
         list($originalWidth, $originalHeight) = getimagesize($file);
+
+        if (!$originalWidth || !$originalHeight) {
+            throw new \Exception("Invalid image file: $file");
+        }
+
         $aspectRatio = $originalWidth / $originalHeight;
 
-        // We calculate the new height, maintaining the proportions
-        $height = $width / $aspectRatio;
+        // Calculate height and force integer conversion
+        $height = (int) ($width / $aspectRatio);
+        $width = (int) $width;
 
         $src = imagecreatefrompng($file);
         $dst = imagecreatetruecolor($width, $height);
 
-        // Let's change the transparency correctly
+        // Handle transparency
         imagesavealpha($dst, true);
         $trans_colour = imagecolorallocatealpha($dst, 0, 0, 0, 127);
         imagefill($dst, 0, 0, $trans_colour);
 
+        // Resample the image
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $width, $height, $originalWidth, $originalHeight);
+
+        // Save the resized image
+        $output = $output;
         imagepng($dst, $output);
+
+        // Free memory
         imagedestroy($dst);
         imagedestroy($src);
     }
 
-
     /**
-     * Send file data
+     * Send file data after processing.
      * @return void
      */
     protected function uploadInfo()
@@ -198,18 +223,42 @@ class CroppieHandler
         print json_encode(array(
             'folderId' => $this->options['FolderId'],
             'filename' => basename($this->options['OriginalImageName']),
-            'path' => $this->getRelativePath($this->options['OriginalImageName']),
+            'path' => $this->getRelativePath($this->replaceDoubleSlashWithSlash($this->options['OriginalImageName'])),
             'extension' => $this->getExtension($this->options['OriginalImageName']),
             'type' => $this->getMimeType($this->options['OriginalImageName']),
             'size' => filesize($this->options['OriginalImageName']),
             'mtime' => filemtime($this->options['OriginalImageName']),
-            'dimensions' => $this->getDimensions($this->options['OriginalImageName'])
+            'dimensions' => $this->getDimensions($this->options['OriginalImageName']),
+            'width' => $this->getImageWidth($this->options['OriginalImageName']),
+            'height' => $this->getImageHeight($this->options['OriginalImageName']),
         ));
     }
 
     /**
-     * Get file path without RootPath
-     * @param $path
+     * Get width of an image
+     * @param string $path
+     * @return int
+     */
+    public static function getImageWidth($path)
+    {
+        $ImageSize = getimagesize($path);
+        return isset($ImageSize[0]) ? $ImageSize[0] : 0;
+    }
+
+    /**
+     * Get height of an image
+     * @param string $path
+     * @return int
+     */
+    public static function getImageHeight($path)
+    {
+        $ImageSize = getimagesize($path);
+        return isset($ImageSize[1]) ? $ImageSize[1] : 0;
+    }
+
+    /**
+     * Get file path relative to RootPath.
+     * @param string $path
      * @return string
      */
     public function getRelativePath($path)
@@ -218,103 +267,59 @@ class CroppieHandler
     }
 
     /**
-     * Get file extension
+     * Get file extension.
      * @param string $path
-     * @return mixed|string
+     * @return string
      */
     public static function getExtension($path)
     {
-        if(!is_dir($path) && is_file($path)){
-            return strtolower(substr(strrchr($path, '.'), 1));
-        }
+        return strtolower(pathinfo($path, PATHINFO_EXTENSION));
     }
 
     /**
-     * Get mime type
+     * Get file MIME type.
      * @param string $path
-     * @return mixed|string
+     * @return string|false
      */
     public static function getMimeType($path)
     {
-        if(function_exists('mime_content_type')) {
+        if (function_exists('mime_content_type')) {
             return mime_content_type($path);
+        } else if (function_exists('finfo_file')) {
+            return finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path);
         } else {
-            return function_exists('finfo_file') ? finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path) : false;
+            return false;
         }
     }
 
     /**
-     * Get size of an image
+     * Get image dimensions in "width x height" format.
      * @param string $path
-     * @return mixed|string
+     * @return string|null
      */
     public static function getDimensions($path)
     {
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         $ImageSize = getimagesize($path);
-
-        if (in_array($ext, self::getImageExtensions())) {
-            $width = (isset($ImageSize[0]) ? $ImageSize[0] : '0');
-            $height = (isset($ImageSize[1]) ? $ImageSize[1] : '0');
-            $dimensions = $width . ' x ' . $height;
-            return $dimensions;
+        if ($ImageSize) {
+            return $ImageSize[0] . ' x ' . $ImageSize[1];
         }
+        return null;
     }
 
     /**
-     * Get width of an image
-     * @param string $path
-     * @return mixed|string
+     * Replace any occurrence of double slashes (//) in a given path with a single slash (/).
+     * @param string $path The input path that may contain double slashes.
+     * @return string The processed path with double slashes replaced by single slashes.
      */
-    public static function getImageWidth($path)
+    protected function replaceDoubleSlashWithSlash(string $path): string
     {
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $ImageSize = getimagesize($path);
-
-        if (in_array($ext, self::getImageExtensions())) {
-            $width = (isset($ImageSize[0]) ? $ImageSize[0] : '0');
-            return $width;
-        }
+        // Replace any occurrence of double slashes (//) with a single slash (/)
+        return preg_replace('#/{2,}#', '/', $path);
     }
 
-    /**
-     * Get height of an image
-     * @param string $path
-     * @return mixed|string
-     */
-    public static function getImageHeight($path)
-    {
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $ImageSize = getimagesize($path);
-
-        if (in_array($ext, self::getImageExtensions())) {
-            $height = (isset($ImageSize[1]) ? $ImageSize[1] : '0');
-            return $height;
-        }
-    }
 
     /**
-     * Get image files extensions
-     * @return array
-     */
-    public static function getImageExtensions()
-    {
-        return array('jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif');
-    }
-
-    /**
-     * @param $bytes
-     * @return string|void
-     */
-    protected function readableBytes($bytes)
-    {
-        $i = floor(log($bytes) / log(1024));
-        $sizes = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
-        return sprintf('%.02F', $bytes / pow(1024, $i)) * 1 . ' ' . $sizes[$i];
-    }
-
-    /**
-     * Clean path
+     * Clean and sanitize a path string.
      * @param string $path
      * @return string
      */
@@ -323,9 +328,6 @@ class CroppieHandler
         $path = trim($path);
         $path = trim($path, '\\/');
         $path = str_replace(array('../', '..\\'), '', $path);
-        if ($path == '..') {
-            $path = '';
-        }
         return str_replace('\\', '/', $path);
     }
 }

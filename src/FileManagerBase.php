@@ -214,6 +214,10 @@ class FileManagerBase extends FileManagerBaseGen
      */
     public function getRelativePath($path)
     {
+        if (empty($path)) {
+            return ''; // We avoid the error and return an empty string
+        }
+
         return substr($path, strlen($this->strRootPath));
     }
 

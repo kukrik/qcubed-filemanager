@@ -47,7 +47,7 @@ class SampleForm4 extends Form
 
         $this->objMediaFinder = new Q\Plugin\MediaFinder($this);
         $this->objMediaFinder->TempUrl = APP_UPLOADS_TEMP_URL . "/_files/thumbnail";
-        $this->objMediaFinder->PopupUrl = QCUBED_FILEMANAGER_URL . "/src/finder.php";
+        $this->objMediaFinder->PopupUrl = QCUBED_FILEMANAGER_URL . "/examples/finder.php";
         $this->objMediaFinder->EmptyImageAlt = t("Choose a picture");
         $this->objMediaFinder->SelectedImageAlt = t("Selected picture");
 
