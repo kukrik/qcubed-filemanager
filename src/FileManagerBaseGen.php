@@ -3,12 +3,9 @@
 namespace QCubed\Plugin;
 
 use QCubed as Q;
-use QCubed\Control;
-use QCubed\Project\Control\ControlBase;
 use QCubed\Exception\Caller;
 use QCubed\Exception\InvalidCast;
 use QCubed\ModelConnector\Param as QModelConnectorParam;
-use QCubed\Project\Application;
 use QCubed\Type;
 
 /**
@@ -28,7 +25,7 @@ use QCubed\Type;
  * @property boolean $IsImageListView
  * @property boolean $IsListView
  * @property boolean $IsBoxView
- * @property-read string $UpdatedHash
+ * @property string $UpdatedHash
  * @property boolean $LockedDocuments
  * @property boolean $LockedImages
  *
@@ -37,20 +34,28 @@ use QCubed\Type;
 
 class FileManagerBaseGen extends Q\Control\Panel
 {
-    protected $strLanguage = null;
-    protected $strRootPath = null;
-    protected $strRootUrl = null;
-    protected $strTempPath = null;
-    protected $strTempUrl = null;
-    protected $strDateTimeFormat = null;
-    protected $blnIsImageListView = null;
-    protected $blnIsListView = null;
-    protected $blnIsBoxView = null;
-    protected $strUpdatedHash = null;
-    protected $blnLockedDocuments = null;
-    protected $blnLockedImages = null;
+    protected string $strLanguage = "";
+    protected string $strRootPath = "";
+    protected string $strRootUrl = "";
+    protected string $strTempPath = "";
+    protected string $strTempUrl = "";
+    protected string $strDateTimeFormat = "";
+    protected ?bool $blnIsImageListView = null;
+    protected ?bool $blnIsListView = null;
+    protected ?bool $blnIsBoxView = null;
+    protected ?string $strUpdatedHash = null;
+    protected ?bool $blnLockedDocuments = null;
+    protected ?bool $blnLockedImages = null;
 
-    protected function makeJqOptions()
+    /**
+     * Generates and returns an array of options by gathering properties from the class
+     * and combining them with the options from the parent method.
+     *
+     * Properties are only added to the option array if they are not null.
+     *
+     * @return array The array of options with the corresponding property values.
+     */
+    protected function makeJqOptions(): array
     {
         $jqOptions = parent::MakeJqOptions();
         if (!is_null($val = $this->Language)) {$jqOptions['language'] = $val;}
@@ -68,12 +73,28 @@ class FileManagerBaseGen extends Q\Control\Panel
         return $jqOptions;
     }
 
-    protected function getJqSetupFunction()
+    /**
+     * Returns the name of the jQuery setup function to be used for initialization.
+     *
+     * @return string The name of the jQuery setup function.
+     */
+    protected function getJqSetupFunction(): string
     {
         return 'fileManager';
     }
 
-    public function __get($strName)
+    /**
+     * Retrieves the value of a specified property dynamically.
+     *
+     * This method checks for the requested property and returns its value if defined.
+     * If the property is not recognized, it delegates the request to the parent::__get method.
+     *
+     * @param string $strName The name of the property to retrieve.
+     *
+     * @return mixed The value of the requested property if it exists, otherwise the result of the parent::__get method.
+     * @throws Caller If the property is not found and the parent method throws an exception.
+     */
+    public function __get(string $strName): mixed
     {
         switch ($strName) {
             case 'Language': return $this->strLanguage;
@@ -99,12 +120,24 @@ class FileManagerBaseGen extends Q\Control\Panel
         }
     }
 
-    public function __set($strName, $mixValue)
+    /**
+     * Dynamically sets the value of a property by name and updates the corresponding
+     * attribute or option in the process. Throws an exception if the value type does not match
+     * the expected type for the property or if the property is not recognized.
+     *
+     * @param string $strName The name of the property to set.
+     * @param mixed $mixValue The value to assign to the property.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    public function __set(string $strName, mixed $mixValue): void
     {
         switch ($strName) {
             case 'Language':
                 try {
-                    $this->strLanguage = Type::Cast($mixValue, Type::STRING);
+                    $this->strLanguage = Type::cast($mixValue, Type::STRING);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'language', $this->strLanguage);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -113,7 +146,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'RootPath':
                 try {
-                    $this->strRootPath = Type::Cast($mixValue, Type::STRING);
+                    $this->strRootPath = Type::cast($mixValue, Type::STRING);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'rootPath', $this->strRootPath);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -122,7 +155,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'RootUrl':
                 try {
-                    $this->strRootUrl = Type::Cast($mixValue, Type::STRING);
+                    $this->strRootUrl = Type::cast($mixValue, Type::STRING);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'rootUrl', $this->strRootUrl);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -131,7 +164,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'TempPath':
                 try {
-                    $this->strTempPath = Type::Cast($mixValue, Type::STRING);
+                    $this->strTempPath = Type::cast($mixValue, Type::STRING);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'tempPath', $this->strTempPath);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -140,7 +173,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'TempUrl':
                 try {
-                    $this->strTempUrl = Type::Cast($mixValue, Type::STRING);
+                    $this->strTempUrl = Type::cast($mixValue, Type::STRING);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'tempUrl', $this->strTempUrl);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -149,7 +182,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'DateTimeFormat':
                 try {
-                    $this->strDateTimeFormat = Type::Cast($mixValue, Type::STRING);
+                    $this->strDateTimeFormat = Type::cast($mixValue, Type::STRING);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'tempUrl', $this->strDateTimeFormat);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -158,7 +191,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'IsImageListView':
                 try {
-                    $this->blnIsImageListView = Type::Cast($mixValue, Type::BOOLEAN);
+                    $this->blnIsImageListView = Type::cast($mixValue, Type::BOOLEAN);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'isImageListView', $this->blnIsImageListView);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -167,7 +200,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'IsListView':
                 try {
-                    $this->blnIsListView = Type::Cast($mixValue, Type::BOOLEAN);
+                    $this->blnIsListView = Type::cast($mixValue, Type::BOOLEAN);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'isListView', $this->blnIsListView);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -176,7 +209,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'IsBoxView':
                 try {
-                    $this->blnIsBoxView = Type::Cast($mixValue, Type::BOOLEAN);
+                    $this->blnIsBoxView = Type::cast($mixValue, Type::BOOLEAN);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'isBoxView', $this->blnIsBoxView);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -185,7 +218,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'UpdatedHash':
                 try {
-                    $this->strUpdatedHash = Type::Cast($mixValue, Type::STRING);
+                    $this->strUpdatedHash = Type::cast($mixValue, Type::STRING);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'updatedHash', $this->strUpdatedHash);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -194,7 +227,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'LockedDocuments':
                 try {
-                    $this->blnLockedDocuments = Type::Cast($mixValue, Type::BOOLEAN);
+                    $this->blnLockedDocuments = Type::cast($mixValue, Type::BOOLEAN);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'lockedDocuments', $this->blnLockedDocuments);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -203,7 +236,7 @@ class FileManagerBaseGen extends Q\Control\Panel
                 }
             case 'LockedImages':
                 try {
-                    $this->blnLockedImages = Type::Cast($mixValue, Type::BOOLEAN);
+                    $this->blnLockedImages = Type::cast($mixValue, Type::BOOLEAN);
                     $this->addAttributeScript($this->getJqSetupFunction(), 'option', 'lockedImages', $this->blnLockedImages);
                     break;
                 } catch (InvalidCast $objExc) {
@@ -227,7 +260,7 @@ class FileManagerBaseGen extends Q\Control\Panel
      * used by the ModelConnector designer dialog to display a list of options for the control.
      * @return QModelConnectorParam[]
      **/
-    public static function getModelConnectorParams()
+    public static function getModelConnectorParams(): array
     {
         return array_merge(parent::GetModelConnectorParams(), array());
     }

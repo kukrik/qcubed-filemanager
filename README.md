@@ -1,14 +1,16 @@
 # QCubed FileManager Plugin
 
-## FileManager for QCubed v4
+## FileManager for QCubed-4
 
 The FileManager plugin includes itself, UploadHandler, MediaFinder, and the ckeditor image and file plugin.
+
+These plugins work starting from PHP version 8.3+.
 
 * The plugin author maintains that the correct approach is to consolidate all uploaded images and files into a specific 
 location rather than scattering them throughout the file system. In line with this, FileManager has been developed. 
 * Upon the initial deployment of FileManager, an "upload" folder is automatically created, where original images and 
 files are consolidated. Simultaneously, within the "tmp" folder, the first folder "_files" is automatically created, 
-containing subfolders "large," "medium," "thumbnail," and "zip".
+containing subfolders "large," "medium," "thumbnail," "temp," and "zip".
 * The UploadHandler automatically generates images in folders "large," "medium," and "thumbnail" with suitable dimensions: 
 up to 1500 px, up to 480 px, up to 320 px, respectively.
 * The "zip" folder is intended for compressing and sending downloaded files and folders to the user's browser. 
@@ -58,7 +60,7 @@ news, or elsewhere, it is advisable to copy the image to another location and us
 
 **Any feedback is highly welcome and will contribute to improving or enhancing FileManager!**
 
-If you have not previously installed QCubed Bootstrap and twitter bootstrap, run the following actions on the command 
+If you have not previously installed QCubed-4 Bootstrap and twitter bootstrap, run the following actions on the command 
 line of your main installation directory by Composer:
 ```
     composer require twbs/bootstrap v3.3.7
@@ -67,9 +69,9 @@ and
 
 ```
     composer require kukrik/qcubed-filemanager
-    composer require kukrik/bootstrap
+    composer require qcubed-4/plugin-bootstrap
     composer require kukrik/bootstrap-filecontrol
-    composer require kukrik/ckeditor
+    composer require qcubed-4/plugin-ckeditor
     composer require ckeditor/ckeditor
 ```
 

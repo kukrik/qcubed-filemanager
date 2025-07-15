@@ -8,6 +8,9 @@
 namespace QCubed\Plugin;
 
 
+/**
+ * Handles file upload processes by extending functionalities provided in the FileUploadHandlerBase class.
+ */
 class FileUploadHandler extends FileUploadHandlerBase
 {
 /*public function  __construct($objParentObject, $strControlId = null) {

@@ -3,8 +3,6 @@
 namespace QCubed\Plugin;
 
 use QCubed as Q;
-use QCubed\Control;
-use QCubed\Project\Control\ControlBase;
 use QCubed\Exception\Caller;
 use QCubed\Exception\InvalidCast;
 use QCubed\Type;
@@ -25,11 +23,18 @@ use QCubed\Type;
 
 class MediaFinderGen extends Q\Control\Panel
 {
-    protected $strPopupUrl = null;
-    protected $strPopupWidth = null;
-    protected $strPopupHeight = null;
+    protected ?string $strPopupUrl = null;
+    protected ?string $strPopupWidth = null;
+    protected ?string $strPopupHeight = null;
 
-    protected function makeJqOptions()
+    /**
+     * Generates an array of jQuery options by inheriting from the parent method
+     * and adding additional properties if they are set.
+     *
+     * @return array An associative array containing jQuery options,
+     *               which may include `url`, `popupWidth`, and `popupHeight`.
+     */
+    protected function makeJqOptions(): array
     {
         $jqOptions = parent::MakeJqOptions();
         if (!is_null($val = $this->PopupUrl)) {$jqOptions['url'] = $val;}
@@ -38,12 +43,27 @@ class MediaFinderGen extends Q\Control\Panel
         return $jqOptions;
     }
 
-    protected function getJqSetupFunction()
+    /**
+     * Returns the name of the jQuery setup function used for initialization.
+     *
+     * @return string The name of the jQuery setup function, which is `mediaFinder`.
+     */
+    protected function getJqSetupFunction(): string
     {
         return 'mediaFinder';
     }
 
-    public function __get($strName)
+    /**
+     * Magic method to retrieve the value of a property dynamically.
+     * Handles specific cases for `PopupUrl`, `PopupWidth`, and `PopupHeight`,
+     * and falls back to the parent implementation for other properties.
+     *
+     * @param string $strName The name of the property to retrieve.
+     *
+     * @return mixed The value of the requested property, or the result of the parent implementation.
+     * @throws Caller If the property does not exist and cannot be resolved by the parent method.
+     */
+    public function __get(string $strName): mixed
     {
         switch ($strName) {
             case 'PopupUrl': return $this->strPopupUrl;
@@ -60,7 +80,19 @@ class MediaFinderGen extends Q\Control\Panel
         }
     }
 
-    public function __set($strName, $mixValue)
+    /**
+     * Sets the value of a property dynamically, performing type casting and
+     * updating associated jQuery options when applicable.
+     *
+     * @param string $strName The name of the property to set.
+     * @param mixed $mixValue The value to assign to the property.
+     *
+     * @return void
+     *
+     * @throws InvalidCast Thrown if the value cannot be cast to the required type.
+     * @throws Caller Thrown if the property does not exist or cannot be set.
+     */
+    public function __set(string $strName, mixed $mixValue): void
     {
         switch ($strName) {
             case 'PopupUrl':

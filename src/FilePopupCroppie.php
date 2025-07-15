@@ -3,10 +3,8 @@
 namespace QCubed\Plugin;
 
 use QCubed\Bootstrap\Bootstrap;
-use QCubed\Control\ControlBase;
 use QCubed\Exception\Caller;
 use QCubed\Exception\InvalidCast;
-use QCubed\Project\Application;
 use QCubed\Type;
 
 /**
@@ -20,10 +18,10 @@ use QCubed\Type;
  * @property string $SaveClass Default "Crop and save" button background class "btn-orange". The background class of
  *                              the button can be overridden if desired.
  * @property string $SaveText Default button text "Crop and save". The button text can be overridden if desired.
- * @property string $CancelClass Default "btn-default" background class for "Cancel" button. The background class of
+ * @property string $CancelClass Default "btn-default" background class for the "Cancel" button. The background class of
  *                                  the button can be overridden if desired.
  * @property string $CancelText Default button text "Cancel". The button text can be overridden if desired.
- * @property string $FinalPath Defult null. Outputs the name of the cropped image along with the relative path after saving.
+ * @property string $FinalPath Default null. Outputs the name of the cropped image along with the relative path after saving.
  *
  *
  * @package QCubed\Plugin
@@ -32,39 +30,45 @@ use QCubed\Type;
 class FilePopupCroppie extends FilePopupCroppieGen
 {
     /** @var bool make sure the popupCroppie gets rendered */
-    protected $blnAutoRender = true;
-    /** @var bool  PRAEGU EI TEA, default to auto open being false, since this would be a rare need, and dialogs are auto-rendered. */
+    protected bool $blnAutoRender = true;
+    /** @var bool default to auto open being false, since this would be a rare need, and dialogs are auto-rendered. */
     protected $blnAutoOpen = false;
-    /** @var bool records whether dialog is open */
-    protected $blnIsOpen = false;
-    protected $blnIsChangeObject = false;
-    protected $blnUseWrapper = true;
+    /** @var bool records whether the dialog is open */
+    protected ?bool $blnIsOpen = false;
+    protected ?bool $blnIsChangeObject = false;
+    protected bool $blnUseWrapper = true;
 
     /** @var string */
-    protected $strHeaderTitle = 'Crop image';
+    protected string $strHeaderTitle = 'Crop image';
     /** @var string */
-    protected $strHeaderClass = 'bg-default';
+    protected string $strHeaderClass = 'bg-default';
     /** @var string */
-    protected $strRotateClass = 'btn-default';
+    protected string $strRotateClass = 'btn-default';
     /** @var string */
-    protected $strSaveClass = 'btn-orange';
+    protected string $strSaveClass = 'btn-orange';
     /** @var string */
-    protected $strSaveText = 'Crop and save';
+    protected string $strSaveText = 'Crop and save';
     /** @var string */
-    protected $strCancelClass = 'btn-default';
+    protected string $strCancelClass = 'btn-default';
     /** @var string */
-    protected $strCancelText = 'Cancel';
-    /** @var string */
-    protected $strFinalPath = null;
+    protected string $strCancelText = 'Cancel';
+    /** @var string|null */
+    protected ?string $strFinalPath = null;
 
     /**
-     * @param $objParentObject
-     * @param $strControlId
+     * Constructor for the class.
+     *
+     * @param mixed $objParentObject The parent object which this control belongs to, or null to set it to the global
+     *     form.
+     * @param string|null $strControlId The control ID to uniquely identify this control, or null to generate an ID
+     *     automatically.
+     *
+     * @return void
      * @throws Caller
      */
-    public function __construct($objParentObject = null, $strControlId = null)
+    public function __construct(mixed $objParentObject = null, ?string $strControlId = null)
     {
-        // Detect which mode we are going to display in, whether to show right away, or wait for later.
+        // Detect which mode we are going to display in, whether to show right away or wait for later.
         if ($objParentObject === null) {
             // The dialog will be shown right away, and then when closed, removed from the form.
             global $_FORM;
@@ -81,9 +85,13 @@ class FilePopupCroppie extends FilePopupCroppieGen
     }
 
     /**
+     * Registers the CSS and JavaScript files required for the file manager functionality.
+     *
+     * @return void
      * @throws Caller
      */
-    protected function registerFiles() {
+    protected function registerFiles(): void
+    {
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/croppie.css");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom-switch.css");
         $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom.css");
@@ -100,11 +108,16 @@ class FilePopupCroppie extends FilePopupCroppieGen
     }
 
     /**
-     * Returns the HTML for the control.
+     * Generates and returns the HTML markup for the control.
      *
-     * @return string
+     * The returned HTML includes the structure for a modal dialog with various
+     * components such as a header, body, options for viewport configuration,
+     * buttons for actions like save, cancel, and rotation, as well as selections
+     * for a destination and viewport type.
+     *
+     * @return string The generated HTML markup for the control.
      */
-    public function getControlHtml()
+    public function getControlHtml(): string
     {
         $strHtml = '';
 
@@ -178,18 +191,21 @@ class FilePopupCroppie extends FilePopupCroppieGen
     }
 
     /**
-     * @param $strName
-     * @return array|bool|callable|float|int|mixed|string|null
-     * @throws Caller
+     * Magic method to get the value of a property dynamically.
+     *
+     * @param string $strName The name of the property to retrieve.
+     *
+     * @return mixed The value of the requested property.
+     * @throws Caller If the requested property does not exist or cannot be retrieved.
      */
-    public function __get($strName)
+    public function __get(string $strName): mixed
     {
         switch ($strName) {
             case "HeaderTitle": return $this->strHeaderTitle;
             case "HeaderClass": return $this->strHeaderClass;
             case "RotateClass": return $this->strRotateClass;
             case "SaveClass": return $this->strSaveClass;
-            case "SaveText": return $this-strSaveText;
+            case "SaveText": return $this->strSaveText;
             case "CancelClass": return $this->strCancelClass;
             case "CancelText": return $this->strCancelText;
             case 'FinalPath': return $this->strFinalPath;
@@ -205,16 +221,19 @@ class FilePopupCroppie extends FilePopupCroppieGen
     }
 
     /**
-     * @param $strName
-     * @param $mixValue
+     * Magic method to set the value of a property.
+     *
+     * @param string $strName The name of the property to set.
+     * @param mixed $mixValue The value to assign to the property.
+     *
      * @return void
-     * @throws Caller
-     * @throws InvalidCast
+     * @throws InvalidCast If the provided value cannot be cast to the expected type.
+     * @throws Caller If the property name is not valid or cannot be set.
      */
-    public function __set($strName, $mixValue)
+    public function __set(string $strName, mixed $mixValue): void
     {
         switch ($strName) {
-            case '_finalPath': // Internal only to output the cropped image name with relative path after saving.
+            case '_finalPath': // Internal only to output the cropped image name with a relative path after saving.
                 try {
                     $this->strFinalPath = Type::cast($mixValue, Type::STRING);
                     break;

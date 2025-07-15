@@ -10,158 +10,169 @@ ini_set('log_errors', TRUE); // Error logging
 
 use QCubed as Q;
 use QCubed\Bootstrap as Bs;
-use QCubed\Plugin\FileHandler;
-use QCubed\Plugin\FileManager;
-use QCuded\Plugin\FileInfo;
-use QCubed\QDateTime;
+use QCubed\Event\DialogButton;
 use QCubed\Folder;
 use QCubed\QString;
-use QCubed\Project\Control\ControlBase;
 use QCubed\Project\Control\FormBase as Form;
 use QCubed\Action\ActionParams;
 use QCubed\Project\Application;
-use QCubed\Html;
-use QCubed\Query\QQ;
 use QCubed\Action\Ajax;
 use QCubed\Jqui\Event\SelectableStop;
+use QCubed\Exception\Caller;
+use QCubed\Exception\InvalidCast;
+use Random\RandomException;
+use QCubed\Database\Exception\UndefinedPrimaryKey;
 
 /**
  * Class SampleForm
  */
 class SampleForm extends Form
 {
-    protected $dlgModal1;
-    protected $dlgModal2;
-    protected $dlgModal3;
-    protected $dlgModal4;
-    protected $dlgModal5;
-    protected $dlgModal6;
-    protected $dlgModal7;
-    protected $dlgModal8;
-    protected $dlgModal9;
-    protected $dlgModal10;
-    protected $dlgModal11;
-    protected $dlgModal12;
-    protected $dlgModal13;
-    protected $dlgModal14;
-    protected $dlgModal15;
-    protected $dlgModal16;
-    protected $dlgModal17;
-    protected $dlgModal18;
-    protected $dlgModal19;
-    protected $dlgModal20;
-    protected $dlgModal21;
-    protected $dlgModal22;
-    protected $dlgModal23;
-    protected $dlgModal24;
-    protected $dlgModal25;
-    protected $dlgModal26;
-    protected $dlgModal27;
-    protected $dlgModal28;
-    protected $dlgModal29;
-    protected $dlgModal30;
-    protected $dlgModal31;
-    protected $dlgModal32;
-    protected $dlgModal33;
-    protected $dlgModal34;
+    protected Bs\Modal $dlgModal1; // A corrupted table "folders" in the database or folder "upload" in the file system! ...
+    protected Bs\Modal $dlgModal2; // Sorry, files cannot be added to this reserved folder! ...
+    protected Bs\Modal $dlgModal3; // Please choose only a specific folder to upload files!
+    protected Bs\Modal $dlgModal4; // Cannot select multiple folders to upload files!
+    protected Bs\Modal $dlgModal5; // Please check if the destination is correct!
+    protected Bs\Modal $dlgModal6; // Sorry, a new folder cannot be added to this reserved folder! ...
+    protected Bs\Modal $dlgModal7; // Please select only one folder to create a new folder in!
+    protected Bs\Modal $dlgModal8; // Please check if the destination is correct!
+    protected Bs\Modal $dlgModal9; // Different comments are available depending on the user's behavior,
+    // associated with helper functions or helper classes related to this modal
+    protected Bs\Modal $dlgModal10; // A new folder created successfully!
+    protected Bs\Modal $dlgModal11; // Failed to create a new folder!
+    protected Bs\Modal $dlgModal12; // Sorry, this reserved folder or file cannot be renamed! ...
+    protected Bs\Modal $dlgModal13; // Please select a folder or file!
+    protected Bs\Modal $dlgModal14; // Please select only one folder or file to rename!
+    protected Bs\Modal $dlgModal15; // Different comments are available depending on the user's behavior,
+    // associated with helper functions or helper classes related to this modal
+    protected Bs\Modal $dlgModal16; // Folder name changed successfully!
+    protected Bs\Modal $dlgModal17; // Failed to rename a folder!
+    protected Bs\Modal $dlgModal18; // File name changed successfully!
+    protected Bs\Modal $dlgModal19; // Failed to rename a file!
+    protected Bs\Modal $dlgModal20; // Please select a specific folder(s) or file(s)!
+    protected Bs\Modal $dlgModal21; // It is not possible to copy the main directory!
+    protected Bs\Modal $dlgModal22; // Different comments are available depending on the user's behavior,
+    // associated with helper functions or helper classes related to this modal
+    protected Bs\Modal $dlgModal23; // Selected files and folders have been copied successfully!
+    protected Bs\Modal $dlgModal24; // Error while copying items!
+    protected Bs\Modal $dlgModal25; // Sorry, this reserved folder or file cannot be deleted!
+    protected Bs\Modal $dlgModal26; // It is not possible to delete the main directory!
+    protected Bs\Modal $dlgModal27; // Different comments are available depending on the user's behavior,
+    // associated with helper functions or helper classes related to this modal
+    protected Bs\Modal $dlgModal28; // The selected files and folders have been successfully deleted!
+    protected Bs\Modal $dlgModal29; // Error while deleting items!
+    protected Bs\Modal $dlgModal30; // Error while deleting items!
+    protected Bs\Modal $dlgModal31; // Sorry, this reserved folder or file cannot be moved! ...
+    protected Bs\Modal $dlgModal32; // Different comments are available depending on the user's behavior,
+    // associated with helper functions or helper classes related to this modal
+    protected Bs\Modal $dlgModal33; // The selected files and folders have been successfully moved!
+    protected Bs\Modal $dlgModal34; // Error while moving items!
 
-    protected $dlgModal35;
-    protected $dlgModal36;
-    protected $dlgModal37;
-    protected $dlgModal38;
-    protected $dlgModal39;
+    protected Bs\Modal $dlgModal35; // Operations with archives are not available!
+    protected Bs\Modal $dlgModal36; // It is not possible to download the main directory!
+    protected Bs\Modal $dlgModal37; // Failed to create an archive for a download!
+    protected Bs\Modal $dlgModal38; // ZipArchive is not available!
+    protected Bs\Modal $dlgModal39; // Empty folder(s) do not contain files! Then no packing and no downloading!
 
-    protected $dlgModal40;
-    protected $dlgModal41;
-    protected $dlgModal42;
-    protected $dlgModal43;
-    protected $dlgModal44;
-    protected $dlgModal45;
-    protected $dlgModal46;
+    protected Bs\Modal $dlgModal40; // Please select an image!
+    protected Bs\Modal $dlgModal41; // Please select only one image to crop! ...
+    protected Bs\Modal $dlgModal42; // Please select only one image to crop!
+    protected Bs\Modal $dlgModal43; // Image cropping succeeded!
+    protected Bs\Modal $dlgModal44; // Image cropping failed!
+    protected Bs\Modal $dlgModal45; // The image is invalid for cropping!
+    protected Bs\Modal $dlgModal46; // CSRF Token is invalid
 
-    protected $objUpload;
-    protected $objManager;
-    protected $dlgPopup;
-    protected $objInfo;
-    protected $lblSearch;
-    protected $objHomeLink;
+    protected Q\Plugin\FileUploadHandler $objUpload;
+    protected Q\Plugin\FileManager $objManager;
+    protected Q\Plugin\FilePopupCroppie $dlgPopup;
+    protected Q\Plugin\FileInfo $objInfo;
+    protected Q\Plugin\Label $lblSearch;
+    protected Q\Plugin\Label $objHomeLink;
 
-    protected $btnAddFiles;
-    protected $btnAllStart;
-    protected $btnAllCancel;
-    protected $btnBack;
-    protected $btnDone;
+    protected Q\Plugin\BsFileControl $btnAddFiles;
+    protected Bs\Button $btnAllStart;
+    protected Bs\Button $btnAllCancel;
+    protected Bs\Button $btnBack;
+    protected Bs\Button $btnDone;
 
-    protected $btnUploadStart;
-    protected $btnAddFolder;
-    protected $btnRefresh;
-    protected $btnRename;
-    protected $btnCrop;
-    protected $btnCopy;
-    protected $btnDelete;
-    protected $btnMove;
-    protected $btnDownload;
-    protected $btnImageListView;
-    protected $btnListView;
-    protected $btnBoxView;
-    protected $txtFilter;
+    protected Bs\Button $btnUploadStart;
+    protected Bs\Button $btnAddFolder;
+    protected Bs\Button $btnRefresh;
+    protected Bs\Button $btnRename;
+    protected Bs\Button $btnCrop;
+    protected Bs\Button $btnCopy;
+    protected Bs\Button $btnDelete;
+    protected Bs\Button $btnMove;
+    protected Bs\Button $btnDownload;
+    protected Bs\Button $btnImageListView;
+    protected Bs\Button $btnListView;
+    protected Bs\Button $btnBoxView;
+    protected Bs\TextBox $txtFilter;
 
-    protected $txtAddFolder;
-    protected $lblError;
-    protected $lblSameName;
-    protected $lblRenameName;
-    protected $lblDirectoryError;
-    protected $txtRename;
+    protected Bs\TextBox $txtAddFolder;
+    protected Q\Plugin\Label $lblError;
+    protected Q\Plugin\Label $lblSameName;
+    protected Q\Plugin\Label $lblRenameName;
+    protected Q\Plugin\Label $lblDirectoryError;
+    protected Bs\TextBox $txtRename;
 
-    protected $lblDestinationError;
-    protected $lblCourceTitle;
-    protected $lblCourcePath;
-    protected $lblCopyingTitle;
-    protected $dlgCopyingDestination;
+    protected Q\Plugin\Label $lblDestinationError;
+    protected Q\Plugin\Label $lblCourseTitle;
+    protected Q\Plugin\Label $lblCoursePath;
+    protected Q\Plugin\Label $lblCopyingTitle;
+    protected Q\Plugin\Select2 $dlgCopyingDestination;
 
-    protected $lblMovingError;
-    protected $lblMoveInfo;
-    protected $lblMovingDestinationError;
-    protected $lblMovingCourceTitle;
-    protected $lblMovingCourcePath;
-    protected $lblMovingTitle;
-    protected $dlgMovingDestination;
+    protected Q\Plugin\Label $lblMovingError;
+    protected Q\Plugin\Label $lblMoveInfo;
+    protected Q\Plugin\Label $lblMovingDestinationError;
+    protected Q\Plugin\Label $lblMovingCourseTitle;
+    protected Q\Plugin\Label $lblMovingCoursePath;
+    protected Q\Plugin\Label $lblMovingTitle;
+    protected Q\Plugin\Select2 $dlgMovingDestination;
 
-    protected $lblDeletionWarning;
-    protected $lblDeletionInfo;
-    protected $lblDeleteError;
-    protected $lblDeleteInfo;
-    protected $lblDeleteTitle;
-    protected $lblDeletePath;
+    protected Q\Plugin\Label $lblDeletionWarning;
+    protected Q\Plugin\Label $lblDeletionInfo;
+    protected Q\Plugin\Label $lblDeleteError;
+    protected Q\Plugin\Label $lblDeleteInfo;
+    protected Q\Plugin\Label $lblDeleteTitle;
+    protected Q\Plugin\Label $lblDeletePath;
 
-    protected $arrSomeArray = [];
-    protected $tempItems = [];
-    protected $tempSelectedItems = [];
-    protected $objLockedFiles = 0;
-    protected $objLockedDirs = [];
+    protected array $arrSomeArray = [];
+    protected array $tempItems = [];
+    protected array $tempSelectedItems = [];
+    protected int $objLockedFiles = 0;
+    protected array $objLockedDirs = [];
 
-    protected $intDataId = "";
-    protected $strDataName = "";
-    protected $strDataPath = "";
-    protected $strDataExtension = "";
-    protected $strDataType = "";
-    protected $intDataLocked = "";
-    protected $strNewPath;
-    protected $intStoredChecks = 0;
-    protected $arrAllowed = array('jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif');
-    protected $tempFolders = array('thumbnail', 'medium', 'large');
-    protected $arrCroppieTypes = array('jpg', 'jpeg', 'png');
+    protected ?int $intDataId = null;
+    protected ?string $strDataName = "";
+    protected ?string $strDataPath = "";
+    protected ?string $strDataExtension = "";
+    protected ?string $strDataType = "";
+    protected ?int $intDataLocked = 0;
+    protected string $strNewPath;
+    protected int $intStoredChecks = 0;
+    protected array $arrAllowed = array('jpg', 'jpeg', 'bmp', 'png', 'webp', 'gif', 'svg');
+    protected array $tempFolders = array('thumbnail', 'medium', 'large');
+    protected array $arrCroppieTypes = array('jpg', 'jpeg', 'png');
 
-    protected $blnMove = false;
+    protected ?bool $blnMove = false;
 
-    protected function formCreate()
+    /**
+     * Initializes and configures the form and its components, including file upload handlers,
+     * file managers, popups, and labels. Sets up event listeners and UI interactions to manage
+     * file operations such as uploads, cropping, searching, and navigation.
+     *
+     * @return void This method does not return any value.
+     * @throws Caller
+     */
+    protected function formCreate(): void
     {
         parent::formCreate();
 
         $this->objUpload = new Q\Plugin\FileUploadHandler($this);
         $this->objUpload->Language = "et"; // Default en
         //$this->objUpload->ShowIcons = true; // Default false
-        //$this->objUpload->AcceptFileTypes = ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'ppt', 'docx', 'mp4']; // Default null
+        $this->objUpload->AcceptFileTypes = ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'ppt', 'docx', 'xlsx', 'txt', 'mp4', 'mov', 'svg', 'zip']; // Default null
         //$this->objUpload->MaxNumberOfFiles = 5; // Default null
         //$this->objUpload->MaxFileSize = 1024 * 1024 * 2; // 2 MB // Default null
         //$this->objUpload->MinFileSize = 500000; // 500 kb // Default null
@@ -193,7 +204,7 @@ class SampleForm extends Form
         $this->dlgPopup->SaveText = t("Crop and save");
         $this->dlgPopup->CancelText = t("Cancel");
 
-        $this->dlgPopup->addAction(new Q\Plugin\Event\ChangeObject(), new \QCubed\Action\Ajax('objManagerRefresh_Click'));
+        $this->dlgPopup->addAction(new Q\Plugin\Event\ChangeObject(), new Ajax('objManagerRefresh_Click'));
 
         if ($this->dlgPopup->Language) {
             $this->dlgPopup->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/i18n/". $this->dlgPopup->Language . ".js");
@@ -217,7 +228,7 @@ class SampleForm extends Form
         $this->objHomeLink->setCssStyle('font-size', '14px;');
         $this->objHomeLink->Text = Q\Html::renderLink("filemanager.php#/", "Repository", ["data-lang" => "repository"]);
         $this->objHomeLink->HtmlEntities = false;
-        $this->objHomeLink->addAction(new Q\Event\Click(), new Q\Action\Ajax('appendData_Click'));
+        $this->objHomeLink->addAction(new Q\Event\Click(), new Ajax('appendData_Click'));
 
         $this->CreateButtons();
         $this->createModals();
@@ -235,9 +246,9 @@ class SampleForm extends Form
      * Processes the selected items from the action parameters and decodes them into an array.
      *
      * @param ActionParams $params The action parameters containing the selected items.
-     * @return array Decoded array of selected items.
+     * @return array Decoded an array of selected items.
      */
-    public function selectable_stop(ActionParams $params)
+    public function selectable_stop(ActionParams $params): array
     {
         $arr = $this->objManager->SelectedItems;
         $this->arrSomeArray = json_decode($arr, true);
@@ -255,8 +266,9 @@ class SampleForm extends Form
      * Additionally, it configures view toggles and a search filter field.
      *
      * @return void
+     * @throws Caller
      */
-    public function CreateButtons()
+    public function CreateButtons(): void
     {
         $this->btnAddFiles = new Q\Plugin\BsFileControl($this, 'files');
         $this->btnAddFiles->Text = t(' Add files');
@@ -269,7 +281,7 @@ class SampleForm extends Form
         $this->btnAllStart->Text = t('Start upload');
         $this->btnAllStart->CssClass = 'btn btn-darkblue all-start disabled';
         $this->btnAllStart->UseWrapper = false;
-        $this->btnAllStart->addAction(new Q\Event\Click(), new Q\Action\Ajax('confirmParent_Click'));
+        $this->btnAllStart->addAction(new Q\Event\Click(), new Ajax('confirmParent_Click'));
 
         $this->btnAllCancel = new Bs\Button($this);
         $this->btnAllCancel->Text = t('Cancel all uploads');
@@ -280,109 +292,109 @@ class SampleForm extends Form
         $this->btnBack->Text = t('Back to file manager');
         $this->btnBack->CssClass = 'btn btn-default back';
         $this->btnBack->UseWrapper = false;
-        $this->btnBack->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnBack_Click'));
-        $this->btnBack->addAction(new Q\Event\Click(), new Q\Action\Ajax('dataClearing_Click'));
+        $this->btnBack->addAction(new Q\Event\Click(), new Ajax('btnBack_Click'));
+        $this->btnBack->addAction(new Q\Event\Click(), new Ajax('dataClearing_Click'));
 
         $this->btnDone = new Bs\Button($this);
         $this->btnDone->Text = t('Done');
         $this->btnDone->CssClass = 'btn btn-success pull-right done';
         $this->btnDone->UseWrapper = false;
-        $this->btnDone->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnDone_Click'));
+        $this->btnDone->addAction(new Q\Event\Click(), new Ajax('btnDone_Click'));
 
         /////////////////////////////////////////////////////////////////////
 
-        $this->btnUploadStart = new Q\Plugin\Button($this);
+        $this->btnUploadStart = new Bs\Button($this);
         $this->btnUploadStart->Text = t(' Upload');
         $this->btnUploadStart->Glyph = 'fa fa-upload';
         $this->btnUploadStart->CssClass = 'btn btn-orange launch-start';
         $this->btnUploadStart->CausesValidation = false;
         $this->btnUploadStart->UseWrapper = false;
-        $this->btnUploadStart->addAction(new Q\Event\Click(), new Q\Action\Ajax('uploadStart_Click'));
+        $this->btnUploadStart->addAction(new Q\Event\Click(), new Ajax('uploadStart_Click'));
 
         /////////////////////////////////////////////////////////////////////
 
-        $this->btnAddFolder = new Q\Plugin\Button($this);
+        $this->btnAddFolder = new Bs\Button($this);
         $this->btnAddFolder->Text = t(' Add folder');
         $this->btnAddFolder->Glyph = 'fa fa-folder';
         $this->btnAddFolder->CssClass = 'btn btn-orange';
         $this->btnAddFolder->CausesValidation = false;
         $this->btnAddFolder->UseWrapper = false;
-        $this->btnAddFolder->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnAddFolder_Click'));
+        $this->btnAddFolder->addAction(new Q\Event\Click(), new Ajax('btnAddFolder_Click'));
 
-        $this->btnRefresh = new Q\Plugin\Button($this);
+        $this->btnRefresh = new Bs\Button($this);
         $this->btnRefresh->Glyph = 'fa fa-refresh';
         $this->btnRefresh->CssClass = 'btn btn-darkblue';
         $this->btnRefresh->CausesValidation = false;
-        $this->btnRefresh->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnRefresh_Click'));
+        $this->btnRefresh->addAction(new Q\Event\Click(), new Ajax('btnRefresh_Click'));
 
-        $this->btnRename = new Q\Plugin\Button($this);
+        $this->btnRename = new Bs\Button($this);
         $this->btnRename->Text = t(' Rename');
         $this->btnRename->Glyph = 'fa fa-pencil';
         $this->btnRename->CssClass = 'btn btn-darkblue';
         $this->btnRename->CausesValidation = false;
         $this->btnRename->UseWrapper = false;
-        $this->btnRename->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnRename_Click'));
+        $this->btnRename->addAction(new Q\Event\Click(), new Ajax('btnRename_Click'));
 
-        $this->btnCrop = new Q\Plugin\Button($this);
+        $this->btnCrop = new Bs\Button($this);
         $this->btnCrop->Text = t(' Crop');
         $this->btnCrop->Glyph = 'fa fa-crop';
         $this->btnCrop->CssClass = 'btn btn-darkblue';
         $this->btnCrop->CausesValidation = false;
         $this->btnCrop->UseWrapper = false;
-        $this->btnCrop->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnCrop_Click'));
+        $this->btnCrop->addAction(new Q\Event\Click(), new Ajax('btnCrop_Click'));
 
-        $this->btnCopy = new Q\Plugin\Button($this);
+        $this->btnCopy = new Bs\Button($this);
         $this->btnCopy->Text = t(' Copy');
         $this->btnCopy->Glyph = 'fa fa-files-o';
         $this->btnCopy->CssClass = 'btn btn-darkblue';
         $this->btnCopy->CausesValidation = false;
         $this->btnCopy->UseWrapper = false;
-        $this->btnCopy->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnCopy_Click'));
+        $this->btnCopy->addAction(new Q\Event\Click(), new Ajax('btnCopy_Click'));
 
-        $this->btnDelete = new Q\Plugin\Button($this);
+        $this->btnDelete = new Bs\Button($this);
         $this->btnDelete->Text = t(' Delete');
         $this->btnDelete->Glyph = 'fa fa-trash-o';
         $this->btnDelete->CssClass = 'btn btn-darkblue';
         $this->btnDelete->CausesValidation = false;
         $this->btnDelete->UseWrapper = false;
-        $this->btnDelete->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnDelete_Click'));
+        $this->btnDelete->addAction(new Q\Event\Click(), new Ajax('btnDelete_Click'));
 
-        $this->btnMove = new Q\Plugin\Button($this);
+        $this->btnMove = new Bs\Button($this);
         $this->btnMove->Text = t(' Move');
         $this->btnMove->Glyph = 'fa fa-reply-all';
         $this->btnMove->CssClass = 'btn btn-darkblue';
         $this->btnMove->CausesValidation = false;
         $this->btnMove->UseWrapper = false;
-        $this->btnMove->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnMove_Click'));
+        $this->btnMove->addAction(new Q\Event\Click(), new Ajax('btnMove_Click'));
 
-        $this->btnDownload = new Q\Plugin\Button($this);
+        $this->btnDownload = new Bs\Button($this);
         $this->btnDownload->Text = t(' Download');
         $this->btnDownload->Glyph = 'fa fa-download';
         $this->btnDownload->CssClass = 'btn btn-darkblue';
         $this->btnDownload->CausesValidation = false;
         $this->btnDownload->UseWrapper = false;
-        $this->btnDownload->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnDownload_Click'));
+        $this->btnDownload->addAction(new Q\Event\Click(), new Ajax('btnDownload_Click'));
 
-        $this->btnImageListView = new Q\Plugin\Button($this);
+        $this->btnImageListView = new Bs\Button($this);
         $this->btnImageListView->Glyph = 'fa fa-list'; //  fa-align-justify
         $this->btnImageListView->CssClass = 'btn btn-darkblue';
         $this->btnImageListView->addCssClass('btn-imageList active');
         $this->btnImageListView->UseWrapper = false;
-        $this->btnImageListView->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnImageListView_Click'));
+        $this->btnImageListView->addAction(new Q\Event\Click(), new Ajax('btnImageListView_Click'));
 
-        $this->btnListView = new Q\Plugin\Button($this);
+        $this->btnListView = new Bs\Button($this);
         $this->btnListView->Glyph = 'fa fa-align-justify';
         $this->btnListView->CssClass = 'btn btn-darkblue';
         $this->btnListView->addCssClass('btn-list');
         $this->btnListView->UseWrapper = false;
-        $this->btnListView->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnListView_Click'));
+        $this->btnListView->addAction(new Q\Event\Click(), new Ajax('btnListView_Click'));
 
-        $this->btnBoxView = new Q\Plugin\Button($this);
+        $this->btnBoxView = new Bs\Button($this);
         $this->btnBoxView->Glyph = 'fa fa-th-large';
         $this->btnBoxView->CssClass = 'btn btn-darkblue';
         $this->btnBoxView->addCssClass('btn-box');
         $this->btnBoxView->UseWrapper = false;
-        $this->btnBoxView->addAction(new Q\Event\Click(), new Q\Action\Ajax('btnBoxView_Click'));
+        $this->btnBoxView->addAction(new Q\Event\Click(), new Ajax('btnBoxView_Click'));
 
         $this->txtFilter = new Bs\TextBox($this);
         $this->txtFilter->Placeholder = t('Search...');
@@ -397,11 +409,11 @@ class SampleForm extends Form
      *
      * @return void
      */
-    public function createModals()
+    public function createModals(): void
     {
         $this->dlgModal1 = new Bs\Modal($this);
         $this->dlgModal1->Title = t('Warning');
-        $this->dlgModal1->Text = t('<p style="margin-top: 15px;">Corrupted table "folders" in the database or folder "upload" in the file system!</p>
+        $this->dlgModal1->Text = t('<p style="margin-top: 15px;">A corrupted table "folders" in the database or folder "upload" in the file system!</p>
                                     <p style="margin-top: 15px;">The table and the file system must be in sync.</p>
                                     <p style="margin-top: 15px;">Please contact the developer or webmaster!</p>');
         $this->dlgModal1->HeaderClasses = 'btn-danger';
@@ -419,7 +431,7 @@ class SampleForm extends Form
 
         $this->dlgModal3 = new Bs\Modal($this);
         $this->dlgModal3->Title = t('Tip');
-        $this->dlgModal3->Text = t('<p style="margin-top: 15px;">Please choose only specific folder to upload files!</p>');
+        $this->dlgModal3->Text = t('<p style="margin-top: 15px;">Please choose only a specific folder to upload files!</p>');
         $this->dlgModal3->HeaderClasses = 'btn-darkblue';
         $this->dlgModal3->addCloseButton(t("I close the window"));
 
@@ -437,8 +449,8 @@ class SampleForm extends Form
         $this->dlgModal5->addButton(t("I will continue"), null, false, false, null,
             ['class' => 'btn btn-orange']);
         $this->dlgModal5->addCloseButton(t("I'll cancel"));
-        $this->dlgModal5->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('startUploadProcess_Click'));
-        $this->dlgModal5->addAction(new Bs\Event\ModalHidden(), new \QCubed\Action\Ajax('dataClearing_Click'));
+        $this->dlgModal5->addAction(new DialogButton(), new Ajax('startUploadProcess_Click'));
+        $this->dlgModal5->addAction(new Bs\Event\ModalHidden(), new Ajax('dataClearing_Click'));
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         // NEW FOLDER
@@ -464,28 +476,28 @@ class SampleForm extends Form
         $this->dlgModal8->addButton(t("I will continue"), null, false, false, null,
             ['class' => 'btn btn-orange']);
         $this->dlgModal8->addCloseButton(t("I'll cancel"));
-        $this->dlgModal8->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('startAddFolderProcess_Click'));
-        $this->dlgModal8->addAction(new Bs\Event\ModalHidden(), new \QCubed\Action\Ajax('dataClearing_Click'));
+        $this->dlgModal8->addAction(new DialogButton(), new Ajax('startAddFolderProcess_Click'));
+        $this->dlgModal8->addAction(new Bs\Event\ModalHidden(), new Ajax('dataClearing_Click'));
 
         $this->dlgModal9 = new Bs\Modal($this);
         $this->dlgModal9->AutoRenderChildren = true;
-        $this->dlgModal9->Title = t('Name of new folder');
+        $this->dlgModal9->Title = t('Name of a new folder');
         $this->dlgModal9->HeaderClasses = 'btn-default';
         $this->dlgModal9->addButton(t("I accept"), null, false, false, null,
             ['class' => 'btn btn-orange']);
         $this->dlgModal9->addCloseButton(t("I'll cancel"));
-        $this->dlgModal9->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('addFolderName_Click'));
-        $this->dlgModal9->addAction(new Bs\Event\ModalHidden(), new \QCubed\Action\Ajax('dataClearing_Click'));
+        $this->dlgModal9->addAction(new DialogButton(), new Ajax('addFolderName_Click'));
+        $this->dlgModal9->addAction(new Bs\Event\ModalHidden(), new Ajax('dataClearing_Click'));
 
         $this->dlgModal10 = new Bs\Modal($this);
-        $this->dlgModal10->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">New folder created successfully!</p>');
+        $this->dlgModal10->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">A new folder created successfully!</p>');
         $this->dlgModal10->Title = t("Success");
         $this->dlgModal10->HeaderClasses = 'btn-success';
         $this->dlgModal10->addCloseButton(t("I close the window"));
 
         $this->dlgModal11 = new Bs\Modal($this);
         $this->dlgModal11->Title = t('Warning');
-        $this->dlgModal11->Text = t('<p style="margin-top: 15px;">Failed to create new folder!</p>');
+        $this->dlgModal11->Text = t('<p style="margin-top: 15px;">Failed to create a new folder!</p>');
         $this->dlgModal11->HeaderClasses = 'btn-danger';
         $this->dlgModal11->addCloseButton(t("I understand"));
 
@@ -518,8 +530,8 @@ class SampleForm extends Form
         $this->dlgModal15->addButton(t("I accept"), null, false, false, null,
             ['class' => 'btn btn-orange']);
         $this->dlgModal15->addCloseButton(t("I'll cancel"));
-        $this->dlgModal15->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('renameName_Click'));
-        $this->dlgModal15->addAction(new Bs\Event\ModalHidden(), new \QCubed\Action\Ajax('dataClearing_Click'));
+        $this->dlgModal15->addAction(new DialogButton(), new Ajax('renameName_Click'));
+        $this->dlgModal15->addAction(new Bs\Event\ModalHidden(), new Ajax('dataClearing_Click'));
 
         $this->dlgModal16 = new Bs\Modal($this);
         $this->dlgModal16->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">Folder name changed successfully!</p>');
@@ -528,7 +540,7 @@ class SampleForm extends Form
         $this->dlgModal16->addCloseButton(t("I close the window"));
 
         $this->dlgModal17 = new Bs\Modal($this);
-        $this->dlgModal17->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">Failed to rename folder!</p>');
+        $this->dlgModal17->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">Failed to rename a folder!</p>');
         $this->dlgModal17->Title = t("Warning");
         $this->dlgModal17->HeaderClasses = 'btn-danger';
         $this->dlgModal17->addCloseButton(t("I understand"));
@@ -540,7 +552,7 @@ class SampleForm extends Form
         $this->dlgModal18->addCloseButton(t("I close the window"));
 
         $this->dlgModal19 = new Bs\Modal($this);
-        $this->dlgModal19->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">Failed to rename file!</p>');
+        $this->dlgModal19->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">Failed to rename a file!</p>');
         $this->dlgModal19->Title = t("Warning");
         $this->dlgModal19->HeaderClasses = 'btn-danger';
         $this->dlgModal19->addCloseButton(t("I understand"));
@@ -567,8 +579,8 @@ class SampleForm extends Form
         $this->dlgModal22->addButton(t("I will continue"), null, false, false, null,
             ['class' => 'btn btn-orange']);
         $this->dlgModal22->addCloseButton(t("I'll cancel"));
-        $this->dlgModal22->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('startCopyingProcess_Click'));
-        $this->dlgModal22->addAction(new Bs\Event\ModalHidden(), new \QCubed\Action\Ajax('dataClearing_Click'));
+        $this->dlgModal22->addAction(new DialogButton(), new Ajax('startCopyingProcess_Click'));
+        $this->dlgModal22->addAction(new Bs\Event\ModalHidden(), new Ajax('dataClearing_Click'));
 
         $this->dlgModal23 = new Bs\Modal($this);
         $this->dlgModal23->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">Selected files and folders have been copied successfully!</p>');
@@ -605,8 +617,8 @@ class SampleForm extends Form
         $this->dlgModal27->addButton(t("I will continue"), null, false, false, null,
             ['class' => 'btn btn-orange']);
         $this->dlgModal27->addCloseButton(t("I'll cancel"));
-        $this->dlgModal27->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('startDeletionProcess_Click'));
-        $this->dlgModal27->addAction(new Bs\Event\ModalHidden(), new \QCubed\Action\Ajax('dataClearing_Click'));
+        $this->dlgModal27->addAction(new DialogButton(), new Ajax('startDeletionProcess_Click'));
+        $this->dlgModal27->addAction(new Bs\Event\ModalHidden(), new Ajax('dataClearing_Click'));
 
         $this->dlgModal28 = new Bs\Modal($this);
         $this->dlgModal28->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">The selected files and folders have been successfully deleted!</p>');
@@ -644,8 +656,8 @@ class SampleForm extends Form
         $this->dlgModal32->addButton(t("I will continue"), null, false, false, null,
             ['class' => 'btn btn-orange']);
         $this->dlgModal32->addCloseButton(t("I'll cancel"));
-        $this->dlgModal32->addAction(new \QCubed\Event\DialogButton(), new \QCubed\Action\Ajax('startMovingProcess_Click'));
-        $this->dlgModal32->addAction(new Bs\Event\ModalHidden(), new \QCubed\Action\Ajax('dataClearing_Click'));
+        $this->dlgModal32->addAction(new DialogButton(), new Ajax('startMovingProcess_Click'));
+        $this->dlgModal32->addAction(new Bs\Event\ModalHidden(), new Ajax('dataClearing_Click'));
 
         $this->dlgModal33 = new Bs\Modal($this);
         $this->dlgModal33->Text = t('<p style="line-height: 25px; margin-bottom: 2px;">The selected files and folders have been successfully moved!</p>');
@@ -698,7 +710,7 @@ class SampleForm extends Form
 
         $this->dlgModal40 = new Bs\Modal($this);
         $this->dlgModal40->Title = t('Tip');
-        $this->dlgModal40->Text = t('<p style="margin-top: 15px;">Please select a image!</p>');
+        $this->dlgModal40->Text = t('<p style="margin-top: 15px;">Please select an image!</p>');
         $this->dlgModal40->HeaderClasses = 'btn-darkblue';
         $this->dlgModal40->addCloseButton(t("I close the window"));
 
@@ -745,11 +757,13 @@ class SampleForm extends Form
     }
 
     /**
-     * Initializes and sets up two DestinationInfo panels with specific modal dialogs.
+     * Sets up destination information panels for two modal dialogs.
+     * Initializes new instances of the `DestinationInfo` class and assigns them to specific modals.
      *
-     * @return void
+     * @return void This method performs operations for setting destination information panels but does not return any value.
+     * @throws Caller
      */
-    public function portedCheckDestination()
+    public function portedCheckDestination(): void
     {
         $pnl1 = new Q\Plugin\DestinationInfo($this->dlgModal5);
         $pnl2 = new Q\Plugin\DestinationInfo($this->dlgModal8);
@@ -761,11 +775,12 @@ class SampleForm extends Form
      * their styles, visibility, and required attributes.
      *
      * @return void
+     * @throws Caller
      */
-    public function portedAddFolderTextBox()
+    public function portedAddFolderTextBox(): void
     {
         $this->lblError = new Q\Plugin\Label($this->dlgModal9);
-        $this->lblError->Text = t('Folder cannot be created without name!');
+        $this->lblError->Text = t('Folder cannot be created without a name!');
         $this->lblError->addCssClass("modal-error-text hidden");
         $this->lblError->setCssStyle('color', '#ff0000');
         $this->lblError->setCssStyle('font-weight', 600);
@@ -793,8 +808,9 @@ class SampleForm extends Form
      * Initializes and configures text boxes and error label messages for renaming functionality.
      *
      * @return void
+     * @throws Caller
      */
-    public function portedRenameTextBox()
+    public function portedRenameTextBox(): void
     {
         $this->lblDirectoryError = new Q\Plugin\Label($this->dlgModal15);
         $this->lblDirectoryError->Text = t('The name of the main directory cannot be changed!');
@@ -832,8 +848,9 @@ class SampleForm extends Form
      * Initializes and configures labels and a dropdown list box for managing source and destination folder selection.
      *
      * @return void
+     * @throws Caller
      */
-    public function portedCopyingListBox()
+    public function portedCopyingListBox(): void
     {
         $this->lblDestinationError = new Q\Plugin\Label($this->dlgModal22);
         $this->lblDestinationError->Text = t('Please select a destination folder!');
@@ -844,22 +861,22 @@ class SampleForm extends Form
         $this->lblDestinationError->setCssStyle('padding-top', '5px');
         $this->lblDestinationError->UseWrapper = false;
 
-        $this->lblCourceTitle = new Q\Plugin\Label($this->dlgModal22);
-        $this->lblCourceTitle->Text = t('Source folder: ');
-        $this->lblCourceTitle->addCssClass('source-title');
-        $this->lblCourceTitle->setCssStyle('width', '100%');
-        $this->lblCourceTitle->setCssStyle('font-weight', 600);
-        $this->lblCourceTitle->setCssStyle('padding-right', '5px');
-        $this->lblCourceTitle->setCssStyle('padding-bottom', '5px');
-        $this->lblCourceTitle->UseWrapper = false;
+        $this->lblCourseTitle = new Q\Plugin\Label($this->dlgModal22);
+        $this->lblCourseTitle->Text = t('Source folder: ');
+        $this->lblCourseTitle->addCssClass('source-title');
+        $this->lblCourseTitle->setCssStyle('width', '100%');
+        $this->lblCourseTitle->setCssStyle('font-weight', 600);
+        $this->lblCourseTitle->setCssStyle('padding-right', '5px');
+        $this->lblCourseTitle->setCssStyle('padding-bottom', '5px');
+        $this->lblCourseTitle->UseWrapper = false;
 
-        $this->lblCourcePath = new Q\Plugin\Label($this->dlgModal22);
-        $this->lblCourcePath->addCssClass('source-path');
-        $this->lblCourcePath->setCssStyle('width', '100%');
-        $this->lblCourcePath->setCssStyle('font-weight', 400);
-        $this->lblCourcePath->setCssStyle('padding-right', '5px');
-        $this->lblCourcePath->setCssStyle('padding-bottom', '5px');
-        $this->lblCourcePath->UseWrapper = false;
+        $this->lblCoursePath = new Q\Plugin\Label($this->dlgModal22);
+        $this->lblCoursePath->addCssClass('source-path');
+        $this->lblCoursePath->setCssStyle('width', '100%');
+        $this->lblCoursePath->setCssStyle('font-weight', 400);
+        $this->lblCoursePath->setCssStyle('padding-right', '5px');
+        $this->lblCoursePath->setCssStyle('padding-bottom', '5px');
+        $this->lblCoursePath->UseWrapper = false;
 
         $this->lblCopyingTitle = new Q\Plugin\Label($this->dlgModal22);
         $this->lblCopyingTitle->Text = t('Destination folder: ');
@@ -873,18 +890,19 @@ class SampleForm extends Form
         $this->dlgCopyingDestination->Width = '100%';
         $this->dlgCopyingDestination->MinimumResultsForSearch = -1; // If you want to remove the search box, set it to "-1"
         $this->dlgCopyingDestination->SelectionMode = Q\Control\ListBoxBase::SELECTION_MODE_SINGLE;
-        $this->dlgCopyingDestination->AddItem(t('- Select One -'), null);
+        $this->dlgCopyingDestination->AddItem(t('- Select One -'));
         $this->dlgCopyingDestination->Theme = 'web-vauu';
-        $this->dlgCopyingDestination->AddAction(new Q\Event\Change(), new Q\Action\Ajax('dlgDestination_Change'));
+        $this->dlgCopyingDestination->AddAction(new Q\Event\Change(), new Ajax('dlgDestination_Change'));
     }
 
     /**
-     * Configures and initializes multiple label components for a modal dialog related to the deletion of files and folders.
-     * These labels display various deletion-related warnings, errors, and informational messages to the user.
+     * Configures and initializes multiple label components for a modal dialog related to the deletion of files and
+     * folders. These labels display various deletion-related warnings, errors, and informational messages to the user.
      *
      * @return void
+     * @throws Caller
      */
-    public function portedDeleteBox()
+    public function portedDeleteBox(): void
     {
         $this->lblDeletionWarning = new Q\Plugin\Label($this->dlgModal27);
         $this->lblDeletionWarning->Text = t('Are you sure you want to permanently delete these files and folders?');
@@ -943,11 +961,12 @@ class SampleForm extends Form
      * informational text, and user selections for the moving operation dialogs.
      *
      * @return void
+     * @throws Caller
      */
-    public function portedMovingListBox()
+    public function portedMovingListBox(): void
     {
         $this->lblMovingError = new Q\Plugin\Label($this->dlgModal32);
-        $this->lblMovingError->Text = t('Files are locked or cannot be moved together  with folders!');
+        $this->lblMovingError->Text = t('Files are locked or cannot be moved together with folders!');
         $this->lblMovingError->addCssClass("move-error-text hidden");
         $this->lblMovingError->setCssStyle('width', '100%');
         $this->lblMovingError->setCssStyle('color', '#ff0000');
@@ -972,20 +991,20 @@ class SampleForm extends Form
         $this->lblMovingDestinationError->setCssStyle('padding-top', '5px');
         $this->lblMovingDestinationError->UseWrapper = false;
 
-        $this->lblMovingCourceTitle = new Q\Plugin\Label($this->dlgModal32);
-        $this->lblMovingCourceTitle->Text = t('Source folder: ');
-        $this->lblMovingCourceTitle->addCssClass('moving-source-title');
-        $this->lblMovingCourceTitle->setCssStyle('font-weight', 600);
-        $this->lblMovingCourceTitle->setCssStyle('padding-right', '5px');
-        $this->lblMovingCourceTitle->setCssStyle('padding-bottom', '5px');
-        $this->lblMovingCourceTitle->UseWrapper = false;
+        $this->lblMovingCourseTitle = new Q\Plugin\Label($this->dlgModal32);
+        $this->lblMovingCourseTitle->Text = t('Source folder: ');
+        $this->lblMovingCourseTitle->addCssClass('moving-source-title');
+        $this->lblMovingCourseTitle->setCssStyle('font-weight', 600);
+        $this->lblMovingCourseTitle->setCssStyle('padding-right', '5px');
+        $this->lblMovingCourseTitle->setCssStyle('padding-bottom', '5px');
+        $this->lblMovingCourseTitle->UseWrapper = false;
 
-        $this->lblMovingCourcePath = new Q\Plugin\Label($this->dlgModal32);
-        $this->lblMovingCourcePath->addCssClass('moving-source-path');
-        $this->lblMovingCourcePath->setCssStyle('font-weight', 400);
-        $this->lblMovingCourcePath->setCssStyle('padding-right', '5px');
-        $this->lblMovingCourcePath->setCssStyle('padding-bottom', '5px');
-        $this->lblMovingCourcePath->UseWrapper = false;
+        $this->lblMovingCoursePath = new Q\Plugin\Label($this->dlgModal32);
+        $this->lblMovingCoursePath->addCssClass('moving-source-path');
+        $this->lblMovingCoursePath->setCssStyle('font-weight', 400);
+        $this->lblMovingCoursePath->setCssStyle('padding-right', '5px');
+        $this->lblMovingCoursePath->setCssStyle('padding-bottom', '5px');
+        $this->lblMovingCoursePath->UseWrapper = false;
 
         $this->lblMovingTitle = new Q\Plugin\Label($this->dlgModal32);
         $this->lblMovingTitle->Text = t('Destination folder: ');
@@ -999,9 +1018,10 @@ class SampleForm extends Form
         $this->dlgMovingDestination->Width = '100%';
         $this->dlgMovingDestination->MinimumResultsForSearch = -1; // If you want to remove the search box, set it to "-1"
         $this->dlgMovingDestination->SelectionMode = Q\Control\ListBoxBase::SELECTION_MODE_SINGLE;
-        $this->dlgMovingDestination->AddItem(t('- Select One -'), null);
+        $this->dlgMovingDestination->addCssClass('js-moving-destination');
+        $this->dlgMovingDestination->AddItem(t('- Select One -'));
         $this->dlgMovingDestination->Theme = 'web-vauu';
-        $this->dlgMovingDestination->AddAction(new Q\Event\Change(), new Q\Action\Ajax('dlgDestination_Change'));
+        $this->dlgMovingDestination->AddAction(new Q\Event\Change(), new Ajax('dlgDestination_Change'));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -1011,12 +1031,14 @@ class SampleForm extends Form
      * Handles the append data operation and executes the necessary JavaScript.
      *
      * @param ActionParams $params Parameters containing information for the action.
+     *
      * @return array The updated array containing appended data.
+     * @throws Caller
      */
-    public function appendData_Click(ActionParams $params)
+    public function appendData_Click(ActionParams $params): array
     {
-        $this->arrSomeArray = [["data-id" => 1, "data-path" => "", "data-item-type" => "dir", "data-locked" => 0, "data-activities-locked" => 0]];
-        Application::executeJavaScript(sprintf("$('.breadcrumbs').empty()"));
+        $this->arrSomeArray = [["data-id" => 1, "data-parent-id" => null, "data-path" => "", "data-item-type" => "dir", "data-locked" => 0, "data-activities-locked" => 0]];
+        Application::executeJavaScript("$('.breadcrumbs').empty()");
 
         return $this->arrSomeArray;
     }
@@ -1030,16 +1052,18 @@ class SampleForm extends Form
      * appropriate dialog messages are displayed and the process is halted.
      *
      * @param ActionParams $params The parameters associated with the action triggering this method.
-     * @return void This method does not return a value, but may execute JavaScript or show dialog messages.
+     *
+     * @return void This method does not return a value but may execute JavaScript or show dialog messages.
+     * @throws Caller
      */
-    public function uploadStart_Click(ActionParams $params)
+    public function uploadStart_Click(ActionParams $params): void
     {
         clearstatcache();
 
         Application::executeJavaScript("$('.alert').remove();");
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
         }
 
@@ -1075,9 +1099,9 @@ class SampleForm extends Form
         if ($this->strDataPath == "") {
             $_SESSION['folderId'] = 1;
             $_SESSION['filePath'] = "";
-            Application::executeJavaScript(sprintf("$('.modalPath').append('/')"));
+            Application::executeJavaScript("$('.modalPath').append('/')");
         } else {
-            Application::executeJavaScript(sprintf("$('.modalPath').append('{$this->strDataPath}')"));
+            Application::executeJavaScript("$('.modalPath').append('$this->strDataPath')");
         }
     }
 
@@ -1085,36 +1109,33 @@ class SampleForm extends Form
      * Displays a dialog box based on the provided modal number.
      *
      * @param int $modalNumber The numerical identifier for the dialog to be displayed.
+     *
      * @return void
      */
-    private function showDialog($modalNumber)
+    private function showDialog(int $modalNumber): void
     {
         $dialog = $this->getDialogByNumber($modalNumber);
         $dialog->showDialogBox();
     }
 
+
     /**
-     * Retrieves the dialog object corresponding to the given modal number.
+     * Retrieves the dialog instance corresponding to the provided modal number.
+     * Depending on the input number, the appropriate dialog object is returned.
+     * Falls back to a default dialog if the number does not match any predefined cases.
      *
      * @param int $modalNumber The number of the modal to retrieve.
-     * @return object The dialog object associated with the given modal number,
-     *                or dlgModal3 by default if the number is not recognized.
+     *
+     * @return object|null The dialog object associated with the specified modal number, or the default dialog if no match is found.
      */
-    private function getDialogByNumber($modalNumber)
+    private function getDialogByNumber(int $modalNumber): ?object
     {
-        switch ($modalNumber) {
-            case 2:
-                return $this->dlgModal2;
-            case 3:
-                return $this->dlgModal3;
-            case 5:
-                return $this->dlgModal5;
-            case 7:
-                return $this->dlgModal7;
-            default:
-                // Default to dlgModal3 if an unknown modal number is provided.
-                return $this->dlgModal3;
-        }
+        return match ($modalNumber) {
+            2 => $this->dlgModal2,
+            5 => $this->dlgModal5,
+            7 => $this->dlgModal7,
+            default => $this->dlgModal3,
+        };
     }
 
     /**
@@ -1122,9 +1143,11 @@ class SampleForm extends Form
      * and executing a JavaScript script to set up the required upload interface.
      *
      * @param ActionParams $params Information related to the action triggering this function.
+     *
      * @return void
+     * @throws Caller
      */
-    public function startUploadProcess_Click(ActionParams $params)
+    public function startUploadProcess_Click(ActionParams $params): void
     {
         $script = "
             $('.fileupload-buttonbar').removeClass('hidden');
@@ -1146,9 +1169,13 @@ class SampleForm extends Form
      * Handles the action triggered when confirming the parent folder operation.
      *
      * @param ActionParams $params Parameters passed to the action triggered by the user.
+     *
      * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     * @throws RandomException
      */
-    public function confirmParent_Click(ActionParams $params)
+    public function confirmParent_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -1158,7 +1185,7 @@ class SampleForm extends Form
 
         $path = $this->objManager->RootPath . $this->strDataPath;
 
-        $folderId = isset($_SESSION['folderId']) ? $_SESSION['folderId'] : null;
+        $folderId = $_SESSION['folderId'] ?? null;
 
         if ($folderId) {
             $objFolder = Folders::loadById($folderId);
@@ -1176,9 +1203,11 @@ class SampleForm extends Form
      * Handles the click event for the "Back" button and performs UI updates.
      *
      * @param ActionParams $params Parameters related to the triggered action.
+     *
      * @return void
+     * @throws Caller
      */
-    public function btnBack_Click(ActionParams $params)
+    public function btnBack_Click(ActionParams $params): void
     {
         $script = "
             $('.fileupload-buttonbar').addClass('hidden');
@@ -1199,9 +1228,11 @@ class SampleForm extends Form
      * Handles the actions to be performed when the "Done" button is clicked.
      *
      * @param ActionParams $params The parameters for the action triggered by the button click.
+     *
      * @return void This method does not return a value.
+     * @throws Caller
      */
-    protected function btnDone_Click(ActionParams $params)
+    protected function btnDone_Click(ActionParams $params): void
     {
         unset($_SESSION['folderId']);
         unset($_SESSION['filePath']);
@@ -1228,14 +1259,16 @@ class SampleForm extends Form
      * validating input data, and setting certain properties if all checks are satisfied.
      *
      * @param ActionParams $params The parameters associated with the action triggering this method.
+     *
      * @return void No return value. Displays modal dialog boxes for errors or confirmations as needed.
+     * @throws Caller
      */
-    public function btnAddFolder_Click(ActionParams $params)
+    public function btnAddFolder_Click(ActionParams $params): void
     {
         clearstatcache();
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
         }
 
@@ -1263,9 +1296,9 @@ class SampleForm extends Form
         if ($this->strDataPath == "") {
             $this->intDataId = 1;
             $this->strDataPath = "";
-            Application::executeJavaScript(sprintf("$('.modalPath').append('/')"));
+            Application::executeJavaScript("$('.modalPath').append('/')");
         } else {
-            Application::executeJavaScript(sprintf("$('.modalPath').append('{$this->strDataPath}')"));
+            Application::executeJavaScript("$('.modalPath').append('$this->strDataPath')");
         }
     }
 
@@ -1274,9 +1307,12 @@ class SampleForm extends Form
      * clears relevant text fields, and binds JavaScript for UI interaction and validation during folder creation.
      *
      * @param ActionParams $params Contains parameters related to the action event.
+     *
      * @return void
+     * @throws Caller
+     * @throws RandomException
      */
-    public function startAddFolderProcess_Click(ActionParams $params)
+    public function startAddFolderProcess_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -1311,16 +1347,19 @@ class SampleForm extends Form
         });
     ";
 
-        Application::executeJavaScript(sprintf($javascript));
+        Application::executeJavaScript($javascript);
     }
 
     /**
      * Handles the addition of a new folder when triggered.
      *
      * @param ActionParams $params Parameters associated with the action triggering this method.
+     *
      * @return void
+     * @throws Caller
+     * @throws RandomException
      */
-    public function addFolderName_Click(ActionParams $params)
+    public function addFolderName_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -1350,14 +1389,14 @@ class SampleForm extends Form
      *
      * @return string The JavaScript code as a string, which modifies the modal's header, hides specific error text, displays other error text, and disables a button.
      */
-    private function getJavaScriptForEmptyFolder()
+    private function getJavaScriptForEmptyFolder(): string
     {
-        return sprintf("
+        return "
             $('.modal-header').removeClass('btn-default').addClass('btn-danger');
             $('.modal-error-same-text').addClass('hidden');
             $('.modal-error-text').removeClass('hidden');
             $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-        ");
+        ";
     }
 
     /**
@@ -1365,14 +1404,14 @@ class SampleForm extends Form
      *
      * @return string JavaScript code to update the modal's classes and attributes for a duplicate folder error.
      */
-    private function getJavaScriptForDuplicateFolder()
+    private function getJavaScriptForDuplicateFolder(): string
     {
-        return sprintf("
+        return "
             $('.modal-header').removeClass('btn-default').addClass('btn-danger');
             $('.modal-error-same-text').removeClass('hidden');
             $('.modal-error-text').addClass('hidden');
             $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-        ");
+        ";
     }
 
     /**
@@ -1381,9 +1420,12 @@ class SampleForm extends Form
      * @param string $text The name of the folder to be created, sanitized for use in URLs.
      * @param int|null $id The ID of the parent folder, if applicable. Null if no parent folder exists.
      * @param string $path The base path where the folder will be created.
+     *
      * @return void
+     * @throws Caller
+     * @throws InvalidCast
      */
-    protected function makeFolders($text, $id, $path)
+    protected function makeFolders(string $text, ?int $id, string $path): void
     {
         clearstatcache();
 
@@ -1432,7 +1474,7 @@ class SampleForm extends Form
      * @param ActionParams $params The parameters associated with the refresh action.
      * @return void This method does not return a value.
      */
-    public function btnRefresh_Click(ActionParams $params)
+    public function btnRefresh_Click(ActionParams $params): void
     {
         $this->objManager->refresh();
     }
@@ -1447,15 +1489,17 @@ class SampleForm extends Form
      *
      * @param ActionParams $params Parameters provided during the button click, which may include details
      *                             about the triggering action or event metadata.
+     *
      * @return void This method does not return a value, but it updates the internal state of the application,
-     *              displays dialog boxes, or executes JavaScript functions based on the results of its checks.
+     *              displays dialog boxes or executes JavaScript functions based on the results of its checks.
+     * @throws Caller
      */
-    public function btnRename_Click(ActionParams $params)
+    public function btnRename_Click(ActionParams $params): void
     {
         clearstatcache();
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
         }
 
@@ -1482,7 +1526,14 @@ class SampleForm extends Form
         $this->strDataType = $this->arrSomeArray[0]["data-item-type"];
         $this->intDataLocked = $this->arrSomeArray[0]["data-locked"];
 
-        $this->txtRename->Text = $this->strDataName;
+        $strFile = $this->objManager->RootPath . $this->strDataPath;
+
+        if (is_file($strFile)) {
+            $strName = pathinfo($strFile, PATHINFO_FILENAME);
+            $this->txtRename->Text = $strName;
+        } else {
+            $this->txtRename->Text = $this->strDataName;
+        }
 
         $this->dlgModal15->showDialogBox();
 
@@ -1496,9 +1547,11 @@ class SampleForm extends Form
     /**
      * Executes JavaScript code to dynamically modify the DOM elements of a modal when a file upload error occurs.
      *
-     * @return void This method does not return any value, as it directly executes the JavaScript code to handle upload errors.
+     * @return void This method does not return any value, as it directly executes the JavaScript code to handle upload
+     *     errors.
+     * @throws Caller
      */
-    private function showUploadError()
+    private function showUploadError(): void
     {
         $script = "
             $('.modal-header').removeClass('btn-default').addClass('btn-danger');
@@ -1513,11 +1566,13 @@ class SampleForm extends Form
 
     /**
      * Generates and executes JavaScript code to handle user input validation in a rename modal.
-     * The script dynamically updates the modal's appearance and behavior based on the text length within the input field.
+     * The script dynamically updates the modal's appearance and behavior based on the text length within the input
+     * field.
      *
      * @return void The method executes the JavaScript code directly and does not return a value.
+     * @throws Caller
      */
-    private function showRenameJavaScript()
+    private function showRenameJavaScript(): void
     {
         $script = "
             $('.modal-check-rename-textbox').on('keyup keydown', function() {
@@ -1541,10 +1596,16 @@ class SampleForm extends Form
     /**
      * Handles the click event for renaming an item (file or directory) based on the provided parameters.
      *
-     * @param ActionParams $params The parameters associated with the rename action, including relevant data for processing the rename operation.
-     * @return void This method does not return any value but initiates rename operations, updates the UI, and handles related post-rename tasks.
+     * @param ActionParams $params The parameters associated with the rename action, including relevant data for
+     *     processing the rename operation.
+     *
+     * @return void This method does not return any value but initiates rename operations, updates the UI, and handles
+     *     related post-rename tasks.
+     * @throws Caller
+     * @throws InvalidCast
+     * @throws RandomException
      */
-    public function renameName_Click(ActionParams $params)
+    public function renameName_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -1579,9 +1640,10 @@ class SampleForm extends Form
      * Verifies if renaming a file or folder to the given name is not allowed by checking for naming conflicts in the directory.
      *
      * @param string $path The full path of the file or folder to be renamed.
+     *
      * @return bool Returns true if renaming is not allowed due to a naming conflict, otherwise false.
      */
-    private function isRenameNotAllowed($path)
+    private function isRenameNotAllowed(string $path): bool
     {
         $ext = pathinfo($path, PATHINFO_EXTENSION);
         $files = array_diff(scandir(dirname($path)), array('..', '.'));
@@ -1594,16 +1656,18 @@ class SampleForm extends Form
     /**
      * Executes JavaScript code to update the DOM elements of a modal when a rename error occurs.
      *
-     * @return void Executes a JavaScript snippet that modifies the modal's header styling, displays the rename error message, hides other error messages, and disables a specific button in the modal footer.
+     * @return void Executes a JavaScript snippet that modifies the modal's header styling, displays the rename error
+     *     message, hides other error messages, and disables a specific button in the modal footer.
+     * @throws Caller
      */
-    private function showRenameError()
+    private function showRenameError(): void
     {
-        Application::executeJavaScript(sprintf("
-        $('.modal-header').removeClass('btn-default').addClass('btn-danger');
-        $('.modal-error-rename-text').removeClass('hidden');
-        $('.modal-error-text').addClass('hidden');
-        $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-    "));
+        Application::executeJavaScript("
+            $('.modal-header').removeClass('btn-default').addClass('btn-danger');
+            $('.modal-error-rename-text').removeClass('hidden');
+            $('.modal-error-text').addClass('hidden');
+            $('.modal-footer .btn-orange').attr('disabled', 'disabled');
+        ");
     }
 
     /**
@@ -1613,10 +1677,12 @@ class SampleForm extends Form
      *
      * @return void This method does not return a value but updates directory and file paths both in the file system
      *              and the database, ensuring data consistency.
+     * @throws Caller
+     * @throws InvalidCast
      */
-    private function renameDirectory()
+    private function renameDirectory(): void
     {
-        // Perform directory renaming logic
+        // Perform a directory renaming logic
 
         $path = $this->objManager->RootPath . $this->strDataPath;
         $parts = pathinfo($path);
@@ -1648,7 +1714,6 @@ class SampleForm extends Form
                 }
             }
 
-            $this->handleResult();
         } else {
             // If there are subfolders and files in the folder, they must also be renamed.
             $this->tempItems = $this->fullScanIds($this->intDataId);
@@ -1697,9 +1762,9 @@ class SampleForm extends Form
                         $newPath = str_replace(basename($this->strDataPath), $sanitizedName, $objFile->Path);
                         $this->strNewPath = $this->objManager->RootPath . $newPath;
 
-                        if (is_file($this->objManager->RootPath . $objFile->getPath())) {
-                            $this->objManager->rename($this->objManager->RootPath . $objFile->getPath(), $this->objManager->RootPath . $this->strNewPath);
-                        }
+                        // if (is_file($this->objManager->RootPath . $objFile->getPath())) {
+                            // $this->objManager->rename($this->objManager->RootPath . $objFile->getPath(), $this->objManager->RootPath . $this->strNewPath);
+                        // }
 
                         $obj = Files::loadById($objFile->getId());
                         $obj->Path = $this->objManager->getRelativePath($this->strNewPath);
@@ -1708,19 +1773,20 @@ class SampleForm extends Form
                     }
                 }
             }
-
-            $this->handleResult();
         }
+        $this->handleResult();
     }
 
     /**
      * Renames a file and updates its associated metadata in the database. The method also ensures that
      * the file is renamed consistently in related temporary directories if applicable.
      *
-     * @return void This method does not return a value but performs file renaming operations, updates file metadata,
+     * @return void This method does not return a value but performs a file renaming operation, updates file metadata,
      *              and handles the result of the rename operation.
+     * @throws Caller
+     * @throws InvalidCast
      */
-    private function renameFile()
+    private function renameFile(): void
     {
         // Perform file renaming logic
 
@@ -1757,7 +1823,7 @@ class SampleForm extends Form
      *
      * @return void This method does not return any value but dynamically shows or hides dialog boxes based on the operation result and data type (directory or file).
      */
-    private function handleResult()
+    private function handleResult(): void
     {
         // Handle success or failure scenarios after renaming
 
@@ -1780,15 +1846,16 @@ class SampleForm extends Form
     }
 
     /**
-     * Executes JavaScript code to update the breadcrumbs in the application's UI after a rename operation,
+     * Executes JavaScript code to update the breadcrumbs in the application's UI after a rename operation
      * if a specific condition related to the array size is met.
      *
      * @return void Executes JavaScript code directly without returning any value.
+     * @throws Caller
      */
-    private function postRenameOperations()
+    private function postRenameOperations(): void
     {
         if (count($this->arrSomeArray) === 1) {
-            Application::executeJavaScript(sprintf("$('.breadcrumbs').empty()"));
+            Application::executeJavaScript("$('.breadcrumbs').empty()");
         }
     }
 
@@ -1803,8 +1870,10 @@ class SampleForm extends Form
      * @param ActionParams $params Action parameters containing the context of the button click.
      *
      * @return void Does not return a value. Displays modal dialogs or populates selection dialogs based on conditions.
+     * @throws Caller
+     * @throws RandomException
      */
-    public function btnCrop_Click(ActionParams $params)
+    public function btnCrop_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -1818,12 +1887,12 @@ class SampleForm extends Form
         $fullFilePath = $this->objManager->RootUrl . $this->strDataPath;
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
         }
 
         if (!$this->arrSomeArray) {
-            $this->dlgModal40->showDialogBox(); // Please select a image!
+            $this->dlgModal40->showDialogBox(); // Please select an image!
             return;
         }
 
@@ -1876,7 +1945,7 @@ class SampleForm extends Form
      * @param ActionParams $params The parameters passed from the action triggering this method.
      * @return void This method does not return a value.
      */
-    public function objManagerRefresh_Click(ActionParams $params)
+    public function objManagerRefresh_Click(ActionParams $params): void
     {
         if (file_exists($this->objManager->RootPath . $this->dlgPopup->FinalPath)) {
             $this->dlgModal43->showDialogBox(); // Image cropping succeeded!
@@ -1894,13 +1963,16 @@ class SampleForm extends Form
      * Handles the click event for the Copy button, performing operations related to copying folders and files.
      *
      * This method performs a series of tasks, including validation, data preparation, processing,
-     * and updating the UI before initiating a copy operation. It interacts with folder and file data
+     * and updating the UI before initiating a copy operation. It interacts with a folder and file data
      * and manages the user interface elements related to the copy functionality.
      *
      * @param ActionParams $params The parameters associated with the action event triggered by the Copy button.
+     *
      * @return void This method does not return a value but performs operations directly related to the copy functionality.
+     * @throws Caller
+     * @throws RandomException
      */
-    public function btnCopy_Click(ActionParams $params)
+    public function btnCopy_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -1936,14 +2008,16 @@ class SampleForm extends Form
      * Checks the integrity of the file system and database, ensures that a valid selection exists,
      * and ensures that copying to the root directory is not attempted.
      *
-     * @return bool Returns true if all conditions are met for copying; otherwise, returns false and shows an appropriate dialog box.
+     * @return bool Returns true if all conditions are met for copying; otherwise, returns false and shows an
+     *     appropriate dialog box.
+     * @throws Caller
      */
-    private function validateCopyConditions()
+    private function validateCopyConditions(): bool
     {
         clearstatcache();
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
             return false;
         }
 
@@ -1964,9 +2038,9 @@ class SampleForm extends Form
      * Prepares and processes data for copying by organizing selected items into a temporary array.
      * Iterates through input data, collects the necessary file paths, and stores them for further operations.
      *
-     * @return void This function does not return any value, but modifies internal class properties to store the prepared data.
+     * @return void This function does not return any value but modifies internal class properties to store the prepared data.
      */
-    private function prepareCopyData()
+    private function prepareCopyData(): void
     {
         // Preparing and sending data to the function fullCopy($src, $dst)
 
@@ -1985,12 +2059,13 @@ class SampleForm extends Form
     /**
      * Processes the copying of data by handling both folder and file operations.
      *
-     * @param object $objFolders An object containing information about the folders to be copied.
-     * @param object $objFiles An object containing information about the files to be copied.
+     * @param array $objFolders An object containing information about the folders to be copied.
+     * @param array $objFiles An object containing information about the files to be copied.
      *
      * @return void
+     * @throws Caller
      */
-    private function processCopyData($objFolders, $objFiles)
+    private function processCopyData(array $objFolders, array $objFiles): void
     {
         // Processing logic for copying data
 
@@ -2004,10 +2079,13 @@ class SampleForm extends Form
      * This method processes an array of objects representing folders, identifying
      * and copying their paths based on specific conditions.
      *
-     * @param array $objFolders Array of folder objects to be processed. Each object should provide methods to retrieve its ID and path.
+     * @param array $objFolders Array of folder objects to be processed. Each object should provide methods to retrieve
+     *     its ID and path.
+     *
      * @return void No return value, as the method operates directly on the class's internal properties.
+     * @throws Caller
      */
-    private function copyDirectory($objFolders)
+    private function copyDirectory(array $objFolders): void
     {
         // Perform directory copying logic
 
@@ -2037,17 +2115,17 @@ class SampleForm extends Form
      * Copies specified file objects by matching their folder or file IDs with predefined arrays and updating an internal temporary items list.
      *
      * @param array $objFiles An array of file objects to be processed. Each file object should provide methods to retrieve folder IDs and file paths.
+     *
      * @return void This method does not return a value; it updates the internal state by modifying the temporary items list.
      */
-    private function copyFile($objFiles)
+    private function copyFile(array $objFiles): void
     {
         // Perform file copying logic
 
-        $tempIds = [];
         $dataFiles = [];
 
         foreach ($objFiles as $objFile) {
-            foreach ($tempIds as $tempId) {
+            foreach ([] as $tempId) {
                 if ($objFile->getFolderId() == $tempId) {
                     $this->tempItems[] = $objFile->getPath();
                 }
@@ -2074,13 +2152,14 @@ class SampleForm extends Form
      * Updates the copy destination dialog interface by scanning directories, marking locked directories,
      * and populating the dialog with relevant items.
      *
-     * This method identifies locked directories based on the current state and additional checks,
+     * This method identifies locked directories based on the current state and additional checks 
      * and then integrates the scanned paths into the copy destination dialog with appropriate markers.
      * Locked directories are highlighted based on specific conditions.
      *
      * @return void This method does not return a value.
+     * @throws Caller
      */
-    private function updateCopyDestinationDialog()
+    private function updateCopyDestinationDialog(): void
     {
         // Update destination dialog UI
 
@@ -2094,50 +2173,58 @@ class SampleForm extends Form
 
         if ($objPaths) foreach ($objPaths as $objPath) {
             if ($objPath['activities_locked'] == 1) {
-                array_push($this->objLockedDirs, $objPath["path"]);
+                $this->objLockedDirs[] = $objPath["path"];
             }
         }
 
-        if ($objPaths) foreach ($objPaths as $objPath) {
-            if (in_array($objPath["path"], $this->objLockedDirs)) {
+        foreach ($objPaths as $folder) {
+            $level = $folder['depth'];
+            if ($this->checkString($folder['path'])) {
+                $level = 0;
+            }
+
+            if ($folder['activities_locked'] == 1) {
                 $mark = true;
             } else {
                 $mark = false;
             }
-            $this->dlgCopyingDestination->AddItem($this->printDepth($objPath['name'], $objPath['parent_id'], $objPath['depth']), $objPath, null, $mark);
+
+            $this->dlgCopyingDestination->AddItem($this->printDepth($folder['name'], $level), $folder['path'], null, $mark);
         }
     }
 
     /**
      * Displays the copy dialog and updates its state based on the conditions provided.
      * Adjusts labels, styles, enabled states of components, and executes necessary JavaScript code.
-     * Specifically, it handles the enabling/disabling of action buttons and shows the modal dialog for copying operations.
+     * Specifically, it handles the enabling/disabling of action buttons and shows the modal dialog for copying
+     * operations.
      *
      * @return void This method does not return any value.
+     * @throws Caller
      */
-    private function showCopyDialog()
+    private function showCopyDialog(): void
     {
         // Show the copy dialog
 
         if (count($this->tempItems) !== 0) {
             $source = join(', ', $this->tempItems);
-            $this->lblCourcePath->Text = $source;
-            $this->lblCourcePath->setCssStyle('color', '#000000');
+            $this->lblCoursePath->Text = $source;
+            $this->lblCoursePath->setCssStyle('color', '#000000');
             $this->dlgCopyingDestination->Enabled = true;
         } else {
-            $this->lblCourcePath->Text = t("It is not possible to copy the main directory!");
-            $this->lblCourcePath->setCssStyle('color', '#ff0000');
+            $this->lblCoursePath->Text = t("It is not possible to copy the main directory!");
+            $this->lblCoursePath->setCssStyle('color', '#ff0000');
             $this->dlgCopyingDestination->Enabled = false;
         }
 
         if (count($this->tempItems) == 0 || $this->dlgCopyingDestination->SelectedValue == null) {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-            "));
+            ");
         } else {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.modal-footer .btn-orange').removeAttr('disabled', 'disabled');
-            "));
+            ");
         }
 
         $this->dlgModal22->showDialogBox();  // Copy files or folders
@@ -2149,10 +2236,12 @@ class SampleForm extends Form
      * and updates the UI or handles the result accordingly.
      *
      * @param ActionParams $params Parameters for the action that trigger the copying process.
+     *
      * @return void This method does not return a value but performs operations such as validation,
-     *              file copying, and result handling.
+     *              file copying and result handling.
+     * @throws Caller
      */
-    public function startCopyingProcess_Click(ActionParams $params)
+    public function startCopyingProcess_Click(ActionParams $params): void
     {
         $objPath = $this->dlgCopyingDestination->SelectedValue;
 
@@ -2175,11 +2264,13 @@ class SampleForm extends Form
     // Helper functions
 
     /**
-     * Handles the error encountered during a copy operation by resetting the destination, displaying an error, and performing cleanup tasks.
+     * Handles the error encountered during a copy operation by resetting the destination, displaying an error, and
+     * performing cleanup tasks.
      *
      * @return void This method does not return a value as it focuses on error handling and cleanup processes.
+     * @throws Caller
      */
-    private function handleCopyError()
+    private function handleCopyError(): void
     {
         $this->resetDestinationAndDisplayError();
         $this->cleanupAfterCopy();
@@ -2190,21 +2281,23 @@ class SampleForm extends Form
      * Updates the modal's appearance and functionality by modifying the DOM elements to indicate an error state.
      * Ensures that the destination dropdown is reset with the default option when no value is selected.
      *
-     * @return void This method does not return a value, but executes JavaScript to update the modal's state and appearance.
+     * @return void This method does not return a value but executes JavaScript to update the modal's state and
+     *     appearance.
+     * @throws Caller
      */
-    private function resetDestinationAndDisplayError()
+    private function resetDestinationAndDisplayError(): void
     {
         if ($this->dlgCopyingDestination->SelectedValue == null) {
             $this->dlgCopyingDestination->removeAllItems();
-            $this->dlgCopyingDestination->AddItem(t('- Select One -'), null);
+            $this->dlgCopyingDestination->AddItem(t('- Select One -'));
 
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.modal-header').removeClass('btn-default').addClass('btn-danger');
                 $('.destination-error').removeClass('hidden');
                 $('.source-title').addClass('hidden');
                 $('.source-path').addClass('hidden');
                 $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-            "));
+            ");
         }
     }
 
@@ -2212,14 +2305,16 @@ class SampleForm extends Form
      * Copies the specified item from a source path to a destination path, maintaining the item's structure and contents.
      *
      * @param string $selectedItem The name or relative path of the item to be copied.
-     * @param array $objPath An associative array containing the key 'path', which specifies the destination directory.
+     * @param string $objPath An associative array containing the key 'path', which specifies the destination directory.
      *
      * @return void
+     * @throws Caller
+     * @throws InvalidCast
      */
-    private function fullCopyItem($selectedItem, $objPath)
+    private function fullCopyItem(string $selectedItem, string $objPath): void
     {
         $sourcePath = $this->objManager->RootPath . $selectedItem;
-        $destinationPath = $this->objManager->RootPath . $objPath['path'] . "/" . basename($selectedItem);
+        $destinationPath = $this->objManager->RootPath . $objPath . "/" . basename($selectedItem);
 
         // Perform the copying logic
         $this->fullCopy($sourcePath, $destinationPath);
@@ -2231,7 +2326,7 @@ class SampleForm extends Form
      *
      * @return void This method does not return a value. It manages the state and side effects of the copy operation.
      */
-    private function handleCopyResult()
+    private function handleCopyResult(): void
     {
         if ($this->intStoredChecks >= count($this->tempItems)) {
             $this->dlgModal23->showDialogBox(); // The selected files and folders have been successfully copied!
@@ -2248,7 +2343,7 @@ class SampleForm extends Form
      *
      * @return void This method does not return a value.
      */
-    private function cleanupAfterCopy()
+    private function cleanupAfterCopy(): void
     {
         unset($this->tempSelectedItems);
         unset($this->tempItems);
@@ -2260,13 +2355,18 @@ class SampleForm extends Form
     // DELETE
 
     /**
-     * Handles the click event for the delete button by performing validation checks and initiating the delete operation.
+     * Handles the click event for the delete button by performing validation checks and initiating the delete
+     * operation.
      *
-     * @param ActionParams $params Parameters passed to the action, which may contain context-specific data for the click event.
-     * @return void No value is returned. The method either performs an action, displays a specific dialog box for validation errors,
-     *              or initiates the delete operation for selected folders or files.
+     * @param ActionParams $params Parameters passed to the action, which may contain context-specific data for the
+     *     click event.
+     *
+     * @return void No value is returned. The method either performs an action, displays a specific dialog box for
+     *     validation errors, or initiates the delete operation for selected folders or files.
+     * @throws Caller
+     * @throws RandomException
      */
-    public function btnDelete_Click(ActionParams $params)
+    public function btnDelete_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -2277,7 +2377,7 @@ class SampleForm extends Form
         clearstatcache();
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
         }
 
@@ -2305,9 +2405,11 @@ class SampleForm extends Form
      * Initializes the delete operation by loading all folders and files, preparing and processing data for deletion,
      * and handling the necessary user interface updates associated with the delete operation.
      *
-     * @return void This method does not return any value; it performs the required setup and UI handling for the delete operation.
+     * @return void This method does not return any value; it performs the required setup and UI handling for the
+     *     delete operation.
+     * @throws Caller
      */
-    private function initializeDeleteOperation()
+    private function initializeDeleteOperation(): void
     {
         $objFolders = Folders::loadAll();
         $objFiles = Files::loadAll();
@@ -2327,7 +2429,7 @@ class SampleForm extends Form
      *
      * @return void This method does not return a value but modifies the object's state by populating the tempSelectedItems property with data-path values.
      */
-    private function prepareDeleteData()
+    private function prepareDeleteData(): void
     {
         // Preparing and sending data to the function fullRemove($dir)
 
@@ -2346,12 +2448,13 @@ class SampleForm extends Form
     /**
      * Handles the processing of deleting specified folders and files.
      *
-     * @param mixed $objFolders The object or data structure representing the folders to be deleted.
-     * @param mixed $objFiles The object or data structure representing the files to be deleted.
+     * @param array $objFolders The object or data structure representing the folders to be deleted.
+     * @param array $objFiles The object or data structure representing the files to be deleted.
      *
      * @return void
+     * @throws Caller
      */
-    private function processDeleteData($objFolders, $objFiles)
+    private function processDeleteData(array $objFolders, array $objFiles): void
     {
         // Processing logic for deleting data
 
@@ -2366,9 +2469,11 @@ class SampleForm extends Form
      *
      * @param array $objFolders An array of folder objects to be processed for deletion.
      * @param array $objFiles An array of file objects to be checked and processed for deletion.
+     *
      * @return void
+     * @throws Caller
      */
-    private function deleteDirectory($objFolders, $objFiles)
+    private function deleteDirectory(array $objFolders, array $objFiles): void
     {
         $dataFolders = [];
         $dataFiles = [];
@@ -2426,9 +2531,10 @@ class SampleForm extends Form
      * If a match is found, the file's path is added to a temporary array, and locked files are counted.
      *
      * @param array $objFiles An array of file objects, each providing methods to retrieve their ID, path, and locked status.
+     *
      * @return void This method does not return a value.
      */
-    private function deleteFile($objFiles)
+    private function deleteFile(array $objFiles): void
     {
         $dataFiles = [];
 
@@ -2441,8 +2547,6 @@ class SampleForm extends Form
         foreach ($objFiles as $objFile) {
             foreach ($dataFiles as $dataFile) {
                 if ($objFile->getId() == $dataFile) {
-
-
 
                     if ($objFile->getId() == $dataFile) {
                         $this->tempItems[] = $objFile->getPath();
@@ -2462,8 +2566,9 @@ class SampleForm extends Form
      * and allowing the user to proceed with or cancel the operation.
      *
      * @return void This method does not return a value. It updates the UI and displays the dialog box.
+     * @throws Caller
      */
-    private function deleteListDialog()
+    private function deleteListDialog(): void
     {
         // Update list dialog UI
 
@@ -2476,21 +2581,21 @@ class SampleForm extends Form
         // Here have to check if some files have already been locked before.
         //If so, cancel and select unlocked files again...
         if ($this->objLockedFiles !== 0) {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.deletion-warning-text').addClass('hidden');
                 $('.deletion-info-text').addClass('hidden');
                 $('.delete-error-text').removeClass('hidden');
                 $('.delete-info-text').removeClass('hidden');
                 $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-            "));
+            ");
         } else {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.deletion-warning-text').removeClass('hidden');
                 $('.deletion-info-text').removeClass('hidden');
                 $('.delete-error-text').addClass('hidden');
                 $('.delete-info-text').addClass('hidden');
                 $('.modal-footer .btn-orange').removeAttr('disabled', 'disabled');
-            "));
+            ");
         }
 
         $this->dlgModal27->showDialogBox(); // Delete files or folders
@@ -2500,9 +2605,13 @@ class SampleForm extends Form
      * Initiates the deletion process for selected items and updates the application state accordingly.
      *
      * @param ActionParams $params Parameters associated with the action triggering the deletion process.
+     *
      * @return void No value is returned as the method performs the deletion process and updates the dialog box state.
+     * @throws UndefinedPrimaryKey
+     * @throws Caller
+     * @throws InvalidCast
      */
-    public function startDeletionProcess_Click(ActionParams $params)
+    public function startDeletionProcess_Click(ActionParams $params): void
     {
         $this->dlgModal27->hideDialogBox(); // Delete files or folders
 
@@ -2519,9 +2628,13 @@ class SampleForm extends Form
      * Removes an item fully from the system by its path.
      *
      * @param string $tempSelectedItem The selected item path to be removed, relative to the root path.
+     *
      * @return void
+     * @throws UndefinedPrimaryKey
+     * @throws Caller
+     * @throws InvalidCast
      */
-    private function fullRemoveItem($tempSelectedItem)
+    private function fullRemoveItem(string $tempSelectedItem): void
     {
         $itemPath = $this->objManager->RootPath . $tempSelectedItem;
 
@@ -2535,7 +2648,7 @@ class SampleForm extends Form
      *
      * @return void
      */
-    private function handleDeletionResult()
+    private function handleDeletionResult(): void
     {
         if ($this->intStoredChecks >= count($this->tempItems)) {
             $this->dlgModal28->showDialogBox(); // The selected files and folders have been successfully deleted!
@@ -2552,7 +2665,7 @@ class SampleForm extends Form
      *
      * @return void
      */
-    private function cleanupAfterDeletion()
+    private function cleanupAfterDeletion(): void
     {
         unset($this->tempSelectedItems);
         unset($this->objLockedFiles);
@@ -2567,9 +2680,12 @@ class SampleForm extends Form
      * to process file and folder relocation, including validation, data preparation, and UI updates.
      *
      * @param ActionParams $params The parameters associated with the button click event, typically holding context regarding the action performed.
+     *
      * @return void This method does not return any value but performs multiple internal operations to handle the move process.
+     * @throws Caller
+     * @throws RandomException
      */
-    public function btnMove_Click(ActionParams $params)
+    public function btnMove_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -2608,13 +2724,14 @@ class SampleForm extends Form
      * Appropriate dialog boxes are displayed when validation fails, with specific error messages.
      *
      * @return bool Returns true if all move conditions are valid; otherwise, false.
+     * @throws Caller
      */
-    private function validateMoveConditions()
+    private function validateMoveConditions(): bool
     {
         clearstatcache();
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
             return false;
         }
 
@@ -2641,7 +2758,7 @@ class SampleForm extends Form
      *
      * @return void
      */
-    private function prepareMoveData()
+    private function prepareMoveData(): void
     {
         // Preparing and sending data to the function fullMove($src, $dst)
 
@@ -2660,12 +2777,13 @@ class SampleForm extends Form
     /**
      * Processes the data necessary for moving directories and files.
      *
-     * @param mixed $objFolders The folders data to process for moving.
-     * @param mixed $objFiles The files data to process for moving.
+     * @param array $objFolders The folder data to process for moving.
+     * @param array $objFiles The files data to process for moving.
      *
      * @return void
+     * @throws Caller
      */
-    private function processMoveData($objFolders, $objFiles)
+    private function processMoveData(array $objFolders, array $objFiles): void
     {
         // Processing logic for moving data
 
@@ -2678,9 +2796,11 @@ class SampleForm extends Form
      *
      * @param array $objFolders An array of folder objects to be moved.
      * @param array $objFiles An array of file objects to be moved.
+     *
      * @return void
+     * @throws Caller
      */
-    private function moveDirectory($objFolders, $objFiles)
+    private function moveDirectory(array $objFolders, array $objFiles): void
     {
         // Perform directory moving logic
 
@@ -2739,9 +2859,10 @@ class SampleForm extends Form
      * Moves specified files by performing necessary logic and updates internal properties.
      *
      * @param array $objFiles An array of file objects to be moved. Each file object must implement methods like getId, getPath, and getLockedFile.
+     *
      * @return void
      */
-    private function moveFile($objFiles)
+    private function moveFile(array $objFiles): void
     {
         // Perform file moving logic
 
@@ -2774,8 +2895,9 @@ class SampleForm extends Form
      * managing locks, and marking items for the UI based on specific conditions.
      *
      * @return void
+     * @throws Caller
      */
-    private function updateMoveDestinationDialog()
+    private function updateMoveDestinationDialog(): void
     {
         // Update destination dialog UI
 
@@ -2789,17 +2911,26 @@ class SampleForm extends Form
 
         if ($objPaths) foreach ($objPaths as $objPath) {
             if ($objPath['activities_locked'] == 1) {
-                array_push($this->objLockedDirs, $objPath["path"]);
+                $this->objLockedDirs[] = $objPath["path"];
             }
         }
 
-        if ($objPaths) foreach ($objPaths as $objPath) {
-            if (in_array($objPath["path"], $this->objLockedDirs)) {
+        foreach ($objPaths as $folder) {
+            $level = $folder['depth'];
+            if ($this->checkString($folder['path'])) {
+                $level = 0;
+            }
+
+            if (($folder['activities_locked'] == 1) ||
+                ($this->arrSomeArray[0]["data-path"] ==  $folder['path']) ||
+                ($this->arrSomeArray[0]["data-parent-id"] ==  $folder['id'])
+            ) {
                 $mark = true;
             } else {
                 $mark = false;
             }
-            $this->dlgMovingDestination->AddItem($this->printDepth($objPath['name'], $objPath['parent_id'], $objPath['depth']), $objPath, null, $mark);
+
+            $this->dlgMovingDestination->AddItem($this->printDepth($folder['name'], $level), $folder['path'], null, $mark);
         }
     }
 
@@ -2809,43 +2940,46 @@ class SampleForm extends Form
      * are locked, and enforces rules around move permissions and destination selection.
      *
      * @return void
+     * @throws Caller
      */
-    private function showMoveDialog()
+    private function showMoveDialog(): void
     {
         // Show the move dialog
 
         // Show folder and file names before moving
         if (count($this->tempItems) !== 0) {
             $source = implode(', ', $this->tempItems);
-            $this->lblMovingCourcePath->Text = $source;
+            $this->lblMovingCoursePath->Text = $source;
         }
 
         // Here have to check if some files have already been locked before.
         //If so, cancel and select unlocked files again...
         if ($this->objLockedFiles !== 0) {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.modal-header').removeClass('btn-default').addClass('btn-danger');
                 $('.move-error-text').removeClass('hidden');
                 $('.move-info-text').removeClass('hidden');
+                $('.js-moving-destination').prop('disabled', true); 
                 $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-            "));
+            ");
         } else {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.modal-header').removeClass('btn-danger').addClass('btn-default');
                 $('.move-error-text').addClass('hidden');
                 $('.move-info-text').addClass('hidden');
+                $('.js-moving-destination').prop('disabled', false); 
                 $('.modal-footer .btn-orange').removeAttr('disabled', 'disabled');
-            "));
+            ");
         }
 
         if ($this->dlgMovingDestination->SelectedValue == null) {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-            "));
+            ");
         } else {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.modal-footer .btn-orange').removeAttr('disabled', 'disabled');
-            "));
+            ");
         }
 
         $this->dlgModal32->showDialogBox(); // Move files or folders
@@ -2855,9 +2989,11 @@ class SampleForm extends Form
      * Handles the click event for starting the moving process of files or folders.
      *
      * @param ActionParams $params Parameters associated with the action event, such as user interaction data.
+     *
      * @return void
+     * @throws Caller
      */
-    public function startMovingProcess_Click(ActionParams $params)
+    public function startMovingProcess_Click(ActionParams $params): void
     {
         $objPath = $this->dlgMovingDestination->SelectedValue;
 
@@ -2865,6 +3001,8 @@ class SampleForm extends Form
             $this->handleMovingError();
             return;
         }
+
+        $this->dlgMovingDestination->Enabled = false;
 
         $this->dlgModal32->hideDialogBox(); // Move files or folders
 
@@ -2883,16 +3021,18 @@ class SampleForm extends Form
      * Moves the selected item from its source path to the specified destination path.
      *
      * @param string $selectedItem The name or path of the item to be moved.
-     * @param array $objPath An associative array containing the destination path details.
+     * @param string $objPath An associative array containing the destination path details.
      *                        Example: ['path' => 'target_directory']
+     *
      * @return void
+     * @throws UndefinedPrimaryKey
+     * @throws Caller
+     * @throws InvalidCast
      */
-    private function fullMoveItem($selectedItem, $objPath)
+    private function fullMoveItem(string $selectedItem, string $objPath): void
     {
         $sourcePath = $this->objManager->RootPath . $selectedItem;
-        $destinationPath = $this->objManager->RootPath . $objPath['path'] . "/" . basename($selectedItem);
-
-
+        $destinationPath = $this->objManager->RootPath . $objPath . "/" . basename($selectedItem);
 
         // Perform the move logic
         $this->fullMove($sourcePath, $destinationPath);
@@ -2901,23 +3041,24 @@ class SampleForm extends Form
     /**
      * Handles errors related to the moving destination selection.
      * Ensures that a default value is added to the moving destination dropdown
-     * if no value is selected, and updates the interface to indicate the error state.
+     * if no value is selected and updates the interface to indicate the error state.
      *
      * @return void
+     * @throws Caller
      */
-    private function handleMovingError()
+    private function handleMovingError(): void
     {
         if ($this->dlgMovingDestination->SelectedValue == null) {
             $this->dlgMovingDestination->removeAllItems();
-            $this->dlgMovingDestination->AddItem(t('- Select One -'), null);
+            $this->dlgMovingDestination->AddItem(t('- Select One -'));
 
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                $('.modal-header').removeClass('btn-default').addClass('btn-danger');
                $('.destination-moving-error').removeClass('hidden');
                $('.moving-source-title').addClass('hidden');
                $('.moving-source-path').addClass('hidden');
                $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-            "));
+            ");
         }
     }
 
@@ -2931,7 +3072,7 @@ class SampleForm extends Form
      *
      * @return void
      */
-    private function handleMovingResult()
+    private function handleMovingResult(): void
     {
         if ($this->intStoredChecks >= count($this->tempItems)) {
             $this->dlgModal33->showDialogBox(); // The selected files and folders have been successfully moved!
@@ -2951,7 +3092,7 @@ class SampleForm extends Form
      *
      * @return void
      */
-    private function cleanupAfterMoving()
+    private function cleanupAfterMoving(): void
     {
         unset($this->tempSelectedItems);
         unset($this->objLockedFiles);
@@ -2971,9 +3112,12 @@ class SampleForm extends Form
      * Displays appropriate dialog boxes in case of errors or missing dependencies.
      *
      * @param ActionParams $params Parameters associated with the button click event.
+     *
      * @return void Executes JavaScript for file download, displays dialogs, or performs archive creation.
+     * @throws Caller
+     * @throws RandomException
      */
-    public function btnDownload_Click(ActionParams $params)
+    public function btnDownload_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
             $this->dlgModal46->showDialogBox();
@@ -2989,9 +3133,9 @@ class SampleForm extends Form
         $url = QCUBED_FILEMANAGER_ASSETS_URL;
 
         if (count($this->arrSomeArray) == 1 && $this->strDataType == "file") {
-            Application::executeJavaScript(sprintf("
-                document.location.href = '{$url}' + '/php/download.php?download=' + '{$this->strDataPath}'
-            "));
+            Application::executeJavaScript("
+                document.location.href = '$url' + '/php/download.php?download=' + '$this->strDataPath'
+            ");
             return;
         }
 
@@ -3055,13 +3199,14 @@ class SampleForm extends Form
      * on downloading specific directories.
      *
      * @return void
+     * @throws Caller
      */
-    private function validateDownloadConditions()
+    private function validateDownloadConditions(): void
     {
         clearstatcache();
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
-            $this->dlgModal1->showDialogBox(); // Corrupted table "folders" in the database or directory "upload" in the file system! ...
+            $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
             return;
         }
 
@@ -3077,7 +3222,6 @@ class SampleForm extends Form
 
         if ($this->arrSomeArray[0]["data-id"] == 1 && $this->arrSomeArray[0]["data-path"] == "") {
             $this->dlgModal36->showDialogBox(); // It's not possible to download the root directory!
-            return;
         }
     }
 
@@ -3086,16 +3230,16 @@ class SampleForm extends Form
      *
      * @param string $zipName The name of the zip archive to be created.
      * @param array $files An array of file paths to be included in the zip archive.
+     *
      * @return void This method does not return a value but shows a dialog box if the zip creation fails.
      */
-    private function zipCreate($zipName, $files)
+    private function zipCreate(string $zipName, array $files): void
     {
         $zip = new Archive();
         $res = $zip->create($zipName, $files);
 
         if (!$res) {
-            $this->dlgModal37->showDialogBox(); // Creating an archive for download failed!
-            return;
+            $this->dlgModal37->showDialogBox(); // Creating an archive for a download failed!
         }
     }
 
@@ -3103,19 +3247,20 @@ class SampleForm extends Form
      * Initiates the download of a zip file by generating a JavaScript redirect to the specified file URL.
      *
      * @param string $file The full path of the file to be downloaded.
+     *
      * @return void
+     * @throws Caller
      */
-
-    private function zipDownload($file)
+    private function zipDownload(string $file): void
     {
         $url = QCUBED_FILEMANAGER_ASSETS_URL;
         $basename = basename($file);
 
-        Application::executeJavaScript(sprintf("
-            if ('{$basename}') {
-                document.location.href = '{$url}' + '/php/zip-download.php?download=' + '{$basename}'
+        Application::executeJavaScript("
+            if ('$basename') {
+                document.location.href = '$url' + '/php/zip-download.php?download=' + '$basename'
             }
-        "));
+        ");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -3124,8 +3269,9 @@ class SampleForm extends Form
      * Handles the data clearing operation for the user interface elements, variables, and session storage.
      *
      * @return void
+     * @throws Caller
      */
-    public function dataClearing_Click()
+    public function dataClearing_Click(): void
     {
         // Clearing form elements
         $this->txtAddFolder->Text = '';
@@ -3138,7 +3284,7 @@ class SampleForm extends Form
         $this->clearVariables();
 
         // Clearing session storage
-        Application::executeJavaScript(sprintf("sessionStorage.clear();"));
+        Application::executeJavaScript("sessionStorage.clear();");
     }
 
     // Helper functions
@@ -3147,9 +3293,10 @@ class SampleForm extends Form
      * Clears all existing options from a dropdown and adds a default placeholder option.
      *
      * @param object $dropdown The dropdown component from which all options will be removed and the placeholder option will be added.
+     *
      * @return void
      */
-    private function clearDropdownOptions($dropdown)
+    private function clearDropdownOptions(object $dropdown): void
     {
         $dropdown->removeAllItems();
         $dropdown->AddItem(t('- Select One -'), null);
@@ -3163,7 +3310,7 @@ class SampleForm extends Form
      *
      * @return void
      */
-    private function clearVariables()
+    private function clearVariables(): void
     {
         unset($this->tempSelectedItems);
         unset($this->objLockedFiles);
@@ -3178,17 +3325,29 @@ class SampleForm extends Form
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Scans and processes data from folders, extracting their paths, removing the first element,
-     * and sorting the remaining paths alphabetically.
+     * Check the synchronicity of folders and database.
+     * If they don't match, Filemanager is broken.
+     * The reason for this can be either the "folders" table is corrupted or the file system of the "upload" folder is corrupted or an empty folder.
+     * In this case, help should be asked from the developer or webmaster.
+     *
+     * Here is one way to immediately with the code below (with example):
+     *
+     * $path = $this->objManager->RootPath;
+     * print "<pre>";
+     * print "<br>DATASCAN:<br>";
+     * print_r($this->dataScan());
+     * print "<br>SCAN:<br>";
+     * print_r($this->scan($path));
+     * print "</pre>";
      *
      * @return array The sorted list of folder paths, excluding the first element.
+     * @throws Caller
      */
-
-    protected function dataScan()
+    protected function dataScan(): array
     {
         $folders = Folders::loadAll();
 
-        // Use array_map to extract paths.
+        // Use an array map to extract paths.
         $arr = array_map(function ($folder) {
             return $folder->getPath();
         }, $folders);
@@ -3205,9 +3364,10 @@ class SampleForm extends Form
      * Recursively scans a directory and retrieves a sorted list of folder paths relative to a predefined base.
      *
      * @param string $path The directory path to scan.
+     *
      * @return array An array of relative folder paths sorted alphabetically.
      */
-    protected function scan($path)
+    protected function scan(string $path): array
     {
         $folders = [];
 
@@ -3235,9 +3395,11 @@ class SampleForm extends Form
      * Recursively retrieves all descendant folder IDs, including the given parent ID.
      *
      * @param int $parentId The ID of the parent folder to begin scanning for descendants.
+     *
      * @return array An array of all descendant folder IDs, including the provided parent ID.
+     * @throws Caller
      */
-    protected function fullScanIds($parentId)
+    protected function fullScanIds(int $parentId): array
     {
         $objFolders = Folders::loadAll();
         $descendantIds = [];
@@ -3248,7 +3410,7 @@ class SampleForm extends Form
             }
         }
 
-        array_push($descendantIds, $parentId);
+        $descendantIds[] = $parentId;
 
         return $descendantIds;
     }
@@ -3265,8 +3427,9 @@ class SampleForm extends Form
      *               - path: The complete path of the folder.
      *               - depth: The depth of the folder in the hierarchy based on the path.
      *               - activities_locked: The status indicating whether activities are locked for the folder.
+     * @throws Caller
      */
-    protected function scanForSelect()
+    protected function scanForSelect(): array
     {
         $folders = Folders::loadAll();
         $folderData = [];
@@ -3296,9 +3459,11 @@ class SampleForm extends Form
      * Validates a given string by checking if it contains at most one segment after splitting by slashes.
      *
      * @param string $str The input string to be checked.
+     *
      * @return bool Returns true if the string has at most one segment or the second segment is empty, otherwise false.
      */
-    protected function checkString($str) {
+    protected function checkString(string $str): bool
+    {
         // Remove leading and trailing spaces
         $str = trim($str);
 
@@ -3310,18 +3475,19 @@ class SampleForm extends Form
     }
 
     /**
-     * Prints a formatted string based on the depth and parent information provided.
+     * Generates an indented string representation of a name based on the specified depth.
+     * The indentation is created using a predefined spacer, adjusted according to the depth.
      *
-     * @param string $name The name to be displayed in the formatted output.
-     * @param mixed $parent The parent information; can be null to indicate no parent.
-     * @param int $depth The depth of the element, used to determine the level of indentation.
-     * @return string The formatted string with the appropriate depth-based indentation.
+     * @param string $name The name to be formatted and indented.
+     * @param int $depth The depth level for indentation. A depth of 0 applies no indentation.
+     *
+     * @return string The formatted and indented string representation of the name.
      */
-    protected function printDepth($name, $parent, $depth)
+    protected function printDepth(string $name, int $depth): string
     {
         $spacer = str_repeat('&nbsp;', 5); // Adjust the number as needed for your indentation.
 
-        if ($parent !== null) {
+        if ($depth !== 0) {
             $strHtml = str_repeat(html_entity_decode($spacer), $depth) . ' ' . t($name);
         } else {
             $strHtml = t($name);
@@ -3335,23 +3501,30 @@ class SampleForm extends Form
      *
      * @param string $src The source directory or file path.
      * @param string $dst The destination directory or file path.
+     *
      * @return void
+     * @throws UndefinedPrimaryKey
+     * @throws Caller
+     * @throws InvalidCast
      */
-    protected function fullMove($src, $dst)
+    protected function fullMove(string $src, string $dst): void
     {
         $this->fullCopy($src, $dst);
         $this->fullRemove($src);
     }
 
     /**
-     * Recursively copies a file or directory from source to destination,
+     * Recursively copies a file or directory from source to destination 
      * while managing metadata and associated operations.
      *
      * @param string $src The source path to copy from. It can be a file or directory.
      * @param string $dst The destination path to copy to.
+     *
      * @return void
+     * @throws Caller
+     * @throws InvalidCast
      */
-    protected function fullCopy($src, $dst)
+    protected function fullCopy(string $src, string $dst): void
     {
         $objId = $this->getIdFromParent($dst);
 
@@ -3434,9 +3607,11 @@ class SampleForm extends Form
      * Retrieves the ID of a folder based on its parent path.
      *
      * @param string $path The file path from which the parent folder's ID will be determined.
+     *
      * @return int|null The ID of the folder if a match is found, 1 if the path is empty, or null if no match is found.
+     * @throws Caller
      */
-    protected function getIdFromParent($path)
+    protected function getIdFromParent(string $path): ?int
     {
         $objFolders = Folders::loadAll();
         $objPath = $this->objManager->getRelativePath(realpath(dirname($path)));
@@ -3457,8 +3632,11 @@ class SampleForm extends Form
      * @param string $dir The path of the directory or file to be removed.
      *
      * @return void
+     * @throws UndefinedPrimaryKey
+     * @throws Caller
+     * @throws InvalidCast
      */
-    protected function fullRemove($dir)
+    protected function fullRemove(string $dir): void
     {
         $objFolders = Folders::loadAll();
         $objFiles = Files::loadAll();
@@ -3538,13 +3716,16 @@ class SampleForm extends Form
      * JavaScript behaviors based on the selected values of the copying and moving destinations,
      * as well as the state of `objLockedFiles`.
      *
-     * @param ActionParams $params The parameters passed during the change event triggering, containing any relevant data.
+     * @param ActionParams $params The parameters passed during the change event triggering, containing any relevant
+     *     data.
+     *
      * @return void This method does not return any value.
+     * @throws Caller
      */
-    public function dlgDestination_Change(ActionParams $params)
+    public function dlgDestination_Change(ActionParams $params): void
     {
-        if (is_array($this->dlgCopyingDestination->SelectedValue) || is_array($this->dlgMovingDestination->SelectedValue)) {
-            Application::executeJavaScript(sprintf("
+        if ($this->dlgCopyingDestination->SelectedValue || $this->dlgMovingDestination->SelectedValue) {
+            Application::executeJavaScript("
                 $('.modal-header').removeClass('btn-danger').addClass('btn-default');
                 $('.destination-error').addClass('hidden');
                 $('.destination-moving-error').addClass('hidden');
@@ -3553,9 +3734,9 @@ class SampleForm extends Form
                 $('.source-path').removeClass('hidden');
                 $('.moving-source-path').removeClass('hidden');
                 $('.modal-footer .btn-orange').removeAttr('disabled', 'disabled');
-            "));
+            ");
         } else {
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                 $('.modal-header').removeClass('btn-default').addClass('btn-danger');
                 $('.destination-error').removeClass('hidden');
                 $('.destination-moving-error').removeClass('hidden');
@@ -3564,18 +3745,20 @@ class SampleForm extends Form
                 $('.source-path').addClass('hidden');
                 $('.moving-source-path').addClass('hidden');
                 $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-            "));
+            ");
         }
 
         if ($this->objLockedFiles !== 0) {
 
-            Application::executeJavaScript(sprintf("
+            Application::executeJavaScript("
                $('.modal-header').removeClass('btn-default').addClass('btn-danger');
                //$('.destination-moving-error').removeClass('hidden');
                $('.moving-source-title').addClass('hidden');
                $('.moving-source-path').addClass('hidden');
                $('.modal-footer .btn-orange').attr('disabled', 'disabled');
-            "));
+            ");
+        } else {
+            $this->dlgMovingDestination->Enabled = false;
         }
     }
 
@@ -3588,7 +3771,7 @@ class SampleForm extends Form
      * @param ActionParams $params The parameters associated with the action event triggered by the button click.
      * @return void This method does not return a value.
      */
-    public function btnImageListView_Click(ActionParams $params)
+    public function btnImageListView_Click(ActionParams $params): void
     {
         $this->btnImageListView->addCssClass("active");
         $this->btnListView->removeCssClassesByPrefix("active");
@@ -3610,7 +3793,7 @@ class SampleForm extends Form
      *                             details about the user interaction triggering the event.
      * @return void This method does not return any value.
      */
-    public function btnListView_Click(ActionParams $params)
+    public function btnListView_Click(ActionParams $params): void
     {
         $this->btnListView->addCssClass("active");
         $this->btnImageListView->removeCssClassesByPrefix("active");
@@ -3628,7 +3811,7 @@ class SampleForm extends Form
      * @param ActionParams $params The parameters associated with the action triggered by the button click.
      * @return void
      */
-    public function btnBoxView_Click(ActionParams $params)
+    public function btnBoxView_Click(ActionParams $params): void
     {
         $this->btnBoxView->addCssClass("active");
         $this->btnImageListView->removeCssClassesByPrefix("active");

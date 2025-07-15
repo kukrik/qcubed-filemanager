@@ -3,39 +3,39 @@
 <?php
 // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_file_browse_upload.html
 ?>
-	<script>
-        var dialogPath = <?= json_encode(QCUBED_FILEMANAGER_URL, JSON_UNESCAPED_UNICODE); ?>;
-		ckConfig = {
-			skin: 'moono',
+    <script>
+        const dialogPath = <?= json_encode(dirname(QCUBED_FILEMANAGER_ASSETS_URL), JSON_UNESCAPED_UNICODE); ?>;
+        ckConfig = {
+            skin: 'moono',
             extraPlugins: 'colorbutton,font,justify,print,tableresize,pastefromword,liststyle',
             filebrowserImageBrowseUrl: dialogPath + '/examples/dialog.php',
             filebrowserBrowseUrl: dialogPath + '/examples/dialog.php',
             filebrowserWindowWidth: '95%',
             filebrowserWindowHeight: '95%',
-			//language: 'en',
-			//uiColor: '#9AB8F3'
-			toolbar: [
-				{ name: 'clipboard', items: [ 'PasteFromWord', '-', 'Undo', 'Redo' ] },
-				{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat', 'Subscript', 'Superscript' ] },
-				{ name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote' ] },
-				{ name: 'insert', items: [ 'Image', 'Table' ] },
+            //language: 'en',
+            //uiColor: '#9AB8F3'
+            toolbar: [
+                { name: 'clipboard', items: [ 'PasteFromWord', '-', 'Undo', 'Redo' ] },
+                { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat', 'Subscript', 'Superscript' ] },
+                { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote' ] },
+                { name: 'insert', items: [ 'Image', 'Table' ] },
                 { name: 'links', items: [ 'Link', 'Unlink' ] },
-				'/',
+                '/',
 
-				{ name: 'styles', items: [ 'Format', 'Font', 'FontSize' ] },
-				{ name: 'colors', items: [ 'TextColor', 'BGColor', 'CopyFormatting' ] },
-				{ name: 'align', items: [ 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock' ] },
-				{ name: 'document', items: [ 'Print', 'Source' ] }
-			],
+                { name: 'styles', items: [ 'Format', 'Font', 'FontSize' ] },
+                { name: 'colors', items: [ 'TextColor', 'BGColor', 'CopyFormatting' ] },
+                { name: 'align', items: [ 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock' ] },
+                { name: 'document', items: [ 'Print', 'Source' ] }
+            ],
 
-			// Enabling extra plugins, available in the full-all preset: https://ckeditor.com/cke4/presets
-			/*extraPlugins: 'colorbutton,font,justify,print,tableresize,pastefromword,liststyle',
-			removeButtons: '',
+            // Enabling extra plugins, available in the full-all preset: https://ckeditor.com/cke4/presets
+            /*extraPlugins: 'colorbutton, font, justify, print,tableresize, pastefromword, liststyle',
+            removeButtons: '',
 
-			// Make the editing area bigger than default.
-			height: 350//,
-			//width: 940*/
-		};
+            // Make the editing area bigger than default.
+            height: 350//,
+            //width: 940*/
+        };
 
 
 	</script>
@@ -56,7 +56,7 @@
             count in the "files" table by one.</p>
 
         <p>There are several possible solutions. The one option currently provided is to use the function referenceValidation(),
-            which checks and ensures that the data is up-to-date both when adding and deleting a file.
+            which checks and ensures that the data is up to date both when adding and deleting a file.
             Everything is commented in the code.</p>
 
 		<?= _r($this->txtEditor); ?>

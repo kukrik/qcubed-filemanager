@@ -3,11 +3,9 @@
 namespace QCubed\Plugin;
 
 use QCubed as Q;
-use QCubed\Control;
+use QCubed\ApplicationBase;
 use QCubed\Exception\Caller;
 use QCubed\Exception\InvalidCast;
-use QCubed\ModelConnector\Param as QModelConnectorParam;
-use QCubed\Project\Control\ControlBase;
 use QCubed\Project\Application;
 use QCubed\Type;
 
@@ -19,7 +17,7 @@ use QCubed\Type;
  */
 
 /**
- * @property string $Url Default null. If you want to save the cropped image, choose a php file with upload functions.
+ * @property string $Url Default null. If you want to save the cropped image, choose a PHP file with upload functions.
  * @property string $Language Default null. If you want to choose a language, set the desired language as the language selection.
  * @property string $SelectedImage Default null. Select the image to crop and set it to this variable.
  * @property string $SelectedType Default 'square'. If desired, the default can be set to 'circle.'
@@ -35,22 +33,29 @@ use QCubed\Type;
 
 class FilePopupCroppieGen extends Q\Control\Panel
 {
-    /** @var string */
-    protected $strUrl = null;
-    /** @var string */
-    protected $strLanguage = null;
-    /** @var string */
-    protected $strSelectedImage = null;
-    /** @var string */
-    protected $strSelectedType = null;
-    /** @var string */
-    protected $strTranslatePlaceholder = null;
-    /** @var array */
-    protected $strTheme = null;
-    /** @var array */
-    protected $arrData = null;
+    /** @var string|null */
+    protected ?string $strUrl = null;
+    /** @var string|null */
+    protected ?string $strLanguage = null;
+    /** @var string|null */
+    protected ?string $strSelectedImage = null;
+    /** @var string|null */
+    protected ?string $strSelectedType = null;
+    /** @var string|null */
+    protected ?string $strTranslatePlaceholder = null;
+    /** @var string|null */
+    protected ?string $strTheme = null;
+    /** @var array|null */
+    protected ?array $arrData = null;
+    /** @var bool|null */
+    protected ?bool $blnIsOpen = null;
 
-    protected function makeJqOptions()
+    /**
+     * Generate an array of jQuery options based on the component's properties.
+     *
+     * @return array The array of jQuery options derived from the component's properties.
+     */
+    protected function makeJqOptions(): array
     {
         $jqOptions = null;
         if (!is_null($val = $this->AutoOpen)) {$jqOptions['show'] = $val;}
@@ -64,27 +69,36 @@ class FilePopupCroppieGen extends Q\Control\Panel
         return $jqOptions;
     }
 
-    public function getJqSetupFunction()
+    /**
+     * Retrieves the jQuery setup function name used for initializing the handler.
+     *
+     * @return string The name of the jQuery setup function.
+     */
+    public function getJqSetupFunction(): string
     {
         return 'croppieHandler';
     }
 
     /**
-     * Overrides the parent to call the popup-croppie js initializer.
+     * Create and initialize a jQuery widget by applying the setup function with specified options.
+     *
+     * @return void
      */
-
-    protected function makeJqWidget()
+    protected function makeJqWidget(): void
     {
-        Application::executeControlCommand($this->getJqControlId(), "off", Application::PRIORITY_HIGH);
+        Application::executeControlCommand($this->getJqControlId(), "off", ApplicationBase::PRIORITY_HIGH);
         $jqOptions = $this->makeJqOptions();
         Application::executeControlCommand($this->ControlId, $this->getJqSetupFunction(), $jqOptions,
-            Application::PRIORITY_HIGH);
+            ApplicationBase::PRIORITY_HIGH);
     }
 
     /**
-     * Show the modal.
-     **/
-    public function showDialogBox()
+     * Show the modal dialog box.
+     *
+     * @return void
+     * @throws Caller
+     */
+    public function showDialogBox(): void
     {
         Application::executeJavaScript("$('#' + '$this->ControlId').modal('show');");
         $this->Visible = true; // will redraw the control if needed
@@ -92,9 +106,12 @@ class FilePopupCroppieGen extends Q\Control\Panel
     }
 
     /**
-     * Hide the modal
+     * Hides the dialog box by executing the necessary JavaScript and updating visibility properties.
+     *
+     * @return void
+     * @throws Caller
      */
-    public function hideDialogBox()
+    public function hideDialogBox(): void
     {
         Application::executeJavaScript("$('#' + '$this->ControlId').modal('hide');");
         $this->Visible = false; // will redraw the control if needed
@@ -102,11 +119,15 @@ class FilePopupCroppieGen extends Q\Control\Panel
     }
 
     /**
-     * @param $strName
-     * @return array|bool|callable|float|int|mixed|string|null
-     * @throws Caller
+     * Magic getter method to retrieve property values based on the provided property name.
+     *
+     * @param string $strName The name of the property to retrieve.
+     *
+     * @return mixed Returns the corresponding property value, JSON-encoded data for arrays,
+     *               or delegates to the parent::__get for undefined properties.
+     * @throws Caller Throws an exception if the property is undefined and the parent::__get also fails.
      */
-    public function __get($strName)
+    public function __get(string $strName): mixed
     {
         switch ($strName) {
             case 'Url': return $this->strUrl;
@@ -116,8 +137,8 @@ class FilePopupCroppieGen extends Q\Control\Panel
             case 'TranslatePlaceholder': return $this->strTranslatePlaceholder;
             case 'Theme': return $this->strTheme;
             case 'Data': return json_encode($this->arrData);
+            case 'Show':
             case 'AutoOpen': return $this->blnAutoOpen;
-            case 'Show': return $this->blnAutoOpen;
 
             default:
                 try {
@@ -130,13 +151,16 @@ class FilePopupCroppieGen extends Q\Control\Panel
     }
 
     /**
-     * @param $strName
-     * @param $mixValue
+     * Handles setting the value of a property dynamically based on the provided name and value.
+     *
+     * @param string $strName The name of the property to set.
+     * @param mixed $mixValue The value to assign to the specified property. It will be validated and cast to the appropriate type.
+     *
      * @return void
-     * @throws Caller
-     * @throws InvalidCast
+     * @throws InvalidCast Throws an exception if the value cannot be cast to the expected type.
+     * @throws Caller Throws an exception if the property is not recognized or cannot be set.
      */
-    public function __set($strName, $mixValue)
+    public function __set(string $strName, mixed $mixValue): void
     {
         switch ($strName) {
             case 'Url':
@@ -202,7 +226,7 @@ class FilePopupCroppieGen extends Q\Control\Panel
                     $objExc->incrementOffset();
                     throw $objExc;
                 }
-            case '_IsOpen': // Internal only, to detect when dialog has been opened or closed.
+            case '_IsOpen': // Internal only to detect when a dialog has been opened or closed.
                 try {
                     $this->blnIsOpen = Type::cast($mixValue, Type::BOOLEAN);
                     break;
@@ -232,11 +256,11 @@ class FilePopupCroppieGen extends Q\Control\Panel
     }
 
     /**
-     * If this control is attachable to a codegenerated control in a ModelConnector, this function will be
-     * used by the ModelConnector designer dialog to display a list of options for the control.
-     * @return QModelConnectorParam[]
-     **/
-    public static function getModelConnectorParams()
+     * Retrieves the model connector parameters by merging the parent parameters with additional parameters.
+     *
+     * @return array A combined array of model connector parameters.
+     */
+    public static function getModelConnectorParams(): array
     {
         return array_merge(parent::GetModelConnectorParams(), array());
     }

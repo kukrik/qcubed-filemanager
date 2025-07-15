@@ -29,7 +29,7 @@
         to articles, news, or anything else.
     </p>
     <p>
-        For better illustration, a simplified table named "example" has been added to the database. This table contains
+        For a better illustration, a simplified table named "example" has been added to the database. This table contains
         a column called "picture_id," which stores the necessary information.
     </p>
     <p>

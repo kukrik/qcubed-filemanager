@@ -2,7 +2,8 @@
 require('qcubed.inc.php');
 
 use QCubed as Q;
-use QCubed\Project\Control\ControlBase;
+use QCubed\Exception\Caller;
+use QCubed\Exception\InvalidCast;
 use QCubed\Project\Control\FormBase as Form;
 use QCubed\Project\Control\Button;
 use QCubed\Control\Panel;
@@ -20,32 +21,53 @@ use QCubed\Project\Application;
 
 class SampleForm3 extends Form
 {
-	protected $txtEditor;
-	protected $btnSubmit;
-	protected $pnlResult;
+    protected Q\Plugin\CKEditor $txtEditor;
+    protected Button $btnSubmit;
+    protected Panel $pnlResult;
 
-	protected function formCreate()
-	{
+    /**
+     * Configures the form by initializing UI components and their properties.
+     *
+     * Initializes a CKEditor instance for text editing along with a Submit button
+     * and result display panel. The editor is pre-filled with data loaded from
+     * a specific database entry. The Submit button is configured to trigger an
+     * AJAX callback on a click.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    protected function formCreate(): void
+    {
         // This is one possible example, suppose you have created a database table "example"
         // with one column "ids_ids" next to other columns.
 
         $objExample = Example::load(2);
 
         $this->txtEditor = new Q\Plugin\CKEditor($this);
-		$this->txtEditor->Text = $objExample->getContent() ? $objExample->getContent() : null;
-		$this->txtEditor->Configuration = 'ckConfig';
-		$this->txtEditor->Rows = 15;
+        $this->txtEditor->Text = $objExample->getContent() ? $objExample->getContent() : null;
+        $this->txtEditor->Configuration = 'ckConfig';
+        $this->txtEditor->Rows = 15;
 
         $this->btnSubmit = new Button($this);
-		$this->btnSubmit->Text = "Submit";
-		$this->btnSubmit->PrimaryButton = true;
-		$this->btnSubmit->AddAction(new Click(), new Ajax('submit_click'));
+        $this->btnSubmit->Text = "Submit";
+        $this->btnSubmit->PrimaryButton = true;
+        $this->btnSubmit->AddAction(new Click(), new Ajax('submit_click'));
 
-		$this->pnlResult = new Panel($this);
-		$this->pnlResult->HtmlEntities = true;
-	}
+        $this->pnlResult = new Panel($this);
+        $this->pnlResult->HtmlEntities = true;
+    }
 
-	protected function submit_click(ActionParams $params)
+    /**
+     * Handles the submit button click event, processes the editor's content, and updates the result panel.
+     *
+     * @param ActionParams $params Parameters associated with the action triggering this method.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    protected function submit_click(ActionParams $params): void
     {
         $objExample = Example::loadById(2);
         $objExample->setContent($this->txtEditor->Text);
@@ -60,9 +82,18 @@ class SampleForm3 extends Form
     // to inform FileHandler to first decrease the count of locked files ("locked_file").
     // Finally, delete this example.
 
-    // Approximate example below:
+    // The approximate example below:
 
-    protected function delete_Click(ActionParams $params)
+    /**
+     * Handles the delete button click event, processes and unlocks associated file references, and deletes the main object.
+     *
+     * @param ActionParams $params Parameters associated with the action triggering this method.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    protected function delete_Click(ActionParams $params): void
     {
         $objExample = Example::loadById(2);
         $references = $objExample->getFilesIds();
@@ -84,10 +115,19 @@ class SampleForm3 extends Form
         $objExample->delete();
     }
 
-    // This function referenceValidation(), which checks and ensures that the data is up-to-date both when adding and
+    // This function referenceValidation(), which checks and ensures that the data is up to date both when adding and
     // deleting a file. Everything is commented in the code.
 
-    protected function referenceValidation()
+    /**
+     * Validates and updates references to files linked within the content of an example object.
+     * Synchronizes the file locks and updates the example's file IDs with the current content references.
+     * Manages the locking/unlocking of files depending on additions or removals in the example's content.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    protected function referenceValidation(): void
     {
         $objExample = Example::loadById(2);
         $references = $objExample->getFilesIds();
@@ -96,7 +136,7 @@ class SampleForm3 extends Form
         // Regular expression to find the img id attribute
         $patternImgId = '/<img[^>]*\s(?:id=["\']?([^"\'>]+)["\']?)[^>]*>/i';
 
-        // Regular expression to find the a id attribute
+        // Regular expression to find an id attribute
         $patternAId = $patternAId = '/<a[^>]*\s(?:id=["\']?([^"\'>]+)["\']?)[^>]*>/i';
 
         $matchesImg = [];
@@ -130,12 +170,12 @@ class SampleForm3 extends Form
             // Equal values are proven
             $result = array_intersect($combinedArray, $nativeFilesIds);
 
-            // Content has more ids than FilesIds less references. TULEMUS: test 1 annab vastuse 1124, test 2 tühja massiivi
-            // Then call back to FileHandler to lock that file (+ 1 ).
+            // Content has more IDs than FilesIds fewer references.
+            // Then call back to FileHandler to lock that file (+ 1).
             $lockFiles = array_diff($combinedArray, $nativeFilesIds);
 
-            // Content has fewer IDs than FilesIds, has more references. TULEMUS: test 1 annab tühja massiivi, test 2 annab vastuse
-            // Then call back to FileHandler to unclog that file ( - 1 ).
+            // Content has fewer IDs than FilesIds, has more references.
+            // Then call back to FileHandler to unclog that file (- 1).
             $unlockFiles = array_diff($nativeFilesIds, $combinedArray);
 
 //            Application::displayAlert("RESULT: " . json_encode($result));
@@ -177,4 +217,4 @@ class SampleForm3 extends Form
     }
 
 }
-SampleForm3::Run('SampleForm3');
+SampleForm3::run('SampleForm3');

@@ -3,8 +3,8 @@
 namespace QCubed\Plugin;
 
 use QCubed as Q;
-use QCubed\Control\FormBase;
-use QCubed\Control\ControlBase;
+use QCubed\Project\Control\FormBase;
+use QCubed\Project\Control\ControlBase;
 use QCubed\Exception\InvalidCast;
 use QCubed\Exception\Caller;
 use QCubed\Project\Application;
@@ -14,43 +14,49 @@ use QCubed\Type;
  * Class MediaFinder
  *
  * @property string $TempPath Default temp path APP_UPLOADS_TEMP_DIR. If necessary, the temp dir must be specified.
- * @property string $EmptyImagePath Default predefined image, can be overridden and replaced with another image if desired
+ * @property string $TempUrl Default temp url APP_UPLOADS_TEMP_URL. If necessary, the temp url must be specified.
+ * @property string $EmptyImagePath Default predefined image can be overridden and replaced with another image if desired
  * @property string $EmptyImageAlt Default null. The recommendation is to add the following text: "Choose a picture"
- * @property integer $SelectedImageId Default null. In the case of a selected image, the id of the image is pushed,
+ * @property integer $SelectedImageId Default null. In the case of a selected image, the id of the image is pushed.
  *                                 as well as the id of the selected image is transferred to the database in the column
  *                                 of the selected table.
  * @property string $SelectedImagePath Default null. The path of the selected image with the file name
  * @property string $SelectedImageName Default null. The file name of the selected image
  * @property string $SelectedImageAlt Default null. The recommendation is to add the following text: "Selected picture"
  *
+ * @property string $Item
+ *
  * @package QCubed\Plugin
  */
 
 class MediaFinder extends MediaFinderGen
 {
+    /** @var null|string */
+    protected ?string $intItem = null;
     /** @var string */
-    protected $intItem = null;
-    /** @var string */
-    protected $strTempUrl = APP_UPLOADS_TEMP_URL;
+    protected string $strTempUrl = APP_UPLOADS_TEMP_URL;
     /** @var string EmptyImagePath */
-    protected $strEmptyImagePath = QCUBED_FILEMANAGER_ASSETS_URL . "/images/empty-images-icon.png";
-    /** @var string EmptyImageAlt */
-    protected $strEmptyImageAlt = null;
-    /** @var integer SelectedimageId */
-    protected $intSelectedImageId = null;
-    /** @var string SelectedImagePath */
-    protected $strSelectedImagePath = null;
-    /** @var string SelectedImageName */
-    protected $strSelectedImageName = null;
-    /** @var string SelectedImageAlt */
-    protected $strSelectedImageAlt = null;
+    protected string $strEmptyImagePath = QCUBED_FILEMANAGER_ASSETS_URL . "/images/empty-images-icon.png";
+    /** @var null|string EmptyImageAlt */
+    protected ?string $strEmptyImageAlt = null;
+    /** @var null|integer SelectedimageId */
+    protected ?int $intSelectedImageId = null;
+    /** @var null|string SelectedImagePath */
+    protected ?string $strSelectedImagePath = null;
+    /** @var null|string SelectedImageName */
+    protected ?string $strSelectedImageName = null;
+    /** @var null|string SelectedImageAlt */
+    protected ?string $strSelectedImageAlt = null;
 
     /**
-     * @param $objParentObject
-     * @param $strControlId
+     * Constructor method for initializing the class.
+     *
+     * @param ControlBase|FormBase $objParentObject The parent object, which must be an instance of ControlBase or FormBase.
+     * @param string|null $strControlId An optional control ID for identifying the object.
+     *
      * @throws Caller
      */
-    public function __construct($objParentObject, $strControlId = null)
+    public function __construct(ControlBase|FormBase $objParentObject, ?string $strControlId = null)
     {
         parent::__construct($objParentObject, $strControlId);
 
@@ -58,9 +64,16 @@ class MediaFinder extends MediaFinderGen
     }
 
     /**
+     * Registers necessary JavaScript and CSS files used by the application.
+     *
+     * This method loads JavaScript and CSS files required for the functionality
+     * of the file manager. It ensures the inclusion of scripts for a media finder,
+     * slimscroll, custom logic, and necessary CSS styles, including Bootstrap.
+     *
+     * @return void
      * @throws Caller
      */
-    protected function registerFiles()
+    protected function registerFiles(): void
     {
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/qcubed.mediafinder.js");
         $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/jquery.slimscroll.js");
@@ -70,15 +83,13 @@ class MediaFinder extends MediaFinderGen
     }
 
     /**
-     * Returns the HTML for the control.
+     * Generates and returns the HTML content for the control.
      *
-     * @return string
+     * @return string The constructed HTML string for the control, including image container and templates.
      */
-    protected function getControlHtml()
+    protected function getControlHtml(): string
     {
-        $strHtml = '';
-
-        $strHtml .= '<div class="image-container">';
+        $strHtml = '<div class="image-container">';
         $strHtml .= $this->chooseImageTemplate();
         $strHtml .= $this->selectedImageTemplate();
         $strHtml .= '</div>';
@@ -86,7 +97,13 @@ class MediaFinder extends MediaFinderGen
         return $strHtml;
     }
 
-    protected function chooseImageTemplate()
+    /**
+     * Generates an HTML string for displaying or hiding an image element
+     * based on the selected image ID and alternate text availability.
+     *
+     * @return string The generated HTML string containing the image element.
+     */
+    protected function chooseImageTemplate(): string
     {
         $strHtml = '';
 
@@ -107,7 +124,16 @@ class MediaFinder extends MediaFinderGen
         return $strHtml;
     }
 
-    protected function selectedImageTemplate()
+    /**
+     * Generates an HTML template for displaying the selected image, including its details and controls.
+     *
+     * The method constructs an HTML structure that visually represents a selected image
+     * along with its properties such as ID, path, and optional name and alt text.
+     * It also includes overlay controls for handling actions like deletion.
+     *
+     * @return string The generated HTML for the selected image template.
+     */
+    protected function selectedImageTemplate(): string
     {
         $strHtml = '';
 
@@ -141,7 +167,18 @@ class MediaFinder extends MediaFinderGen
         return $strHtml;
     }
 
-    public function getEndScript()
+    /**
+     * Generates and appends the JavaScript necessary for managing image selection and related actions.
+     *
+     * This method constructs JavaScript code for handling user interactions with image selection,
+     * such as showing and hiding selected images, processing data parameters, and triggering
+     * actions like saving or deleting selected images. The script binds event listeners to
+     * DOM elements to facilitate these functionalities.
+     *
+     * @return string The parent class's end script along with the appended JavaScript for image handling.
+     * @throws Caller
+     */
+    public function getEndScript(): string
     {
         $strJS = parent::getEndScript();
 
@@ -217,17 +254,24 @@ $(document).ready(function() {
     } 
 });
 FUNC;
-        Application::executeJavaScript($strCtrlJs, Application::PRIORITY_HIGH);
+        Application::executeJavaScript($strCtrlJs, Q\ApplicationBase::PRIORITY_HIGH);
 
         return $strJS;
     }
 
     /**
-     * @param $strName
-     * @return array|bool|callable|float|int|mixed|string|null
+     * Magic method to retrieve the value of specified properties dynamically.
+     *
+     * This method provides access to certain defined properties of the object, such as item details,
+     * image-related paths, names, alt texts, and other configurations. If the requested property cannot
+     * be found in the current class, it attempts to fetch it from the parent class.
+     *
+     * @param string $strName The name of the property to retrieve.
+     *
+     * @return mixed The value of the requested property, or an exception if the property does not exist.
      * @throws Caller
      */
-    public function __get($strName)
+    public function __get(string $strName): mixed
     {
         switch ($strName) {
             case 'Item': return $this->intItem;
@@ -250,13 +294,20 @@ FUNC;
     }
 
     /**
-     * @param $strName
-     * @param $mixValue
+     * Overrides the magic __set method to handle dynamically setting the values of defined properties.
+     *
+     * This method manages property assignments and performs validation or type casting where necessary
+     * for supported properties. If the property is not specifically handled, it delegates the call to the parent class.
+     *
+     * @param string $strName The name of the property being set.
+     * @param mixed $mixValue The value being assigned to the property. The type is validated based on the property.
+     *
      * @return void
-     * @throws Caller
-     * @throws InvalidCast
+     *
+     * @throws InvalidCast If the value being assigned cannot be cast to the required type.
+     * @throws Caller If the property name is not recognized or the parent class cannot handle the assignment.
      */
-    public function __set($strName, $mixValue)
+    public function __set(string $strName, mixed $mixValue): void
     {
         switch ($strName) {
             case "_Item": // Internal only. Do not use. Used by JS above to track selections.

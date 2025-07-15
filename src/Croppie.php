@@ -2,8 +2,9 @@
 
 namespace QCubed\Plugin;
 
-use QCubed\Control\ControlBase;
-
+use QCubed\Project\Control\ControlBase;
+use QCubed\Project\Control\FormBase;
+use QCubed\Exception\Caller;
 
 /**
  * Class Croppie
@@ -13,20 +14,28 @@ use QCubed\Control\ControlBase;
 class Croppie extends CroppieGen
 {
     /**
-     * @param $objParentObject
-     * @param $strControlId
+     * Constructor method.
+     *
+     * @param ControlBase|FormBase $objParentObject The parent object with which this control is associated.
+     * @param string|null $strControlId Optional string specifying the control ID.
+     *
+     * @return void
      * @throws Caller
      */
-    public function __construct($objParentObject, $strControlId = null)
+    public function __construct(ControlBase|FormBase$objParentObject, ?string $strControlId = null)
     {
         parent::__construct($objParentObject, $strControlId);
         $this->registerFiles();
     }
 
     /**
+     * Registers the necessary JavaScript and CSS files for the control.
+     *
+     * @return void
      * @throws Caller
      */
-    protected function registerFiles() {
+    protected function registerFiles(): void
+    {
         $this->AddJavascriptFile(QCUBED_CROPPIE_ASSETS_URL . "/js/croppie.js");
         $this->AddJavascriptFile(QCUBED_CROPPIE_ASSETS_URL . "/js/exif.js");
         $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/croppie.css");

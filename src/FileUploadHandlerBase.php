@@ -5,11 +5,16 @@ namespace QCubed\Plugin;
 use QCubed\Exception\Caller;
 use QCubed\Exception\InvalidCast;
 use QCubed\Folder;
+//use QCubed\Project\Control\ControlBase;
+//use QCubed\Project\Control\FormBase;
+
+use QCubed\Control\ControlBase;
+use QCubed\Control\FormBase;
 use QCubed\Type;
 
 
 /**
- * Class FileUpload
+ * Class FileUploadHandler
  *
  * Note: the "upload" folder must already exist in /project/assets/ and this folder has 777 permissions.
  *
@@ -23,8 +28,8 @@ use QCubed\Type;
  * @property string $TempPath = Default temp path APP_UPLOADS_TEMP_DIR. If necessary, the temp dir must be specified.
  * @property string $TempUrl Default temp url APP_UPLOADS_TEMP_URL. If necessary, the temp url must be specified.
  * @property string $StoragePath Default dir named _files. This dir is generated together with the dirs
- *                               /thumbnail,  /medium,  /large when the corresponding page is opened for the first time.
- * @property string $FullStoragePath Please see the setup() function! Can only be changed in this function.
+ *                               /thumbnail, /medium, /large when the corresponding page is opened for the first time.
+ * @property string $FullStoragePath Please a see the setup() function! Can only be changed in this function.
  *
  * @package QCubed\Plugin
  */
@@ -32,26 +37,29 @@ use QCubed\Type;
 class FileUploadHandlerBase extends FileUploadHandlerBaseGen
 {
     /** @var string[] */
-    //protected $strFormAttributes = array('enctype' => 'multipart/form-data');
+    protected array $strFormAttributes = array('enctype' => 'multipart/form-data');
     /** @var string */
-    protected $strRootPath = APP_UPLOADS_DIR;
+    protected string $strRootPath = APP_UPLOADS_DIR;
     /** @var string */
-    protected $strRootUrl = APP_UPLOADS_URL;
+    protected string $strRootUrl = APP_UPLOADS_URL;
     /** @var string */
-    protected $strTempPath = APP_UPLOADS_TEMP_DIR;
+    protected string $strTempPath = APP_UPLOADS_TEMP_DIR;
     /** @var string */
-    protected $strTempUrl = APP_UPLOADS_TEMP_URL;
+    protected string $strTempUrl = APP_UPLOADS_TEMP_URL;
     /** @var string */
-    protected $strStoragePath = '_files';
+    protected string $strStoragePath = '_files';
     /** @var string */
-    protected $strFullStoragePath;
+    protected string $strFullStoragePath;
 
     /**
-     * @param $objParentObject
-     * @param $strControlId
+     * Constructor for the class initializes the object with a parent and an optional control ID.
+     *
+     * @param ControlBase|FormBase $objParentObject The parent object of the control, which must be an instance of ControlBase or FormBase.
+     * @param string|null $strControlId An optional identifier for the control. If not provided, a default will be generated.
+     *
      * @throws Caller
      */
-    public function  __construct($objParentObject, $strControlId = null)
+    public function  __construct(ControlBase|FormBase $objParentObject, ?string $strControlId = null)
     {
         parent::__construct($objParentObject, $strControlId);
 
@@ -60,9 +68,16 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
     }
 
     /**
+     * Registers the necessary JavaScript and CSS files for the file upload functionality.
+     *
+     * This method adds the required JavaScript and CSS files related to file upload and ensures
+     * that the bootstrap CSS file is also included for consistent styling.
+     *
+     * @return void
      * @throws Caller
      */
-    protected function registerFiles() {
+    protected function registerFiles(): void
+    {
         $this->AddJavascriptFile(QCUBED_FILEUPLOAD_HANDLER_ASSETS_URL . "/js/qcubed.uploadhandler.js");
         $this->addCssFile(QCUBED_FILEUPLOAD_HANDLER_ASSETS_URL . "/css/qcubed.uploadhandler.css");
         $this->addCssFile(QCUBED_FILEUPLOAD_HANDLER_ASSETS_URL . "/css/custom-svg-icons.css");
@@ -71,20 +86,35 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
     }
 
     /**
-     * Returns the HTML for the control.
+     * Generates and returns the HTML for the control.
      *
-     * @return string
+     * This method is responsible for creating the HTML structure
+     * of the control, specifically a div element with the class "files".
+     * It formats and returns the generated HTML as a string.
+     *
+     * @return string The HTML content of the control.
      */
-    protected function getControlHtml()
+    protected function getControlHtml(): string
     {
-        $strHtml = _nl('<div class="files"></div>');
-        return $strHtml;
+        return _nl('<div class="files"></div>');
     }
 
     /**
+     * Sets up the necessary directories, validates paths and permissions, and configures root and temporary URLs.
+     *
+     * This method ensures the directory structure for storage and temporary files is in place.
+     * It validates paths, checks permissions for writability, and constructs proper URLs for the root
+     * and temporary paths based on the server environment and protocol.
+     *
+     * It verifies that the required directories exist, such as storage subdirectories like
+     * "thumbnail", "medium", and "large". If they do not exist, the method creates them with proper permissions.
+     * The method also validates whether the server root and storage directories are writable, throwing an exception if they are not.
+     * Paths are sanitized and URLs are constructed based on the HTTPS protocol or HTTP host.
+     *
+     * @return void
      * @throws Caller
      */
-    protected function setup()
+    protected function setup(): void
     {
         $this->strFullStoragePath = $this->strTempPath . '/' . $this->strStoragePath;
         $strCreateDirs = ['/thumbnail', '/medium', '/large', '/zip', '/temp'];
@@ -100,30 +130,30 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
             }
         }
 
-        if($_SERVER['REQUEST_METHOD'] == "POST") {exit;} // prevent loading entire page in the echo
+        if($_SERVER['REQUEST_METHOD'] == "POST") {exit;} // prevent loading the entire page in the echo
 
         $isHttps = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1)
             || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https';
 
-        /** clean and check $strRootPath */
+        /** Clean and check $strRootPath */
         $this->strRootPath = rtrim($this->strRootPath, '\\/');
         $this->strRootPath = str_replace('\\', '/', $this->strRootPath);
 
         $permissions = fileperms($this->strRootPath);
         $permissions = substr(sprintf('%o', $permissions), -4);
         if (!Folder::isWritable($this->strRootPath)) {
-            throw new Caller('Root path "' . $this->strRootPath . '" not writable or not found and
+            throw new Caller('Root path "' . $this->strRootPath . '" not writable or not found, and
             it has the following directory permissions: ' . $permissions . '. Please set 0755 or 0777 permissions to the
             directory or create a directory "upload" into the location "/project/assets" and grant permissions 0755 or 0777!');
-        };
+        }
 
         if (!Folder::isWritable($this->strRootPath)) {
-            throw new Caller('Root path "' . $this->strRootPath . '" not writable or not found and
+            throw new Caller('Root path "' . $this->strRootPath . '" not writable or not found, and
             it has the following directory permissions: ' . $permissions . '. Please set 0755 or 0777 permissions to the
             directory or create a directory "upload" into the location "/project/assets" and grant permissions 0755 or 0777!');
-        };
+        }
 
-        if (!Folder::isWritable($this->strFullStoragePath) && isset($this->strFullStoragePath)) {
+        if (!Folder::isWritable($this->strFullStoragePath)) {
             throw new Caller('Storage path "' . $this->strTempPath . '/' . $this->strStoragePath .
                 '" not writable or not found." Please set permissions to the 0777 directory "/project/tmp", the "_files" folder and subfolders!');
         }
@@ -139,12 +169,20 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
         $this->strRootUrl = $isHttps ? 'https' : 'http' . '://' . $strHttpHost . (!empty($this->strRootUrl) ? '/' . $this->strRootUrl : '');
         $this->strTempUrl = $isHttps ? 'https' : 'http' . '://' . $strHttpHost . (!empty($this->strTempUrl) ? '/' . $this->strTempUrl : '');
     }
+
     /**
-     * Clean path
-     * @param string $path
-     * @return string
+     * Cleans and normalizes a given file path by removing unnecessary characters and sanitizing it.
+     *
+     * This method trims leading and trailing spaces, removes slashes and backslashes
+     * from the start and end, and prevents directory traversal by stripping occurrences
+     * of "../" or "..\". It also converts all backslashes to forward slashes for consistency.
+     * If the resulting path is equivalent to "..", it returns an empty string.
+     *
+     * @param string $path The file path to be cleaned and sanitized.
+     *
+     * @return string The sanitized and normalized file path.
      */
-    protected function cleanPath($path)
+    protected function cleanPath(string $path): string
     {
         $path = trim($path);
         $path = trim($path, '\\/');
@@ -154,12 +192,22 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
         }
         return str_replace('\\', '/', $path);
     }
+
     /**
-     * @param $strName
-     * @return array|bool|callable|float|int|mixed|string|null
-     * @throws Caller
+     * Magic method to retrieve property values dynamically.
+     *
+     * This method provides access to specific protected properties such as
+     * "RootPath", "RootUrl", "TempPath", "TempUrl", and "StoragePath". If the requested
+     * property does not match any predefined cases, the method attempts to retrieve it
+     * through the parent::__get mechanism. If the property is still unavailable, a Caller
+     * exception is thrown.
+     *
+     * @param string $strName The name of the property to retrieve.
+     *
+     * @return mixed The value of the requested property.
+     * @throws Caller If the requested property does not exist or is inaccessible.
      */
-    public function __get($strName)
+    public function __get(string $strName): mixed
     {
         switch ($strName) {
             case "RootPath": return $this->strRootPath;
@@ -177,14 +225,24 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
                 }
         }
     }
+
     /**
-     * @param $strName
-     * @param $mixValue
+     * Magic method for setting the values of class properties dynamically.
+     *
+     * This method assigns values to various properties, such as `RootPath`, `RootUrl`, `TempPath`, `StoragePath`,
+     * and `FullStoragePath`, after validating and casting the provided values to the appropriate types. If invalid
+     * casting is attempted, it throws an exception. It also marks the object as modified when a property is changed.
+     * For unrecognized property names, the method attempts to set the value on the parent class and handles any
+     * exceptions that may arise.
+     *
+     * @param string $strName The name of the property to set.
+     * @param mixed $mixValue The value to assign to the specified property.
+     *
      * @return void
-     * @throws Caller
-     * @throws InvalidCast
+     * @throws InvalidCast If the provided value cannot be cast to the required type.
+     * @throws Caller If the parent class cannot handle the property or value assignment.
      */
-    public function __set($strName, $mixValue)
+    public function __set(string $strName, mixed $mixValue): void
     {
         switch ($strName) {
             case "RootPath":
@@ -217,6 +275,15 @@ class FileUploadHandlerBase extends FileUploadHandlerBaseGen
             case "StoragePath":
                 try {
                     $this->strStoragePath = Type::Cast($mixValue, Type::STRING);
+                    $this->blnModified = true;
+                    break;
+                } catch (InvalidCast $objExc) {
+                    $objExc->IncrementOffset();
+                    throw $objExc;
+                }
+            case "FullStoragePath":
+                try {
+                    $this->strFullStoragePath = Type::Cast($mixValue, Type::STRING);
                     $this->blnModified = true;
                     break;
                 } catch (InvalidCast $objExc) {

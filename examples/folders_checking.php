@@ -19,7 +19,7 @@
                 </div>
                 <div class="row">
                 <div class="col-md-12" style="margin: 10px 0;">
-                    <span class="center-button"><button class="btn btn-orange" type="button" onclick="javascript:history.go(-1)"><?= t('Back'); ?></button></span>
+                    <span class="center-button"><button class="btn btn-orange" type="button" onclick="history.go(-1)"><?= t('Back'); ?></button></span>
                 </div>
                 </div>
             </div>
@@ -29,73 +29,81 @@
 
 <?php
 
-/**
- * Check the synchronicity of folders and database.
- * If they don't match, Filemanager is broken.
- * The reason for this can be either the "folders" table is corrupted or the file system of the "upload" folder is corrupted or an empty folder.
- * In this case, help should be asked from the developer or webmaster.
- *
- * Here is one way to immediately kontrol with the code below (with example):
- *
- * $path = APP_UPLOADS_DIR;
- * print "<pre>";
- * print "<br>DATASCAN:<br>";
- * print_r(dataScan());
- * print "<br>SCAN:<br>";
- * print_r(scan($path));
- * print "</pre>";
- *
- */
+    use QCubed\Exception\Caller;
 
-function dataScan()
-{
-    $folders = Folders::loadAll();
+    /**
+     * Scans and processes folder data.
+     *
+     * This method retrieves all folder paths, modifies the resulting array by
+     * removing the first element, and sorts the remaining paths in ascending order.
+     *
+     * @return array An array of sorted folder paths with the first element removed.
+     * @throws Caller
+     */
 
-    // Use array_map to extract paths.
-    $arr = array_map(function ($folder) {
-        return $folder->getPath();
-    }, $folders);
+    function dataScan(): array
+    {
+        $folders = Folders::loadAll();
 
-    // Remove the first element from the array
-    array_shift($arr);
-    // Sort the paths.
-    sort($arr);
+        // Use an array map to extract paths.
+        $arr = array_map(function ($folder) {
+            return $folder->getPath();
+        }, $folders);
 
-    return $arr;
-}
+        // Remove the first element from the array
+        array_shift($arr);
+        // Sort the paths.
+        sort($arr);
 
-function scan($path)
-{
-    $folders = [];
-
-    if (file_exists($path)) {
-        foreach (scandir($path) as $f) {
-            if ($f[0] == '.') {
-                continue;
-            }
-
-            $fullPath = $path . DIRECTORY_SEPARATOR . $f;
-
-            if (is_dir($fullPath)) {
-                $folders[] = getRelativePath($fullPath);
-                array_push($folders, ...scan($fullPath));
-            }
-        }
+        return $arr;
     }
 
-    sort($folders);
-    return $folders;
-}
+    /**
+     * Recursively scans a directory to retrieve relative paths of all subfolders.
+     * This method traverses through the given directory, and for each folder, it fetches
+     * its relative path and recursively processes its subdirectories.
+     *
+     * @param string $path The absolute path of the directory to be scanned.
+     *
+     * @return array An array of relative paths for all folders within the given directory, sorted alphabetically.
+     */
+    function scan(string $path): array
+    {
+        $folders = [];
 
-/**
- * Get file path without RootPath
- * @param $path
- * @return string
- */
-function getRelativePath($path)
-{
-    return substr($path, strlen(APP_UPLOADS_DIR));
-}
+        if (file_exists($path)) {
+            foreach (scandir($path) as $f) {
+                if ($f[0] == '.') {
+                    continue;
+                }
+
+                $fullPath = $path . DIRECTORY_SEPARATOR . $f;
+
+                if (is_dir($fullPath)) {
+                    $folders[] = getRelativePath($fullPath);
+                    array_push($folders, ...scan($fullPath));
+                }
+            }
+        }
+
+        sort($folders);
+        return $folders;
+    }
+
+    /**
+     * Retrieves the relative path of a given absolute path.
+     *
+     * This method calculates the relative path by removing the base uploads directory
+     * path portion from the provided absolute path.
+     *
+     * @param string $path The absolute path to process.
+     *
+     * @return string The relative path derived from the provided absolute path.
+     */
+    function getRelativePath(string $path): string
+    {
+        return substr($path, strlen(APP_UPLOADS_DIR));
+    }
 
 ?>
 

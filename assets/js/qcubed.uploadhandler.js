@@ -979,7 +979,7 @@
             back.classList.remove("disabled");
             back.removeAttribute("disabled");
             scroll_wrapper.classList.remove("hidden");
-            dialog_wrapper.classList.remove("hidden");
+            //dialog_wrapper.classList.remove("hidden");
 
             while (storedFiles.length > 0) {
                 storedFiles.pop();

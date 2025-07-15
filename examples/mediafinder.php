@@ -2,19 +2,13 @@
 require('qcubed.inc.php');
 
 use QCubed as Q;
-use QCubed\Plugin\UploadHandler;
-use QCubed\Plugin\FileManager;
-use QCubed\Plugin\FileInfo;
-use QCubed\Plugin\MediaFinder;
-use QCubed\QDateTime;
-use QCubed\Folder;
-use QCubed\Project\Control\ControlBase;
 use QCubed\Project\Control\FormBase as Form;
+use QCubed\Exception\Caller;
+use QCubed\Exception\InvalidCast;
 use QCubed\Project\Control\Button;
 use QCubed\Control\Panel;
 use QCubed\Event\Click;
 use QCubed\Action\Ajax;
-use QCubed\Project\Application;
 use QCubed\Action\ActionParams;
 
 /**
@@ -25,29 +19,36 @@ use QCubed\Action\ActionParams;
 
 class SampleForm4 extends Form
 {
-	protected $txtEditor;
-    protected $objMediaFinder;
-	protected $btnSubmit;
-	protected $pnlResult;
-    protected $pnlData;
-    protected $pnlIntroData;
+    protected Q\Plugin\CKEditor $txtEditor;
+    protected Q\Plugin\MediaFinder $objMediaFinder;
+    protected Button $btnSubmit;
+    protected Panel $pnlResult;
+    protected Panel $pnlData;
+    protected Panel $pnlIntroData;
 
-	protected function formCreate()
-	{
+    /**
+     * Initializes and configures UI components such as text editor, media finder, buttons, and panels.
+     * Includes the setup for handling user interactions with the components.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    protected function formCreate(): void
+    {
         // This is one possible example, suppose you have created a database table "example"
         // with one column "picture_ids" next to other columns.
 
         $objExample = Example::load(1);
 
-
-		$this->txtEditor = new Q\Plugin\CKEditor($this);
-		$this->txtEditor->Text = $objExample->getContent() ? $objExample->getContent() : null;
-		$this->txtEditor->Configuration = 'ckConfig';
-		$this->txtEditor->Rows = 15;
+        $this->txtEditor = new Q\Plugin\CKEditor($this);
+        $this->txtEditor->Text = $objExample->getContent() ? $objExample->getContent() : null;
+        $this->txtEditor->Configuration = 'ckConfig';
+        $this->txtEditor->Rows = 15;
 
         $this->objMediaFinder = new Q\Plugin\MediaFinder($this);
         $this->objMediaFinder->TempUrl = APP_UPLOADS_TEMP_URL . "/_files/thumbnail";
-        $this->objMediaFinder->PopupUrl = QCUBED_FILEMANAGER_URL . "/examples/finder.php";
+        $this->objMediaFinder->PopupUrl = dirname(QCUBED_FILEMANAGER_ASSETS_URL) . "/examples/finder.php";
         $this->objMediaFinder->EmptyImageAlt = t("Choose a picture");
         $this->objMediaFinder->SelectedImageAlt = t("Selected picture");
 
@@ -55,27 +56,37 @@ class SampleForm4 extends Form
 
         if ($this->objMediaFinder->SelectedImageId !== null) {
             $objFiles = Files::loadById($this->objMediaFinder->SelectedImageId);
-            $this->objMediaFinder->SelectedImagePath = $this->objMediaFinder->TempUrl . $objFiles->getPath();;
+            $this->objMediaFinder->SelectedImagePath = $this->objMediaFinder->TempUrl . $objFiles->getPath();
             $this->objMediaFinder->SelectedImageName = $objFiles->getName();
         }
 
         $this->objMediaFinder->addAction(new Q\Plugin\Event\ImageSave(), new Q\Action\Ajax('imageSave_Push'));
         $this->objMediaFinder->addAction(new Q\Plugin\Event\ImageDelete(), new Q\Action\Ajax('imageDelete_Push'));
 
-		$this->btnSubmit = new Button($this);
-		$this->btnSubmit->Text = "Submit";
-		$this->btnSubmit->PrimaryButton = true;
-		$this->btnSubmit->AddAction(new Click(), new Ajax('submit_Click'));
+        $this->btnSubmit = new Button($this);
+        $this->btnSubmit->Text = "Submit";
+        $this->btnSubmit->PrimaryButton = true;
+        $this->btnSubmit->AddAction(new Click(), new Ajax('submit_Click'));
 
-		$this->pnlResult = new Panel($this);
-		$this->pnlResult->HtmlEntities = true;
+        $this->pnlResult = new Panel($this);
+        $this->pnlResult->HtmlEntities = true;
 
         $this->pnlData = new Panel($this);
         $this->pnlIntroData = new Panel($this);
         $this->pnlIntroData->HtmlEntities = true;
-	}
+    }
 
-    protected function imageSave_Push(ActionParams $params)
+    /**
+     * Handles the saving of a selected image by updating the relevant database entry
+     * with the associated image ID. Updates the UI components to reflect the selected image's information.
+     *
+     * @param ActionParams $params Parameters from the action event, used for processing the image save request.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    protected function imageSave_Push(ActionParams $params): void
     {
         // The "finder.php" file always registers the id of the selected image
         // in the "files" table. So there is no need to do anything here.
@@ -94,14 +105,26 @@ class SampleForm4 extends Form
             $this->pnlData->Text = $info;
         }
 
-        $image = $objFiles = Files::loadById($info);
+        $image = Files::loadById($info);
 
         if ($image) {
             $this->pnlIntroData->Text = '<img src="' . APP_UPLOADS_TEMP_URL . "/_files/medium" . $image->getPath() . '" class="image img-responsive">';
         }
     }
 
-    protected function imageDelete_Push(ActionParams $params)
+    /**
+     * Handles the deletion of an image and updates the relevant database records.
+     * Ensures the associated file is marked as free and updates the corresponding
+     * entry in the "example" table to indicate no image is associated. Additionally,
+     * updates UI components to reflect the changes.
+     *
+     * @param ActionParams $params Provides parameters related to the user-triggered action.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    protected function imageDelete_Push(ActionParams $params): void
     {
         // Here it is necessary to inform the "files" table that this selected image is now free.
         // If this is not done, the FileHandler will not report the correct information about
@@ -126,7 +149,18 @@ class SampleForm4 extends Form
         $this->pnlIntroData->Text = "NULL";
     }
 
-	protected function submit_Click(ActionParams $params)
+    /**
+     * Handles the click event for the submit action. This method updates the content
+     * of an example object, saves the changes, and updates various panels with information
+     * or placeholders based on available data, including an associated image.
+     *
+     * @param ActionParams $params Contains the parameters passed during the click event.
+     *
+     * @return void
+     * @throws Caller
+     * @throws InvalidCast
+     */
+    protected function submit_Click(ActionParams $params): void
     {
         $objExample = Example::loadById(1);
         $objExample->setContent($this->txtEditor->Text);
@@ -140,20 +174,20 @@ class SampleForm4 extends Form
             $this->pnlData->Text = "NULL";
         }
 
-        $image = $objFiles = Files::loadById($objExample->getPictureId());
+        $image = Files::loadById($objExample->getPictureId());
 
         if ($image) {
             $this->pnlIntroData->Text = '<img src="' . APP_UPLOADS_TEMP_URL . "/_files/medium" . $image->getPath() . '" class="image img-responsive">';
         } else {
             $this->pnlIntroData->Text = "NULL";
         }
-	}
+    }
 
     // Special attention must be given here when you wish to delete the selected example. It is necessary
     // to inform FileHandler to first decrease the count of locked files ("locked_file").
     // Finally, delete this example.
 
-    // Approximate example below:
+    // The approximate example below:
 
     /*protected function delete_Click(ActionParams $params)
     {
@@ -167,4 +201,4 @@ class SampleForm4 extends Form
     }*/
 
 }
-SampleForm4::Run('SampleForm4');
+SampleForm4::run('SampleForm4');

@@ -8,6 +8,12 @@
 namespace QCubed\Plugin;
 
 
+
+/**
+ * The FileManager class extends the base file manager functionality.
+ * This class is designed to allow custom modifications and additional features
+ * beyond the base implementation. Modify as necessary for project-specific requirements.
+ */
 class FileManager extends FileManagerBase
 {
     /*public function  __construct($objParentObject, $strControlId = null) {
