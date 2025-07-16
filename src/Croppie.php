@@ -36,8 +36,8 @@ class Croppie extends CroppieGen
      */
     protected function registerFiles(): void
     {
-        $this->AddJavascriptFile(QCUBED_CROPPIE_ASSETS_URL . "/js/croppie.js");
-        $this->AddJavascriptFile(QCUBED_CROPPIE_ASSETS_URL . "/js/exif.js");
-        $this->addCssFile(QCUBED_CROPPIE_ASSETS_URL . "/css/croppie.css");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/croppie.js");
+        $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/exif.js");
+        $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL. "/css/croppie.css");
     }
 }
