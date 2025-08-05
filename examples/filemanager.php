@@ -1328,24 +1328,24 @@ class SampleForm extends Form
         $this->txtAddFolder->Text = '';
 
         $javascript = "
-        $('.modal-check-textbox').on('keyup keydown', function() {
-            var length = $(this).val().length;
-            var modalHeader = $('.modal-header');
-            var modalFooterBtn = $('.modal-footer .btn-orange');
-
-            if (length === 0) {
-                modalHeader.removeClass('btn-default').addClass('btn-danger');
-                $('.modal-error-same-text').addClass('hidden');
-                $('.modal-error-text').removeClass('hidden');
-                modalFooterBtn.attr('disabled', 'disabled');
-            } else {
-                modalHeader.removeClass('btn-danger').addClass('btn-default');
-                $('.modal-error-same-text').addClass('hidden');
-                $('.modal-error-text').addClass('hidden');
-                modalFooterBtn.removeAttr('disabled', 'disabled');
-            }
-        });
-    ";
+            $('.modal-check-textbox').on('keyup keydown', function() {
+                var length = $(this).val().length;
+                var modalHeader = $('.modal-header');
+                var modalFooterBtn = $('.modal-footer .btn-orange');
+    
+                if (length === 0) {
+                    modalHeader.removeClass('btn-default').addClass('btn-danger');
+                    $('.modal-error-same-text').addClass('hidden');
+                    $('.modal-error-text').removeClass('hidden');
+                    modalFooterBtn.attr('disabled', 'disabled');
+                } else {
+                    modalHeader.removeClass('btn-danger').addClass('btn-default');
+                    $('.modal-error-same-text').addClass('hidden');
+                    $('.modal-error-text').addClass('hidden');
+                    modalFooterBtn.removeAttr('disabled', 'disabled');
+                }
+            });
+        ";
 
         Application::executeJavaScript($javascript);
     }

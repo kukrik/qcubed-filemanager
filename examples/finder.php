@@ -1133,7 +1133,7 @@ class SampleForm extends Form
             $_SESSION['filePath'] = "";
             Application::executeJavaScript("$('.modalPath').append('/')");
         } else {
-            Application::executeJavaScript("$('.modalPath').append('$this->strDataPath}'");
+            Application::executeJavaScript("$('.modalPath').append('$this->strDataPath')");
         }
     }
 
