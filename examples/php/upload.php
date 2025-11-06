@@ -133,19 +133,3 @@
         echo json_encode(['error' => 'Failed to start the file/s upload system.']);
         exit;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

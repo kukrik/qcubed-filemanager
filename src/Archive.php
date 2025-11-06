@@ -85,11 +85,11 @@
             return $success;
         }
 
+
         /**
-         * Handles the downloading of a ZIP file by sending appropriate HTTP headers to the client
-         * and initiating the file transfer. The file is deleted from the server after the download.
+         * Sends a ZIP file to the client for a download and deletes the file afterward.
          *
-         * @param string $zipPath The absolute path to the ZIP file to be downloaded.
+         * @param string $zipPath The file path to the ZIP file that will be downloaded.
          *
          * @return void
          */

@@ -244,7 +244,7 @@
          *
          * @throws Caller If the property name is not found in the current or parent class.
          */
-        public function __get(string $strName): mixed
+        public function __get($strName): mixed
         {
             switch ($strName) {
                 case 'ContainerWidth': return $this->strContainerWidth;
@@ -318,7 +318,7 @@
          * @throws Caller
          * @throws InvalidCast If the provided value cannot be cast to the expected type of the property.
          */
-        public function __set(string $strName, mixed $mixValue): void
+        public function __set($strName, mixed $mixValue): void
         {
             switch ($strName) {
                 case 'ContainerWidth':
@@ -702,7 +702,6 @@
          * used by the ModelConnector designer dialog to display a list of options for the control.
          * @return QModelConnectorParam[]
          *
-         * @throws \QCubed\Exception\Caller
          */
         public static function getModelConnectorParams(): array
         {

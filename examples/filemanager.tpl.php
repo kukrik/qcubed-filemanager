@@ -38,6 +38,12 @@
                     </div>
                 </div>
             </div>
+            <style>
+                .btn-orange..fileinput-button.disabled,
+                #files.fileinput-button.disabled input[type="file"] {
+                    cursor: not-allowed !important;
+                }
+            </style>
             <div class="fileupload-buttonbar hidden">
                 <div class="row">
                     <div class="col-md-12">

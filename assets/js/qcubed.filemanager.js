@@ -2,6 +2,7 @@
     $.fn.fileManager = function (options) {
         options = $.extend({
             language: null,
+            path: null,
             rootPath: null,
             rootUrl: null,
             tempPath: null,
@@ -67,7 +68,8 @@
         /////////////////////////////////////////
 
         async function fetchLanguageJson(language) {
-            const response = await fetch(`../assets/lang/${language}.json`);
+            //const response = await fetch(`../assets/lang/${language}.json`);
+            const response = await fetch(options.path + `/lang/${language}.json`);
 
             if (!response.ok) {
                 console.error(`Failed to fetch ${language}.json`);
@@ -107,7 +109,8 @@
 
         /////////////////////////////////////////
 
-        fetch("../assets/php/json.php")
+        //fetch("../assets/php/json.php")
+        fetch(options.path + '/php/json.php')
             .then((response) => {
                 if(!response.ok){ // Before parsing (i.e. decoding) the JSON data,
                     // check for any errors.

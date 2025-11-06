@@ -82,8 +82,9 @@ class RadioList extends RadioButtonList
      *
      * @throws InvalidCast If the provided value cannot be cast to the expected type.
      * @throws Caller If the property is not recognized and cannot be handled by the parent class.
+     * @throws \Exception
      */
-    public function __set(string $strName, mixed $mixValue): void
+    public function __set($strName, mixed $mixValue): void
     {
         switch ($strName) {
             // APPEARANCE
@@ -161,7 +162,7 @@ class RadioList extends RadioButtonList
      *               Falls back to the parent::__get method for other properties.
      * @throws Caller If the property does not exist or is inaccessible.
      */
-    public function __get(string $strName): mixed
+    public function __get($strName): mixed
     {
         switch ($strName) {
             case "GroupName": return $this->strGroupName;

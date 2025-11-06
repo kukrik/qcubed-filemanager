@@ -17,7 +17,7 @@
      * @property string $TempPath = Default temp path APP_UPLOADS_TEMP_DIR. If necessary, the temp dir must be specified.
      * @property string $StoragePath Default dir named _files. This dir is generated together with the dirs
      *                               /thumbnail, /medium, /large when the corresponding page is opened for the first time.
-     * @property string $FullStoragePath Please see the setup() function! This can only be changed in this function.
+     * @property string $FullStoragePath Please a see the setup() function! This can only be changed in this function.
      *
      * @property integer $ThumbnailResizeDimensions Default resized image dimensions. Default 320 is a good balance between
      *                                              visible quality and file size.
@@ -101,6 +101,7 @@
         // PHP File Upload error message codes:
         // https://www.php.net/manual/en/features.file-upload.errors.php
         protected array $uploadErrors;
+        protected string $chunkEnabled;
         protected int $index;
         protected string $chunk;
         protected int $count;
@@ -230,10 +231,10 @@
          */
         public function handleFileUpload(): void
         {
-            $chunkEnabled = $_REQUEST['chunkEnabled'] ?? "false";
-            $this->index = isset($_REQUEST['index']) ? intval($_REQUEST['index']) : 0;
-            $this->chunk = isset($_REQUEST['chunk']) ? intval($_REQUEST['chunk']) : 0;
-            $this->count = isset($_REQUEST['count']) ? intval($_REQUEST['count']) : 0;
+            $this->chunkEnabled = $_REQUEST['chunkEnabled'] ?? "false";
+            $this->index = intval($_REQUEST['index']) ?? 0;
+            $this->chunk = intval($_REQUEST['chunk']) ?? 0;
+            $this->count = intval($_REQUEST['count']) ?? 0;
 
             $this->options['FileName'] = $this->options['RootPath'] . '/' . $_FILES["files"]["name"];
             $this->options['File'] = $_FILES["files"]["tmp_name"];
@@ -246,7 +247,7 @@
                 $this->options['FileName'] = $this->options['RootPath'] . $this->options['DestinationPath'] . '/' . basename($this->options['FileName']);
             }
 
-            if ($chunkEnabled === "false") {
+            if ($this->chunkEnabled === "false") {
                 // Check for duplicate filenames and increment if necessary
                 $newFileName = $this->checkDuplicateFile($this->options['FileName']);
 

@@ -149,7 +149,7 @@ class SampleForm3 extends Form
         // Merge arrays into one
         $combinedArray = array_merge($matchesImg[1], $matchesA[1]);
 
-        if (!strlen($references)) {
+        if (!$references) {
             $saveFilesIds = implode(',', $combinedArray);
             $objExample->setFilesIds($saveFilesIds);
             $objExample->save();

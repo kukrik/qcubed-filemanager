@@ -1,9 +1,7 @@
 <?php $strPageTitle = 'Examples of file management' ; ?>
 
 <?php require('header.inc.php'); ?>
-
 <?php $this->RenderBegin(); ?>
-
     <div class="dialog-content-wrapper">
         <div class="page-content">
             <div class="content-body">

@@ -80,7 +80,8 @@ class SampleForm extends Form
     protected Bs\Modal $dlgModal43; // Image cropping succeeded!
     protected Bs\Modal $dlgModal44; // Image cropping failed!
     protected Bs\Modal $dlgModal45; // The image is invalid for cropping!
-    protected Bs\Modal $dlgModal46; // CSRF Token is invalid
+    protected Bs\Modal $dlgModal46; // Sorry, be cannot crop a reserved file!
+    protected Bs\Modal $dlgModal47; // CSRF Token is invalid
 
     protected Q\Plugin\FileUploadHandler $objUpload;
     protected Q\Plugin\FileManager $objManager;
@@ -177,7 +178,7 @@ class SampleForm extends Form
         //$this->objUpload->MaxFileSize = 1024 * 1024 * 2; // 2 MB // Default null
         //$this->objUpload->MinFileSize = 500000; // 500 kb // Default null
         //$this->objUpload->ChunkUpload = false; // Default true
-        $this->objUpload->MaxChunkSize = 1024 * 1024; // Default 5 MB
+        //$this->objUpload->MaxChunkSize = 1024 * 1024 * 10; // Default 5 MB
         //$this->objUpload->LimitConcurrentUploads = 5; // Default 2
         $this->objUpload->Url = 'php/upload.php'; // Default null
         //$this->objUpload->PreviewMaxWidth = 120; // Default 80
@@ -274,6 +275,7 @@ class SampleForm extends Form
         $this->btnAddFiles->Text = t(' Add files');
         $this->btnAddFiles->Glyph = 'fa fa-upload';
         $this->btnAddFiles->Multiple = true;
+        $this->btnAddFiles->removeCssClass('btn btn-default fileinput-button');
         $this->btnAddFiles->CssClass = 'btn btn-orange fileinput-button';
         $this->btnAddFiles->UseWrapper = false;
 
@@ -746,14 +748,21 @@ class SampleForm extends Form
         $this->dlgModal45->HeaderClasses = 'btn-danger';
         $this->dlgModal45->addCloseButton(t("I understand"));
 
+        $this->dlgModal46 = new Bs\Modal($this);
+        $this->dlgModal46->Title = t('Tip');
+        $this->dlgModal46->Text = t('<p style="margin-top: 15px;">Sorry, be cannot crop a reserved file!</p>
+                                    <p style="margin-top: 15px;">Select and copy this file to another location, then crop!</p>');
+        $this->dlgModal46->HeaderClasses = 'btn-darkblue';
+        $this->dlgModal46->addCloseButton(t("I close the window"));
+
         ///////////////////////////////////////////////////////////////////////////////////////////
         // CSRF PROTECTION
 
-        $this->dlgModal46 = new Bs\Modal($this);
-        $this->dlgModal46->Text = t('<p style="margin-top: 15px;">CSRF Token is invalid! The request was aborted.</p>');
-        $this->dlgModal46->Title = t("Warning");
-        $this->dlgModal46->HeaderClasses = 'btn-danger';
-        $this->dlgModal46->addCloseButton(t("I understand"));
+        $this->dlgModal47 = new Bs\Modal($this);
+        $this->dlgModal47->Text = t('<p style="margin-top: 15px;">CSRF Token is invalid! The request was aborted.</p>');
+        $this->dlgModal47->Title = t("Warning");
+        $this->dlgModal47->HeaderClasses = 'btn-danger';
+        $this->dlgModal47->addCloseButton(t("I understand"));
     }
 
     /**
@@ -1178,7 +1187,7 @@ class SampleForm extends Form
     public function confirmParent_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
@@ -1315,7 +1324,7 @@ class SampleForm extends Form
     public function startAddFolderProcess_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
@@ -1362,7 +1371,7 @@ class SampleForm extends Form
     public function addFolderName_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
@@ -1608,7 +1617,7 @@ class SampleForm extends Form
     public function renameName_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
@@ -1876,15 +1885,12 @@ class SampleForm extends Form
     public function btnCrop_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
 
         clearstatcache();
-
-        $this->strDataPath = $this->arrSomeArray[0]["data-path"];
-        $fullFilePath = $this->objManager->RootUrl . $this->strDataPath;
 
         if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
             $this->dlgModal1->showDialogBox(); // A corrupted table "folders" in the database or directory "upload" in the file system! ...
@@ -1895,6 +1901,14 @@ class SampleForm extends Form
             $this->dlgModal40->showDialogBox(); // Please select an image!
             return;
         }
+
+        if ($this->arrSomeArray[0]["data-activities-locked"] == 1) {
+            $this->dlgModal46->showDialogBox(); // Sorry, be cannot crop a reserved file! ...
+            return;
+        }
+
+        $this->strDataPath = $this->arrSomeArray[0]["data-path"];
+        $fullFilePath = $this->objManager->RootUrl . $this->strDataPath;
 
         if ($this->arrSomeArray[0]['data-item-type'] == 'file' &&
             !in_array(strtolower($this->arrSomeArray[0]['data-extension']), $this->arrCroppieTypes)) {
@@ -1975,7 +1989,7 @@ class SampleForm extends Form
     public function btnCopy_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
@@ -2152,7 +2166,7 @@ class SampleForm extends Form
      * Updates the copy destination dialog interface by scanning directories, marking locked directories,
      * and populating the dialog with relevant items.
      *
-     * This method identifies locked directories based on the current state and additional checks 
+     * This method identifies locked directories based on the current state and additional checks
      * and then integrates the scanned paths into the copy destination dialog with appropriate markers.
      * Locked directories are highlighted based on specific conditions.
      *
@@ -2369,7 +2383,7 @@ class SampleForm extends Form
     public function btnDelete_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
@@ -2688,7 +2702,7 @@ class SampleForm extends Form
     public function btnMove_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
@@ -3120,7 +3134,7 @@ class SampleForm extends Form
     public function btnDownload_Click(ActionParams $params): void
     {
         if (!Application::verifyCsrfToken()) {
-            $this->dlgModal46->showDialogBox();
+            $this->dlgModal47->showDialogBox();
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             return;
         }
@@ -3514,7 +3528,7 @@ class SampleForm extends Form
     }
 
     /**
-     * Recursively copies a file or directory from source to destination 
+     * Recursively copies a file or directory from source to destination
      * while managing metadata and associated operations.
      *
      * @param string $src The source path to copy from. It can be a file or directory.

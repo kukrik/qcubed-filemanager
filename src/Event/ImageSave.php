@@ -1,18 +1,18 @@
 <?php
 
-namespace QCubed\Plugin\Event;
+    namespace QCubed\Plugin\Event;
 
-use QCubed\Event\EventBase;
+    use QCubed\Event\EventBase;
 
-/**
- * Class ImageSave
- *
- * Captures the save event that occurs after the popup is closed.
- *
- */
+    /**
+     * Class ImageSave
+     *
+     * Captures the save event that occurs after the popup is closed.
+     *
+     */
 
-class ImageSave extends EventBase {
+    class ImageSave extends EventBase {
 
-    const EVENT_NAME = 'imagesave';
-    const JS_RETURN_PARAM = 'ui';
-}
+        const string EVENT_NAME = 'imagesave';
+        const string JS_RETURN_PARAM = 'ui';
+    }
