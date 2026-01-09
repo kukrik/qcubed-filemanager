@@ -12,7 +12,8 @@ use QCubed as Q;
 use QCubed\Bootstrap as Bs;
 use QCubed\Event\DialogButton;
 use QCubed\Folder;
-use QCubed\QString;
+    use QCubed\QDateTime;
+    use QCubed\QString;
 use QCubed\Project\Control\FormBase as Form;
 use QCubed\Action\ActionParams;
 use QCubed\Project\Application;
@@ -28,6 +29,11 @@ use QCubed\Database\Exception\UndefinedPrimaryKey;
  */
 class SampleForm extends Form
 {
+    /** @var string RootPath  */
+    protected string $strRootPath = APP_UPLOADS_DIR;
+    /** @var string TempPath */
+    protected string $strTempPath = APP_UPLOADS_TEMP_DIR;
+
     protected Bs\Modal $dlgModal1; // A corrupted table "folders" in the database or folder "upload" in the file system! ...
     protected Bs\Modal $dlgModal2; // Sorry, files cannot be added to this reserved folder! ...
     protected Bs\Modal $dlgModal3; // Please choose only a specific folder to upload files!
@@ -231,7 +237,8 @@ class SampleForm extends Form
         $this->objHomeLink->HtmlEntities = false;
         $this->objHomeLink->addAction(new Q\Event\Click(), new Ajax('appendData_Click'));
 
-        $this->CreateButtons();
+        $this->setup();
+        $this->createButtons();
         $this->createModals();
         $this->portedAddFolderTextBox();
         $this->portedRenameTextBox();
@@ -239,6 +246,66 @@ class SampleForm extends Form
         $this->portedCopyingListBox();
         $this->portedDeleteBox();
         $this->portedMovingListBox();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Initializes the setup process for creating and registering a "Mini gallery" folder structure.
+     *
+     * Note: Due to the project's primary need, a reserved folder called "Mini gallery" must
+     * be created before creating other folders.
+     *
+     * This method performs the following operations:
+     * - Creates a directory based on the sanitized folder name within the specified root path.
+     * - Generates additional temporary folders with relative paths.
+     * - Registers the created folder in the database with its properties such as parent ID, path, name, type, etc.
+     * - Adds an entry in the mini gallery register containing references to the created folder.
+     *
+     * @return void
+     * @throws Caller
+     */
+    protected function setup(): void
+    {
+        $fullPath = $this->strRootPath . "/" . QString::sanitizeForUrl(trim('Mini gallery'));
+        $relativePath = $this->getRelativePath($fullPath);
+
+        if (!is_dir($fullPath)) {
+            Folder::makeDirectory($fullPath, 0777);
+
+            foreach ($this->tempFolders as $tempFolder) {
+                $tempPath = $this->strTempPath . '/_files/' . $tempFolder . $relativePath;
+                Folder::makeDirectory($tempPath, 0777);
+            }
+
+            $objAddFolder = new Folders();
+            $objAddFolder->setParentId(1);
+            $objAddFolder->setPath($relativePath);
+            $objAddFolder->setName(trim('Mini gallery'));
+            $objAddFolder->setType('dir');
+            $objAddFolder->setMtime(filemtime($fullPath));
+            $objAddFolder->setLockedFile(0);
+            $objAddFolder->setActivitiesLocked(1);
+            $objAddFolder->save();
+
+            $objAddRegister = new MiniGalleryRegister();
+            $objAddRegister->setFolderId($objAddFolder->getId());
+            $objAddRegister->setFolderPath($relativePath);
+            $objAddRegister->setCreatedAt(QDateTime::now());
+            $objAddRegister->save();
+        }
+    }
+
+    /**
+     * Computes and retrieves the relative path of a given absolute path by removing the root path prefix.
+     *
+     * @param string $path The absolute path for which the relative path is to be calculated.
+     *
+     * @return string The relative path derived from the provided absolute path.
+     */
+    protected function getRelativePath(string $path): string
+    {
+        return substr($path, strlen($this->strRootPath));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +336,7 @@ class SampleForm extends Form
      * @return void
      * @throws Caller
      */
-    public function CreateButtons(): void
+    public function createButtons(): void
     {
         $this->btnAddFiles = new Q\Plugin\BsFileControl($this, 'files');
         $this->btnAddFiles->Text = t(' Add files');
@@ -923,7 +990,7 @@ class SampleForm extends Form
         $this->lblDeletionWarning->UseWrapper = false;
 
         $this->lblDeletionInfo = new Q\Plugin\Label($this->dlgModal27);
-        $this->lblDeletionInfo->Text = t("This action cannot be undone.");
+        $this->lblDeletionInfo->Text = t("Can\'t undo it afterwards!");
         $this->lblDeletionInfo->addCssClass("deletion-info-text");
         $this->lblDeletionInfo->setCssStyle('width', '100%');
         $this->lblDeletionInfo->setCssStyle('color', '#ff0000');
