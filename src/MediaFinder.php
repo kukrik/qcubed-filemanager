@@ -270,7 +270,7 @@ FUNC;
          * @return mixed The value of the requested property, or an exception if the property does not exist.
          * @throws Caller
          */
-        public function __get($strName): mixed
+        public function __get(string $strName): mixed
         {
             switch ($strName) {
                 case 'Item': return $this->intItem;
@@ -306,7 +306,7 @@ FUNC;
          * @throws InvalidCast If the value being assigned cannot be cast to the required type.
          * @throws Caller If the property name is not recognized or the parent class cannot handle the assignment.
          */
-        public function __set($strName, mixed $mixValue): void
+        public function __set(string $strName, mixed $mixValue): void
         {
             switch ($strName) {
                 case "_Item": // Internal only. Do not use. Used by JS above to track selections.
