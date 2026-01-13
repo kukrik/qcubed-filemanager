@@ -3,6 +3,7 @@
     namespace QCubed\Plugin;
 
     use QCubed as Q;
+    use QCubed\Control\Panel;
     use QCubed\Exception\Caller;
     use QCubed\Exception\InvalidCast;
     use QCubed\Type;
@@ -21,7 +22,7 @@
      * @package QCubed\Plugin
      */
 
-    class MediaFinderGen extends Q\Control\Panel
+    class MediaFinderGen extends Panel
     {
         protected ?string $strPopupUrl = null;
         protected ?string $strPopupWidth = null;
@@ -63,7 +64,7 @@
          * @return mixed The value of the requested property, or the result of the parent implementation.
          * @throws Caller If the property does not exist and cannot be resolved by the parent method.
          */
-        public function __get($strName): mixed
+        public function __get(string $strName): mixed
         {
             switch ($strName) {
                 case 'PopupUrl': return $this->strPopupUrl;
@@ -92,7 +93,7 @@
          * @throws InvalidCast Thrown if the value cannot be cast to the required type.
          * @throws Caller Thrown if the property does not exist or cannot be set.
          */
-        public function __set($strName, mixed $mixValue): void
+        public function __set(string $strName, mixed $mixValue): void
         {
             switch ($strName) {
                 case 'PopupUrl':

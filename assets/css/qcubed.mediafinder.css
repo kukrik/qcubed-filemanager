@@ -29,7 +29,7 @@ body, html {
     cursor: pointer;
 }
 
-.overlay {
+.image-overlay {
     position: absolute;
     bottom: 0;
     background: rgb(0, 0, 0);
@@ -42,11 +42,11 @@ body, html {
     font-size: 14px;
     padding: 20px 0 10px 10px;
 }
-.image-container:hover .overlay {
+.image-container:hover .image-overlay {
     opacity: 1;
     cursor: pointer;
 }
-.overlay:hover .svg-delete {
+.image-overlay:hover .svg-delete {
     stroke: #ff0000;
     stroke-width: 0.15em;
 }

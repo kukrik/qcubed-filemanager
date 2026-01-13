@@ -20,8 +20,8 @@
 <div class="instructions" style="margin-bottom: 20px;">
     <h3>MediaFinder: Implementing the MediaFinder plugin and connecting with FileManager</h3>
     <p>
-        How to implement the CKEditor 4 HTML editor, please see examples: <a href="ckeditor.php">ckeditor.php</a>,
-        <a href="ckeditor2.php">ckeditor2.php</a>, and <a href="ckeditor3.php">ckeditor3.php</a>.
+        How to implement the CKEditor 4 HTML editor, please see examples: <a href="../../../qcubed-4/plugin-ckeditor/examples/ckeditor.php">ckeditor.php</a>,
+        <a href="../../../qcubed-4/plugin-ckeditor/examples/ckeditor2.php">ckeditor2.php</a>, and <a href="../../qcubed-filemanager/examples/ckeditor3.php">ckeditor3.php</a>.
     </p>
     <p>
         Integrated here is MediaFinder, visible on the right side of the editor. This plugin allows for a much easier

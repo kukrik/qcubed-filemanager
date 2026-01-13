@@ -148,7 +148,7 @@
                 $strHtml .= _nl(_indent('<img src="' . $this->strSelectedImagePath . '" data-id ="' . $this->intSelectedImageId . '" data-event= "save" class="image overlay-path img-responsive">', 2));
             }
 
-            $strHtml .= _nl(_indent('<div id="' . $this->ControlId . '"  class="image-overlay" data-id ="' . $this->intSelectedImageId . '" data-event= "delete">', 3));
+            $strHtml .= _nl(_indent('<div id="' . $this->ControlId . '"  class="overlay" data-id ="' . $this->intSelectedImageId . '" data-event= "delete">', 3));
             if ($this->strSelectedImageName) {
                 $strHtml .= _nl(_indent('<span class="overLay-left">' . $this->strSelectedImageName . '</span>', 4));
             } else {
@@ -185,7 +185,7 @@
 $(document).ready(function() {
     var choose_image = document.querySelector(".choose-image");
     var selected_image = document.querySelector(".selected-image");
-    var image_overlay = document.querySelector(".image-overlay");
+    var overlay = document.querySelector(".overlay");
     var overlay_path = document.querySelector(".overlay-path");
     var overlay_left = document.querySelector(".overLay-left");
     
@@ -199,14 +199,14 @@ $(document).ready(function() {
         if (id && name && path) {
             choose_image.classList.add('hidden');
             selected_image.classList.remove('hidden');
-            image_overlay.setAttribute('data-id', id);
+            overlay.setAttribute('data-id', id);
             overlay_path.setAttribute('data-id', id);
             overlay_path.src = '$this->strTempUrl' + path;
             overlay_left.textContent = name;
         } else {
             choose_image.classList.remove('hidden');
             selected_image.classList.add('hidden');
-            image_overlay.setAttribute('data-id', '');
+            overlay.setAttribute('data-id', '');
             overlay_path.setAttribute('data-id', '');
             overlay_path.src = "";
         }
@@ -215,8 +215,8 @@ $(document).ready(function() {
     }
 
     window.getDataParams = getDataParams;
-    
-        imageSave = function() {
+
+    imageSave = function() {
         var overlay_path = $(".overlay-path");
         overlay_path.on("imagesave", function(event) {
             if (overlay_path.data('id') !== "" && overlay_path.data('event') === 'save') {
@@ -229,6 +229,33 @@ $(document).ready(function() {
         var ImageSaveEvent = $.Event("imagesave");
         overlay_path.trigger(ImageSaveEvent);
     }
+    
+    $(".overlay").on("click", function() {
+        var id = overlay.getAttribute('data-id')
+
+        // choose_image.classList.remove('hidden');
+        // selected_image.classList.add('hidden');
+        // overlay.setAttribute('data-id', '');
+        // overlay_path.setAttribute('data-id', '');
+        // overlay_path.src = '';
+        // overlay_left.textContent = '';
+        
+        imageDelete();
+    });
+    
+    imageDelete = function() {
+        var overlay = $(".overlay");
+        overlay.on("imagedelete", function(event) {
+            if (overlay.data('id') !== "" && overlay.data('event') === 'delete') {
+                qcubed.recordControlModification("$this->ControlId", "_Item", overlay.data('id'));
+                
+                 console.log('controlModifications :', qcubed.controlModifications);
+            }
+        });
+
+        var ImageDeleteEvent = $.Event("imagedelete");
+        overlay.trigger(ImageDeleteEvent);
+    } 
 });
 FUNC;
             Application::executeJavaScript($strCtrlJs, Q\ApplicationBase::PRIORITY_HIGH);

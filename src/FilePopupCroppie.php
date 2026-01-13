@@ -198,7 +198,7 @@
          * @return mixed The value of the requested property.
          * @throws Caller If the requested property does not exist or cannot be retrieved.
          */
-        public function __get($strName): mixed
+        public function __get(string $strName): mixed
         {
             switch ($strName) {
                 case "HeaderTitle": return $this->strHeaderTitle;
@@ -230,7 +230,7 @@
          * @throws InvalidCast If the provided value cannot be cast to the expected type.
          * @throws Caller If the property name is not valid or cannot be set.
          */
-        public function __set($strName, mixed $mixValue): void
+        public function __set(string $strName, mixed $mixValue): void
         {
             switch ($strName) {
                 case '_finalPath': // Internal only to output the cropped image name with a relative path after saving.

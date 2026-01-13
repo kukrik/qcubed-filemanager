@@ -91,7 +91,6 @@
         protected Bs\Modal $dlgModal44; // Image cropping failed!
         protected Bs\Modal $dlgModal45; // The image is invalid for cropping!
         protected Bs\Modal $dlgModal46; // Sorry, be cannot crop a reserved file!
-        protected Bs\Modal $dlgModal47; // CSRF Token is invalid
 
         protected Q\Plugin\FileUploadHandler $objUpload;
         protected Q\Plugin\FileManager $objManager;
@@ -788,15 +787,6 @@
                                     <p style="margin-top: 15px;">Select and copy this file to another location, then crop!</p>');
             $this->dlgModal46->HeaderClasses = 'btn-darkblue';
             $this->dlgModal46->addCloseButton(t("I close the window"));
-
-            ///////////////////////////////////////////////////////////////////////////////////////////
-            // CSRF PROTECTION
-
-            $this->dlgModal47 = new Bs\Modal($this);
-            $this->dlgModal47->Text = t('<p style="margin-top: 15px;">CSRF Token is invalid! The request was aborted.</p>');
-            $this->dlgModal47->Title = t("Warning");
-            $this->dlgModal47->HeaderClasses = 'btn-danger';
-            $this->dlgModal47->addCloseButton(t("I understand"));
         }
 
         /**
@@ -959,7 +949,7 @@
             $this->lblDeletionWarning->UseWrapper = false;
 
             $this->lblDeletionInfo = new Q\Plugin\Label($this->dlgModal27);
-            $this->lblDeletionInfo->Text = t("This action cannot be undone.");
+            $this->lblDeletionInfo->Text = t("Can\'t undo it afterwards!");
             $this->lblDeletionInfo->addCssClass("deletion-info-text");
             $this->lblDeletionInfo->setCssStyle('width', '100%');
             $this->lblDeletionInfo->setCssStyle('color', '#ff0000');
@@ -1210,16 +1200,9 @@
          * @return void
          * @throws Caller
          * @throws InvalidCast
-         * @throws RandomException
          */
         public function confirmParent_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             $path = $this->objManager->RootPath . $this->strDataPath;
 
             $folderId = $_SESSION['folderId'] ?? null;
@@ -1352,16 +1335,9 @@
          *
          * @return void
          * @throws Caller
-         * @throws RandomException
          */
         public function startAddFolderProcess_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             $_SESSION['fileId'] = $this->intDataId;
             $_SESSION['filePath'] = $this->strDataPath;
 
@@ -1400,16 +1376,9 @@
          * @return void This method does not return a value.
          * @throws Caller
          * @throws InvalidCast
-         * @throws RandomException
          */
         public function addFolderName_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             $path = $this->objManager->RootPath . $_SESSION['filePath'];
             $scanned_directory = array_diff(scandir($path), array('..', '.'));
 
@@ -1654,16 +1623,9 @@
          * @return void No return value. The method performs renaming operations and updates the UI state accordingly.
          * @throws Caller
          * @throws InvalidCast
-         * @throws RandomException
          */
         public function renameName_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             $path = $this->objManager->RootPath . $this->strDataPath;
 
             // Check conditions preventing renaming
@@ -1925,16 +1887,9 @@
          *
          * @return void This method does not return any value but may perform UI updates or trigger dialog boxes.
          * @throws Caller
-         * @throws RandomException
          */
         public function btnCrop_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             clearstatcache();
 
             if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
@@ -2029,16 +1984,9 @@
          * @return void This method does not return a value; it performs operations such as
          *              validating conditions, preparing data, and updating the UI based on the results.
          * @throws Caller
-         * @throws RandomException
          */
         public function btnCopy_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             $objFolders = Folders::loadAll();
             $objFiles = Files::loadAll();
 
@@ -2422,16 +2370,9 @@
          * @return void No value is returned. The method either performs an action, displays a specific dialog box for
          *     validation errors, or initiates the delete operation for selected folders or files.
          * @throws Caller
-         * @throws RandomException
          */
         public function btnDelete_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             clearstatcache();
 
             if ($this->dataScan() !== $this->scan($this->objManager->RootPath)) {
@@ -2741,16 +2682,9 @@
          *
          * @return void This method does not return any value but performs multiple internal operations to handle the move process.
          * @throws Caller
-         * @throws RandomException
          */
         public function btnMove_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             $objFolders = Folders::loadAll();
             $objFiles = Files::loadAll();
 
@@ -3726,22 +3660,12 @@
          * @return void This method does not return a value.
          * @throws Caller
          * @throws InvalidCast
-         * @throws RandomException
          */
         public function btnInsert_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             if ($this->arrSomeArray[0]["data-activities-locked"] == 1) {
                 $this->dlgModal35->showDialogBox();
             } else {
-
-                //$fileId = $this->arrSomeArray[0]["data-id"];
-
                 if ($this->arrSomeArray[0]["data-id"]) {
                     $objFiles = Files::loadById($this->arrSomeArray[0]["data-id"]);
                     $objFiles->setLockedFile($objFiles->getLockedFile() + 1);
@@ -3755,13 +3679,11 @@
                     "name" => $this->arrSomeArray[0]["data-name"],
                     "path" => $this->arrSomeArray[0]["data-path"]
                 ];
-                $data = json_encode($params);
+
+                $data = json_encode($params, JSON_UNESCAPED_UNICODE);
 
                 // Simulate user action of selecting a file to be returned to MediaFinder.
-                Application::executeJavaScript("
-                window.parent.opener.getDataParams('$data');
-                window.close();
-            ");
+                Application::executeJavaScript("window.parent.opener.getDataParams('$data');window.close();");
             }
         }
 
@@ -3775,16 +3697,9 @@
          *
          * @return void This method does not return a value.
          * @throws Caller
-         * @throws RandomException
          */
         public function btnCancel_Click(ActionParams $params): void
         {
-            if (!Application::verifyCsrfToken()) {
-                $this->dlgModal47->showDialogBox();
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                return;
-            }
-
             Application::executeJavaScript("window.close();");
         }
     }
