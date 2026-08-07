@@ -2,7 +2,6 @@
     $.fn.fileManager = function (options) {
         options = $.extend({
             language: null,
-            path: null,
             rootPath: null,
             rootUrl: null,
             tempPath: null,
@@ -68,8 +67,8 @@
         /////////////////////////////////////////
 
         async function fetchLanguageJson(language) {
-            //const response = await fetch(`../assets/lang/${language}.json`);
             const response = await fetch(options.path + `/lang/${language}.json`);
+            // const response = await fetch(`../backend/assets/lang/${language}.json`);
 
             if (!response.ok) {
                 console.error(`Failed to fetch ${language}.json`);
@@ -109,8 +108,8 @@
 
         /////////////////////////////////////////
 
-        //fetch("../assets/php/json.php")
         fetch(options.path + '/php/json.php')
+        // fetch("../backend/assets/php/json.php")
             .then((response) => {
                 if(!response.ok){ // Before parsing (i.e. decoding) the JSON data,
                     // check for any errors.
@@ -401,53 +400,98 @@
 
         function clickstToLinks()
         {
-            // Clicking on folders // dblclick
             const links = document.querySelectorAll(".folder-a");
 
-            links.forEach(function (event) {
-                event.addEventListener("dblclick", function(e) {
+            let lastClickedLink = null;
+            let lastClickTime = 0;
+            const doubleClickDelay = 500;
+
+            /**
+             * Opens the selected folder and exits search mode if active.
+             */
+            function openFolder(link)
+            {
+                const nextDir = link.getAttribute("href");
+
+                if (!nextDir) {
+                    return;
+                }
+
+                breadcrumbsUrls.push(nextDir);
+                currentPath = nextDir;
+
+                if (search) {
+                    search.value = "";
+                }
+
+                imageList_layout.classList.remove("searching");
+                list_layout.classList.remove("searching");
+                box_layout.classList.remove("searching");
+
+                homelink.classList.remove("hidden");
+                breadcrumbs.classList.remove("hidden");
+                search_results.classList.add("hidden");
+
+                window.location.hash = encodeURIComponent(nextDir);
+            }
+
+            /**
+             * Folders:
+             * A single click selects the folder.
+             * Two consecutive clicks open the folder.
+             */
+            links.forEach(function (link) {
+                link.addEventListener("click", function (e) {
                     e.preventDefault();
 
-                    const nextDir = event.attributes.href.nodeValue;
-                    breadcrumbsUrls.push(nextDir);
+                    const currentTime = Date.now();
+                    const isDoubleClick =
+                        lastClickedLink === link &&
+                        currentTime - lastClickTime <= doubleClickDelay;
 
-                    window.location.hash = encodeURIComponent(nextDir);
-                    currentPath = nextDir;
+                    if (isDoubleClick) {
+                        lastClickedLink = null;
+                        lastClickTime = 0;
 
-                    if (search) {
-                        if (search.value.trim().length > 0 || search.value.trim().length == 0) {
-                            imageList_layout.classList.remove('searching');
-                            list_layout.classList.remove('searching');
-                            box_layout.classList.remove('searching');
-
-                            homelink.classList.remove('hidden');
-                            breadcrumbs.classList.remove('hidden');
-                            search_results.classList.add('hidden');
-                            search.value = '';
-                        } else {
-                            imageList_layout.classList.add('searching');
-                            list_layout.classList.add('searching');
-                            box_layout.classList.add('searching');
-
-                            homelink.classList.add('hidden');
-                            breadcrumbs.classList.add('hidden');
-                            search_results.classList.remove('hidden');
-                        }
+                        openFolder(link);
+                        return;
                     }
+
+                    lastClickedLink = link;
+                    lastClickTime = currentTime;
                 });
             });
 
-            // Clicking on breadcrumbs
+            /**
+             * Breadcrumb links are opened with a single click.
+             */
+            const breadcrumbLinks = document.querySelectorAll(".breadcrumbs a");
 
-            const a_links = document.querySelectorAll(".breadcrumbs a")
-
-            a_links.forEach(function (event) {
-                event.addEventListener("click", function(e) {
+            breadcrumbLinks.forEach(function (link, index) {
+                link.addEventListener("click", function (e) {
                     e.preventDefault();
-                    let index = a_links.index(this);
+
                     const nextDir = breadcrumbsUrls[index];
 
-                    breadcrumbsUrls.length = Number(index);
+                    if (!nextDir) {
+                        return;
+                    }
+
+                    breadcrumbsUrls.length = index;
+                    currentPath = nextDir;
+
+                    if (search) {
+                        search.value = "";
+                    }
+
+                    imageList_layout.classList.remove("searching");
+                    list_layout.classList.remove("searching");
+                    box_layout.classList.remove("searching");
+
+                    homelink.classList.remove("hidden");
+                    breadcrumbs.classList.remove("hidden");
+                    search_results.classList.add("hidden");
+
                     window.location.hash = encodeURIComponent(nextDir);
                 });
             });

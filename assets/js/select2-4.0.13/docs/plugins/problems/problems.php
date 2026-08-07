@@ -1,6 +1,7 @@
 <?php
 namespace Grav\Plugin;
 
+use GlobIterator;
 use Grav\Common\Cache;
 use Grav\Common\Plugin;
 use Grav\Common\Uri;
@@ -52,7 +53,7 @@ class ProblemsPlugin extends Plugin
             // If no issues remain, save a state file in the cache
             if (!$this->problemChecker()) {
                 // delete any existing validated files
-                foreach (new \GlobIterator(CACHE_DIR . $validated_prefix . '*') as $fileInfo) {
+                foreach (new GlobIterator(CACHE_DIR . $validated_prefix . '*') as $fileInfo) {
                     @unlink($fileInfo->getPathname());
                 }
 

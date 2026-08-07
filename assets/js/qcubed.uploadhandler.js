@@ -321,7 +321,7 @@
                 list.appendChild(nameTd);
                 list.appendChild(sizeTd);
                 list.appendChild(btnTd);
-            };
+            }
 
             const children = document.querySelectorAll(".cancel");
             for (let i = 0, len = children.length; i < len; i++) {

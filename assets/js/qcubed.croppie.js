@@ -220,7 +220,7 @@
         function formatResult(node) {
             var $result = $('<span style="padding-left:' + (20 * node.level) + 'px;">' + node.text + '</span>');
             return $result;
-        };
+        }
 
         // Initialize the cropper when the modal is shown
         id.on('shown.bs.modal', function () {

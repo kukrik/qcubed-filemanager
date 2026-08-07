@@ -1,6 +1,7 @@
 <?php
 namespace Grav\Plugin;
 
+use Exception;
 use Grav\Common\Page\Collection;
 use Grav\Common\Plugin;
 use Grav\Common\Uri;
@@ -11,6 +12,7 @@ use Grav\Common\Utils;
 use Grav\Common\Data\Data;
 use Grav\Common\Config\Config;
 use RocketTheme\Toolbox\Event\Event;
+use SplFileInfo;
 
 class SimplesearchPlugin extends Plugin
 {
@@ -215,7 +217,7 @@ class SimplesearchPlugin extends Plugin
         if (!isset($page->header()->simplesearch)) {
             // create the search page
             $page = new Page;
-            $page->init(new \SplFileInfo(__DIR__ . '/pages/simplesearch.md'));
+            $page->init(new SplFileInfo(__DIR__ . '/pages/simplesearch.md'));
 
             // override the template is set in the config
             $template_override = $this->config->get('plugins.simplesearch.template');
@@ -305,7 +307,7 @@ class SimplesearchPlugin extends Plugin
             setlocale(LC_ALL, 'en_US');
             try {
                 $result = mb_stripos(iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $haystack), iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $needle));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $result = mb_stripos($haystack, $needle);
             }
             setlocale(LC_ALL, '');

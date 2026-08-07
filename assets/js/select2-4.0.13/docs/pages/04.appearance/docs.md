@@ -109,7 +109,7 @@ You can, and should, use a `<label>` with Select2, just like any other `<select>
         '</span>'
       );
       return $state;
-    };
+    }
   });
 
 </script>

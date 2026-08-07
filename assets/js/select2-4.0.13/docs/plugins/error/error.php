@@ -7,6 +7,7 @@ use Grav\Common\Page\Page;
 use Grav\Common\Page\Pages;
 use Grav\Common\Page\Types;
 use RocketTheme\Toolbox\Event\Event;
+use SplFileInfo;
 
 class ErrorPlugin extends Plugin
 {
@@ -38,7 +39,7 @@ class ErrorPlugin extends Plugin
         if (!$page) {
             // If none provided use built in error page.
             $page = new Page;
-            $page->init(new \SplFileInfo(__DIR__ . '/pages/error.md'));
+            $page->init(new SplFileInfo(__DIR__ . '/pages/error.md'));
         }
 
         $event->page = $page;
