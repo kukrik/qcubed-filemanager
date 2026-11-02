@@ -225,10 +225,6 @@
             // Save the resized image
             //$output = $output;
             imagepng($dst, $output);
-
-            // Free memory
-            imagedestroy($dst);
-            imagedestroy($src);
         }
 
         /**

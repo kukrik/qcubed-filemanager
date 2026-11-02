@@ -1,77 +1,251 @@
-# QCubed FileManager Plugin
+# FileManager for QCubed-4
 
-## FileManager for QCubed-4
+A file management solution built specifically for the **QCubed-4 framework**.
 
-The FileManager plugin includes itself, UploadHandler, MediaFinder, and the ckeditor image and file plugin.
+This plugin centralizes all uploaded files into a single location while automatically generating and maintaining derived image versions for efficient usage.
 
-These plugins work starting from PHP version 8.3+.
+> ⚠️ This is **not a generic PHP file manager**. It is designed specifically for QCubed-4.
 
-* The plugin author maintains that the correct approach is to consolidate all uploaded images and files into a specific 
-location rather than scattering them throughout the file system. In line with this, FileManager has been developed. 
-* Upon the initial deployment of FileManager, an "upload" folder is automatically created, where original images and 
-files are consolidated. Simultaneously, within the "tmp" folder, the first folder "_files" is automatically created, 
-containing subfolders "large," "medium," "thumbnail," "temp," and "zip".
-* The UploadHandler automatically generates images in folders "large," "medium," and "thumbnail" with suitable dimensions: 
-up to 1500 px, up to 480 px, up to 320 px, respectively.
-* The "zip" folder is intended for compressing and sending downloaded files and folders to the user's browser. 
-This folder must always be empty.
-* Various file operations within the "upload" folder are automatically reflected in the temporary folders as well. 
-FileHandler takes care of all these aspects.
-* The files in the "examples" folder, namely dialoog.php and finder.php, are copies of filemanager.php with added 
-specify functionalities. These operate in pop-up windows.
+---
 
-Before putting it into use, please check the constants:
-https://github.com/qcubed-4/application/blob/master/install/project/includes/configuration/active/2directories.cfg.php#L29
+## ✨ Features
+
+* Chunk upload (large file support)
+* Regular upload (fallback mode)
+* Automatic image resizing:
+
+    * large (max 1500px)
+    * medium (max 480px)
+    * thumbnail (max 320px)
+* WEBP support (GD-based)
+* File usage locking system (green / red / yellow indicators)
+* Multi-select file handling
+* Drag selection (mouse-based selection of multiple rows)
+* Toolbar-based file operations:
+
+    * Rename
+    * Crop
+    * Copy
+    * Move
+    * Delete
+    * Download
+* Breadcrumb navigation
+* Quick search
+* Multiple views:
+
+    * ImageListView
+    * ListView
+    * BoxView
+* CKEditor integration
+* MediaFinder integration
+* Database-backed file metadata
+
+---
+
+## 🧱 Architecture
+
+The FileManager uses a predictable and maintainable structure:
+
+```text
+upload/           → original files (source of truth)
+
+tmp/_files/
+    ├── large/       → resized images (≤1500px)
+    ├── medium/      → resized images (≤480px)
+    ├── thumbnail/   → resized images (≤320px)
+    ├── temp/        → temporary chunk upload files
+    └── zip/         → temporary archives for download
+```
+
+### Principles
+
+* All original files are stored in one central location
+* Resized files are generated separately
+* Temporary folders must remain empty outside processing
+* File operations stay synchronized across directories
+
+---
+
+## 🖼 Image handling
+
+Uploaded images are automatically resized:
+
+| Folder    | Max size |
+| --------- | -------- |
+| large     | 1500px   |
+| medium    | 480px    |
+| thumbnail | 320px    |
+
+Original files are always preserved in the `upload/` directory.
+
+---
+
+## 🗄 Database
+
+Required tables:
+
+* `folders`
+* `files`
+
+These are included in the package.
+
+---
+
+## ⚙️ Requirements
+
+* PHP **8.3+**
+* QCubed-4
+* GD extension
+* WEBP support recommended
+
+---
+
+## 📁 Configuration
+
+Verify directory paths in:
+
+```
+install/project/includes/configuration/active/2directories.cfg.php
+```
+
+Incorrect configuration will break uploads and file handling.
+
+---
+
+## 🧪 Usage
+
+### Navigation
+
+* Double-click → open folder
+* Single-click → select file or folder
+
+### Multi-selection
+
+You can select multiple files in two ways:
+
+* Drag the mouse across rows (selection only)
+* OR use:
+
+    * `Cmd` (Mac)
+    * `Ctrl` (Windows)
+
+### Operations
+
+After selecting files, use toolbar buttons:
+
+* Rename
+* Copy
+* Move
+* Delete
+* Download
+
+---
+
+## 🔒 File usage indicators
+
+| Color     | Meaning                            |
+| --------- | ---------------------------------- |
+| 🟢 Green  | Free file                          |
+| 🔴 Red    | Locked (in use by another service) |
+| 🟡 Yellow | Reserved / activity locked         |
+
+Controlled via `activities_locked` in the `files` table.
+
+---
+
+## 🔌 Integrations
+
+### CKEditor
+
+Allows:
+
+* inserting images
+* linking files
+
+### MediaFinder
+
+Provides quick selection of files for content areas.
+
+---
+
+## 📦 Upload system
+
+### Chunk upload (recommended)
+
+* Handles large files
+* Works better on slow connections
+* Uses `.part*` temporary files
+* Automatically merges chunks
+
+### Regular upload
+
+* Simpler fallback
+* Suitable for small files
+
+---
+
+## 🧠 Design philosophy
+
+* Centralize all files
+* Keep structure predictable
+* Separate original and generated data
+* Reflect real usage state in UI
+* Avoid hidden file duplication
+
+---
+
+## 📂 Examples
+
+Located in `examples`:
+
+* `dialoog.php`
+* `finder.php`
+
+Used mainly for popup integrations.
+
+---
+
+## 🖼 Screenshots
+
+### FileManager
 
 ![Image of kukrik](screenshot/filemanager.png?raw=true)
+
+### MediaFinder
+
 ![Image of kukrik](screenshot/mediafinder.png?raw=true)
+
+### CKEditor Integration
+
 ![Image of kukrik](screenshot/ckeditor3.png?raw=true)
 
-### FileManager Usage Options:
+---
 
-* Upload, add folder, refresh page, rename, crop (added new functionality), copy, delete, move, download
-* 3 different views: ImageListView, ListView, BoxView
-* Breadcrumbs for quick navigation
-* Quick search
-* Language support, currently supporting the following languages: English, Estonian, and Russian. If you wish to contribute 
-to language translation, everyone is welcome!
-
-
-### Use cases for FileManager:
-
-* To navigate between directories, use double-click, otherwise use a single click.
-* If you want to use multiple files and folders, simply drag the mouse over the rows in the table.
-Or, if you want to select files and folders, depending on your computer's operating system (Mac or Windows), 
-hold down the "Command" or "Ctrl" key, respectively, and choose with the mouse.
-* In the table, you'll see small round icons in 3 different colors (green, red, and yellow). 
-These indicate the usage status of files by other services (e.g., articles, news, etc.):
-  * Green small icon - free image or file. 
-  * Red small icon - image or file used by other services, meaning it's locked. In this case, you cannot accidentally 
-delete or move it in FileManager.
-  * Yellow small icon - this is intended, for example, if you want to create a separate gallery plugin, you could put 
-all uploaded images in the "upload" folder; just add a value of 1 to the "activities_locked" column in the "files" 
-table in the database. This way, you can't delete, rename, or move these images in FileManager, and the gallery plugin 
-has exclusive rights. Other services can still use gallery images. If you want to use a gallery image in an article, 
-news, or elsewhere, it is advisable to copy the image to another location and use it there.
-  
-    * <strike>To create a gallery plugin, you can use, for example, the FileUpload and UploadHandler plugins and enhance it with other necessary components: https://github.com/kukrik/qcubed-fileupload.</strike> Here is an example that you can refer to and use: https://github.com/kukrik/qcubed-gallery/tree/master
-
-**NOTE! For FileManager to function correctly and display accurate information, the codes in "filehandler.php," "mediafinder.php," and "ckeditor3.php" are equipped with comments or instructions. These comments/guidelines will help keep you on the right track.**
-
-**Any feedback is highly welcome and will contribute to improving or enhancing FileManager!**
-
-If you have not previously installed QCubed-4 Bootstrap and twitter bootstrap, run the following actions on the command 
-line of your main installation directory by Composer:
-```
-    composer require twbs/bootstrap v3.3.7
-```
-and
+## 📥 Installation
 
 ```
-    composer require kukrik/qcubed-filemanager
-    composer require qcubed-4/plugin-bootstrap
-    composer require kukrik/bootstrap-filecontrol
-    composer require qcubed-4/plugin-ckeditor
-    composer require ckeditor/ckeditor
+composer require twbs/bootstrap v3.3.7
 ```
 
+```
+composer require kukrik/qcubed-filemanager
+composer require qcubed-4/plugin-bootstrap
+composer require kukrik/bootstrap-filecontrol
+composer require qcubed-4/plugin-ckeditor
+composer require ckeditor/ckeditor
+```
+
+---
+
+## ⚠️ Notes
+
+* Built specifically for QCubed-4
+* Not framework-agnostic
+* `upload/` is the source of truth
+* Temporary folders must remain clean
+
+---
+
+## 💬 Feedback
+
+Suggestions and improvements are welcome.

@@ -1,8 +1,5 @@
 <?php
-
-    require_once('../../../../../qcubed.inc.php');
-
-    header("Content-Type: application/json"); // Advise a client of a response type
+    require_once('../../../qcubed.inc.php');
 
     $arrFolders = [];
     $arrFiles = [];
@@ -32,12 +29,11 @@
     array_multisort($sortFiles, SORT_ASC, $arrFiles);
 
     /**
-     * Retrieves the parameters of a folder object as an associative array.
+     * Retrieves an array of folder parameters based on the provided item object.
      *
-     * @param object $objItem An object representing a folder, providing access to its attributes through methods.
+     * @param object $objItem The item object containing folder information.
      *
-     * @return array An associative array containing the folder's details, including its ID, parent ID, name, type, path,
-     * modification time, locked status, and activity lock status.
+     * @return array An associative array containing folder parameters such as id, parent_id, name, type, path, mtime, locked_file, and activities_locked.
      */
     function getFolderParam(object $objItem): array
     {
@@ -54,13 +50,11 @@
     }
 
     /**
-     * Retrieves the parameters of a file from the given object.
+     * Retrieves an array of file parameters based on the provided item object.
      *
-     * @param object $objItem The file object providing access to its attributes and properties through defined methods.
+     * @param object $objItem The object representing the file item, which provides access to file properties.
      *
-     * @return array An associative array containing file-related details such as ID, folder ID, name, type, path,
-     *               description, extension, MIME type, size, modification time, dimensions, locked state,
-     *               and activity lock status.
+     * @return array Returns an associative array containing file parameters such as id, folder_id, name, type, path, description, extension, mime_type, size, mtime, dimensions, locked_file, and activities_locked.
      */
     function getFileParam(object $objItem): array
     {
@@ -82,12 +76,12 @@
     }
 
     /**
-     * Scans through provided folders and files, organizing the data into a structured format.
+     * Scans folders and files to organize them into a structured array based on their relationships.
      *
-     * @param array $folders An array of folder data, where each folder contains information such as parent ID, name, type, path, and metadata.
-     * @param array $files An array of file data, used to filter and organize items within folders.
+     * @param array $folders The list of folders, where each folder contains details such as `id`, `parent_id`, `name`, `type`, `path`, `mtime`, `locked_file`, `activities_locked`.
+     * @param array $files The list of files to be linked to the corresponding folders during filtering.
      *
-     * @return array Returns a structured array containing folder data with subitems filtered and organized accordingly.
+     * @return array The structured array containing folder information and their associated items.
      */
     function scan(array $folders, array $files): array
     {
@@ -112,15 +106,15 @@
     }
 
     /**
-     * Filters the provided folders and files based on the specified ID.
+     * Filters folders and files to create a structured array based on parent-child relationships.
      *
-     * @param int|string $id The ID used to filter folders and files.
-     * @param array $folders An array of folder data, where each folder is represented as an associative array.
-     * @param array $files An array of file data, where each file is represented as an associative array.
+     * @param mixed $id The identifier of the parent folder to filter associated folders and files.
+     * @param array $folders The list of folders, where each folder includes details such as `id`, `parent_id`, `name`, `type`, `path`, `mtime`, `locked_file`, and `activities_locked`.
+     * @param array $files The list of files, where each file includes details such as `id`, `folder_id`, `name`, `type`, `path`, `description`, `extension`, `mime_type`, `size`, `mtime`, `dimensions`, `locked_file`, and `activities_locked`.
      *
-     * @return array An array of filtered folders and files that match the specified ID, including their details.
+     * @return array A structured array of folders and files associated with the specified parent folder, containing detailed information for each item.
      */
-    function filter(int|string $id, array $folders, array $files): array
+    function filter(mixed $id, array $folders, array $files): array
     {
         $vars = [];
 
@@ -163,4 +157,6 @@
         }
         return $vars;
     }
-    print json_encode(scan($arrFolders, $arrFiles));
+
+    header("Content-Type: application/json"); // Advise client of response type
+    print json_encode(scan($arrFolders, $arrFiles), JSON_INVALID_UTF8_SUBSTITUTE);

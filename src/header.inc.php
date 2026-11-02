@@ -24,7 +24,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <?php if (isset($strPageTitle)){ ?><title><?php _p($strPageTitle); ?></title><?php } ?>
 
-    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700&subset=all" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700&subset=all" rel="stylesheet" type="text/css"/>
     <link href="<?= QCUBED_PROJECT_CSS_URL ?>/font-awesome.min.css" rel="stylesheet"/>
     <link href="../assets/css/awesome-bootstrap-checkbox.css" rel="stylesheet"/>
     <link href="<?= QCUBED_BOOTSTRAP_CSS ?>" rel="stylesheet"/>

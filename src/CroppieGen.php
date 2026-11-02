@@ -222,7 +222,7 @@
          *               or its parent class.
          * @throws Caller If the property is not defined in this class or the parent.
          */
-        public function __get($strName): mixed
+        public function __get(string $strName): mixed
         {
             switch ($strName) {
                 case 'Boundary': return $this->arrBoundary;
@@ -258,7 +258,7 @@
          * @throws InvalidCast If the provided value does not match the expected type for the property.
          * @throws Caller If the property does not exist or cannot be set in the superclass.
          */
-        public function __set($strName, mixed $mixValue): void
+        public function __set(string $strName, mixed $mixValue): void
         {
             switch ($strName) {
                 case 'Boundary':

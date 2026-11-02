@@ -4,6 +4,7 @@
 
     use Exception;
     use GdImage;
+    use QCubed\QString;
 
     /**
      * Class FileHandler
@@ -45,7 +46,7 @@
      *
      * @property string $ImageResizeFunction Default 'imagecopyresampled'. Choose between 'imagecopyresampled' (smoother)
      *                                       and 'imagecopyresized' (faster). The difference is minimal, but you could use
-     *                                       imagecopyresized, for example, if you want faster resizing when not using image
+     *                                       imagecopyresized, for example if you want faster resizing when not using image
      *                                       resize cache.
      * @property boolean $ImageResizeSharpen Default true. Creates sharper (less blurry) preview images.
      * @property array $TempFolders Default '['thumbnail', 'medium', 'large']'. If you want to change the names of
@@ -69,7 +70,7 @@
      *                                  '['gif', 'jpg', 'jpeg', 'png', 'pdf']'. If necessary, specify the allowed file types.
      *                                  When empty (default), all file types are allowed.
      * @property integer $MaxFileSize Default null. Sets the maximum file size (bytes) allowed for uploads. Default value null
-     *                                means no limit, but the maximum file size will always be limited by your server's
+     *                                it means no limit, but the maximum file size will always be limited by your server's
      *                                PHP upload_max_filesize value.
      *
      * @property integer $MinFileSize Default 1. If necessary, you can limit the minimum bytes of the uploaded image in order
@@ -103,7 +104,9 @@
         protected array $uploadErrors;
         protected string $chunkEnabled;
         protected int $index;
-        protected string $chunk;
+        protected int $chunk;
+        protected string $uploadId;
+        protected int $uploadSize;
         protected int $count;
         protected int $counter = 0;
 
@@ -123,6 +126,7 @@
          *                             - Other configuration options related to uploads.
          *
          * @return void
+         * @throws \Throwable
          * @throws Exception
          */
         public function __construct(?array $options = null)
@@ -135,6 +139,8 @@
                 'ChunkPath' => null,
 
                 'ImageResizeQuality' => 90,
+                'AutoOrient' => true,
+                'MaxImagePixels' => 40000000,
                 'PngLevel' => 6,
                 'ImageResizeFunction' => 'imagecopyresampled', // imagecopyresampled || imagecopyresized
                 'ImageResizeSharpen' => true,
@@ -158,13 +164,13 @@
                 1 => t('Uploaded file exceeds upload_max_filesize directive in php.ini'),
                 2 => t('An uploaded file exceeds the MAX_FILE_SIZE directive specified in the HTML form'),
                 3 => t('The uploaded file was only partially uploaded'),
-                4 => t('Failed to move an uploaded file'),
+                4 => t('No file was uploaded'),
                 6 => t('Missing a temporary folder'),
                 7 => t('Failed to write a file to disk'),
                 8 => t('A PHP extension stopped the file upload'),
-                //'post_max_size' => t('The uploaded file exceeds the post_max_size directive in php.ini'),
-                'max_file_size' => 'File is too big',
-                'min_file_size' => 'File is too small',
+                //'post_max_size' => t('The an uploaded file exceeds the post_max_size directive in php.ini'),
+                'max_file_size' => t('File is too big'),
+                'min_file_size' => t('File is too small'),
                 'accept_file_types' => t('Filetype not allowed'),
                 'invalid_image_type' => t('Invalid image type'),
                 'invalid_file_size' => t('Invalid file size'),
@@ -178,7 +184,43 @@
                 'could-not_write_output' => t('Failed to open the output stream'),
                 'could_not_read_input' => t('Failed to open the input stream'),
                 'failed_to_move_uploaded_file' => t('Failed to move an uploaded file'),
-                'file_not_found' => t('File not found')
+                'file_not_found' => t('File not found'),
+                'failed_to_create_image' => t('Failed to create GD image'),
+                'failed_to_load_image' => t('Failed to load image with GD'),
+
+                'upload_request_exceeds_post_max_size' => t('Upload request exceeds post_max_size ('),
+                'invalid_filename' => t('Invalid filename.'),
+                'invalid_destination_path' => t('Invalid destination path.'),
+                'invalid_chunk_metadata' => t('Invalid chunk metadata.'),
+                'cannot_create_upload_temporary_directory' => t('Cannot create upload temporary directory.'),
+                'this_upload_has_already_completed_start_new_upload' => t('This upload has already completed. Start a new upload.'),
+                'cannot_lock_upload' => t('Cannot lock upload.'),
+                'upload_must_start_with_chunk_1' => t('Upload must start with chunk 1.'),
+                'upload_context_or_chunk_sequence_changed_start_new_upload' => t('Upload context or chunk sequence changed. Start a new upload.'),
+                'cannot_save_upload_chunk' => t('Cannot save upload chunk.'),
+                'invalid_chunk_byte_count' => t('Invalid chunk byte count.'),
+                'invalid_total_upload_size' => t('Invalid total upload size.'),
+                'incomplete_upload' => t('Incomplete upload.'),
+                'cannot_open_merged_upload' => t('Cannot open merged upload.'),
+                'missing_upload chunk' => t('Missing upload chunk.'),
+                'incomplete_chunk_write' => t('Incomplete chunk write.'),
+                'cannot_flush_merged_upload' => t('Cannot flush merged upload.'),
+                'invalid_merged_file_size' => t('Invalid merged file size.'),
+                'cannot_lock_upload_destination' => t('Cannot lock upload destination.'),
+                'cannot_move_merged_upload' => t('Cannot move merged upload.'),
+
+                'cannot_save_upload_state' => t('Cannot save upload state.'),
+                'image_folders_and_dimensions_must_have_equal_counts' => t('Image folders and dimensions must have equal counts.'),
+                'invalid_image_output_configuration' => t('Invalid image output configuration.'),
+                'cannot_create_image_output_directory' => t('Cannot create image output directory.'),
+                'cannot_copy_image' => t('Cannot copy image.'),
+                'cannot_rotate_image' => t('Cannot rotate image.'),
+                'cannot_mirror_image' => t('Cannot mirror image.'),
+
+                'image_content_does_not_match_its_extension' => t('Image content does not match its extension.'),
+                'image_resolution_exceeds_the_allowed_pixel_count' => t('Image resolution exceeds the allowed pixel count.'),
+                'not_enough_server_memory_to_process_this_image_resolution' => t('Not enough server memory to process this image resolution.'),
+                'cannot_save_resized_image' => t('Cannot save resized image.')
             );
 
             if ($options) {
@@ -188,7 +230,7 @@
             $this->options['FullStoragePath'] = $this->options['TempPath'] . '/' . $this->options['StoragePath'];
             $this->options['ChunkPath'] = $this->options['FullStoragePath'] . '/' . 'temp';
 
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 $this->header();
                 $this->handleFileUpload();
             }
@@ -228,42 +270,114 @@
          *
          * @return void
          * @throws Exception
+         * @throws \Throwable
          */
         public function handleFileUpload(): void
         {
-            $this->chunkEnabled = $_REQUEST['chunkEnabled'] ?? "false";
-            $this->index = intval($_REQUEST['index']) ?? 0;
-            $this->chunk = intval($_REQUEST['chunk']) ?? 0;
-            $this->count = intval($_REQUEST['count']) ?? 0;
-
-            $this->options['FileName'] = $this->options['RootPath'] . '/' . $_FILES["files"]["name"];
-            $this->options['File'] = $_FILES["files"]["tmp_name"];
-            $this->options['FileType'] = $_FILES["files"]["type"];
-            $this->options['FileSize'] = $_FILES["files"]["size"];
-            $this->options['FileError'] = $_FILES["files"]["error"];
-
-            // If DestinationPath is set
-            if ($this->options['DestinationPath'] !== null) {
-                $this->options['FileName'] = $this->options['RootPath'] . $this->options['DestinationPath'] . '/' . basename($this->options['FileName']);
+            $postLimit = self::configBytes(ini_get('post_max_size'));
+            if ($postLimit > 0 && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > $postLimit) {
+                http_response_code(413);
+                $this->handleError('upload_request_exceeds_post_max_size' . ini_get('post_max_size') . ').');
             }
-
-            if ($this->chunkEnabled === "false") {
-                // Check for duplicate filenames and increment if necessary
-                $newFileName = $this->checkDuplicateFile($this->options['FileName']);
-
-                // Make sure the new file name is received and then validate the file
-                if ($newFileName !== null) {
-                    $this->options['FileName'] = $newFileName;
-                }
-
-                // Validate the file with the updated filename
-                if ($this->regularValidate($this->options['File'], $this->options['FileName'], $this->options['FileError'])) {
-                    // Upload a file with a new name
-                    $this->handleRegularUpload($this->options['File'], $this->options['FileName']);
-                }
-            } else {
-                $this->handleChunkUpload($this->options['File'], $this->options['FileName']);
+            $input = $_FILES['files'] ?? null;
+            if (!is_array($input) || !isset($input['name'], $input['tmp_name'], $input['error']) ||
+                !is_string($input['name']) || !is_string($input['tmp_name']) || !is_int($input['error'])) {
+                $this->handleError($this->getErrorMessage('file_not_found'));
             }
+            $name = basename(str_replace('\\', '/', $input['name']));
+            if ($name === '' || $name === '.' || $name === '..' || str_contains($name, "\0")) {
+                $this->handleError('invalid_filename');
+            }
+            $name = self::sanitizeForFile($name);
+            $this->options['FileSize'] = (int)($input['size'] ?? 0);
+            $this->options['FileError'] = $input['error'];
+            $this->options['File'] = $input['tmp_name'];
+            if ($input['error'] !== UPLOAD_ERR_OK) {
+                if ($input['error'] === UPLOAD_ERR_INI_SIZE) http_response_code(413);
+                $this->handleError($this->getErrorMessage($input['error']), $name);
+            }
+            $destination = trim((string)$this->options['DestinationPath'], '/');
+            if (str_contains($destination, '\\') || preg_match('~(^|/)\.\.?(/|$)~', $destination)) {
+                $this->handleError('invalid_destination_path', $name);
+            }
+            $file = rtrim($this->options['RootPath'], '/') . '/' . ($destination === '' ? '' : $destination . '/') . $name;
+            $this->options['FileName'] = $file;
+            if (!is_dir(dirname($file)) || !is_uploaded_file($input['tmp_name'])) {
+                $this->handleError($this->getErrorMessage('file_not_found'), $name);
+            }
+            $this->chunkEnabled = ($_POST['chunkEnabled'] ?? 'false') === 'true' ? 'true' : 'false';
+            $this->options['FileType'] = self::getMimeType($input['tmp_name']) ?: 'application/octet-stream';
+            if ($this->chunkEnabled === 'false') {
+                $newName = $this->checkDuplicateFile($file);
+                if ($newName !== null) $this->options['FileName'] = $newName;
+                $this->regularValidate($input['tmp_name'], $this->options['FileName'], $input['error']);
+                $this->handleRegularUpload($input['tmp_name'], $this->options['FileName']);
+                return;
+            }
+            foreach (['chunk', 'count', 'index', 'totalSize'] as $key) {
+                if (!isset($_POST[$key]) || !is_scalar($_POST[$key]) ||
+                    filter_var($_POST[$key], FILTER_VALIDATE_INT) === false) {
+                    $this->handleError('invalid_chunk_metadata', $name);
+                }
+            }
+            $this->chunk = (int)$_POST['chunk'];
+            $this->count = (int)$_POST['count'];
+            $this->index = (int)$_POST['index'];
+            $this->uploadSize = (int)$_POST['totalSize'];
+            $id = $_POST['uploadId'] ?? '';
+            if (!is_string($id) || !preg_match('/^[a-zA-Z0-9_-]{16,80}$/D', $id) ||
+                $this->count < 1 || $this->count > 100000 || $this->chunk < 1 || $this->chunk > $this->count ||
+                $this->index < 0 || $this->uploadSize < 1 || $this->index >= $this->uploadSize ||
+                $this->options['FileSize'] < 1 || $this->options['FileSize'] > $this->uploadSize - $this->index) {
+                $this->handleError('invalid_chunk_metadata', $name);
+            }
+            if ($this->options['MaxFileSize'] && $this->uploadSize > $this->options['MaxFileSize']) {
+                $this->handleError($this->getErrorMessage('max_file_size'), $name);
+            }
+            $this->uploadId = $id;
+            $this->handleChunkUpload($input['tmp_name'], $file);
+        }
+
+        /**
+         * Read PHP shorthand limits without changing the server configuration.
+         * Converts a human-readable size value (e.g., "256M", "2G") into bytes.
+         * Handles optional unit suffixes and powers of 1024 for various size units.
+         *
+         * @param mixed $value The size value to be converted. Can include suffixes such as K, M, G, T, or P.
+         *
+         * @return int The size value in bytes, or 0 if the input is invalid or unconvertible.
+         */
+        public static function configBytes(mixed $value): int
+        {
+            $value = trim((string)$value);
+            if ($value === '-1' || $value === '') return 0;
+            if (!preg_match('/^(\d+(?:\.\d+)?)\s*([KMGTP]?)(?:B)?$/iD', $value, $match)) return 0;
+            $power = strpos(' KMGTP', strtoupper($match[2]));
+            return (int)min(PHP_INT_MAX, (float)$match[1] * (1024 ** $power));
+        }
+
+        /**
+         * Determines and returns the upload capabilities of the system, including maximum
+         * chunk size, protocol version, and features such as EXIF support and upload enablement.
+         *
+         * @return array An associative array containing the following keys:
+         *               - 'error' (null): Placeholder for potential errors, currently always null.
+         *               - 'protocol' (int): The protocol version used for uploads.
+         *               - 'maxChunkSize' (int): The maximum allowable size for upload chunks in bytes.
+         *               - 'uploadsEnabled' (bool): Indicates whether file uploads are enabled in the system configuration.
+         *               - 'exifAvailable' (bool): Indicates whether the EXIF extension is available in PHP.
+         */
+        public static function uploadCapabilities(): array
+        {
+            $upload = self::configBytes(ini_get('upload_max_filesize'));
+            $post = self::configBytes(ini_get('post_max_size'));
+            // Allow room for multipart boundaries, filename and metadata fields.
+            $limits = [1024 * 1024];
+            if ($upload > 0) $limits[] = $upload;
+            if ($post > 0) $limits[] = max(0, $post - 65536);
+            return ['error' => null, 'protocol' => 2, 'maxChunkSize' => min($limits),
+                'uploadsEnabled' => filter_var(ini_get('file_uploads'), FILTER_VALIDATE_BOOLEAN),
+                'exifAvailable' => function_exists('exif_read_data')];
         }
 
         /**
@@ -274,6 +388,7 @@
          * @param int $error Error code associated with the file upload process.
          *
          * @return bool|null Returns true if the file passes all validation checks, false otherwise.
+         * @throws \Exception
          */
         public function regularValidate(mixed $uploadedFile, string $fileName, int $error): ?bool
         {
@@ -285,7 +400,7 @@
             $postMaxSize = $this->getConfigBytes(ini_get('post_max_size'));
 
             // Check if the file size exceeds the post_max_size limit
-            if ($postMaxSize && ($_SERVER['CONTENT_LENGTH'] > $postMaxSize)) {
+            if ($postMaxSize && ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > $postMaxSize)) {
                 $this->handleError($this->getErrorMessage('post_max_size'), $fileName);
             }
 
@@ -363,15 +478,40 @@
          *
          * @return void
          * @throws Exception
+         * @throws \Throwable
          */
         protected function handleRegularUpload(string $uploadedFile, string $file): void
         {
-            move_uploaded_file($uploadedFile, $file);
+            if (!is_uploaded_file($uploadedFile)) {
+                $this->handleError($this->getErrorMessage('file_not_found'), $file);
+            }
 
-            clearstatcache();
+            $targetDir = dirname($file);
+            if (!is_dir($targetDir)) {
+                $this->handleError($this->getErrorMessage('failed_to_open_stream'), $file);
+            }
 
-            $this->resizeImageProcess($file);
-            $this->uploadInfo();
+            if (!move_uploaded_file($uploadedFile, $file)) {
+                $this->handleError($this->getErrorMessage('failed_to_move_uploaded_file'), $file);
+            }
+
+            clearstatcache(true, $file);
+
+            if (!is_file($file)) {
+                $this->handleError($this->getErrorMessage('file_not_found'), $file);
+            }
+
+            $this->options['FileSize'] = filesize($file);
+
+            try {
+                $this->options['FileType'] = self::getMimeType($file) ?: 'application/octet-stream';
+                $this->resizeImageProcess($file);
+                $this->uploadInfo();
+            } catch (\Throwable $error) {
+                $this->removeDerivedFiles($file);
+                if ($this->options['UploadExists'] !== 'overwrite' && is_file($file)) unlink($file);
+                throw $error;
+            }
         }
 
         /**
@@ -382,58 +522,205 @@
          *
          * @return void
          * @throws Exception
+         * @throws \Throwable
          */
         protected function handleChunkUpload(string $uploadedFile, string $file): void
         {
-            $chunkFile = $this->options['ChunkPath'] . '/' . basename($file);
-
-            // Move the file to a temporary location
-            if (!move_uploaded_file($uploadedFile, $chunkFile . '.part' . $this->chunk)) {
-                $this->handleError($this->getErrorMessage('failed_to_move_uploaded_file'), $file);
-                return;
+            $root = $this->options['ChunkPath'];
+            if (!is_dir($root) && !mkdir($root, 0700, true) && !is_dir($root)) {
+                $this->handleError('cannot_create_upload_temporary_directory', $file);
             }
-
-            clearstatcache();
-
-            $filePath = $chunkFile . '.part*';
-            $fileParts = glob($filePath);
-            sort($fileParts, SORT_NATURAL);
-            $_SESSION['parts'] = $fileParts; // We keep the parts in the session
-
-            // Merge chunks
-            $finalFile = fopen($chunkFile, 'wb');
-
-            foreach ($fileParts as $filePart) {
-                $chunk = file_get_contents($filePart);
-                fwrite($finalFile, $chunk);
-                $this->counter++;
+            // Remove completed legacy directories and expired abandoned uploads on new files.
+            if ($this->chunk === 1) $this->cleanupExpiredUploads();
+            // Bind temporary storage to the PHP session, not a client-supplied directory name.
+            $owner = hash('sha256', session_id() . '|' . $this->options['RootPath']);
+            $receipt = $owner . '-' . $this->uploadId;
+            if (isset($_SESSION['galleryCompletedUploads'][$receipt])) {
+                $this->handleError('this_upload_has_already_completed_start_new_upload', $file);
             }
-
-            fclose($finalFile);
-
-            // When all parts are received
-            if ($this->count == $this->counter) {
-
-                $this->partFilesToDelete($_SESSION['parts']);
-
-                // Final validation after merging files
-                if ($this->chunkValidate($finalFile, $chunkFile , 0, true)) {
-
-                    // If the filename already exists, check for duplicates
-                    if (!file_exists($file)) {
-                        rename($chunkFile, $file);
-                        $this->options['FileSize'] = filesize($file);
-                    } else {
-                        $newFileName = $this->checkDuplicateFile($file);
-                        rename($chunkFile, $newFileName);
-                        $this->options['FileName'] = $newFileName;
-                        $this->options['FileSize'] = filesize($newFileName);
-                    }
-
-                    // Further processing
-                    $this->resizeImageProcess($this->options['FileName']);
-                    $this->uploadInfo();
+            $directory = $root . '/upload-' . $owner . '-' . $this->uploadId;
+            if (!is_dir($directory) && !mkdir($directory, 0700) && !is_dir($directory)) {
+                $this->handleError('cannot_create_upload_temporary_directory', $file);
+            }
+            $lock = fopen($directory . '/lock', 'c');
+            if ($lock === false || !flock($lock, LOCK_EX)) {
+                if (is_resource($lock)) fclose($lock);
+                $this->handleError('cannot_lock_upload', $file);
+            }
+            $completed = false;
+            try {
+                $metadataFile = $directory . '/state.json';
+                $state = is_file($metadataFile) ? json_decode(file_get_contents($metadataFile), true, 512, JSON_THROW_ON_ERROR) : null;
+                if ($state === null) {
+                    if ($this->chunk !== 1 || $this->index !== 0) $this->handleError('upload_must_start_with_chunk_1', $file);
+                    $state = ['file' => $file, 'count' => $this->count, 'totalSize' => $this->uploadSize,
+                        'context' => [$this->options['DestinationPath'], $_SESSION['id'] ?? null, $_SESSION['groupId'] ?? null, $_SESSION['folderId'] ?? null],
+                        'nextChunk' => 1, 'received' => 0, 'finished' => false];
                 }
+                $context = [$this->options['DestinationPath'], $_SESSION['id'] ?? null, $_SESSION['groupId'] ?? null, $_SESSION['folderId'] ?? null];
+                if ($state['file'] !== $file || $state['count'] !== $this->count || $state['totalSize'] !== $this->uploadSize ||
+                    $state['context'] !== $context || $state['finished'] || $state['nextChunk'] !== $this->chunk || $state['received'] !== $this->index) {
+                    $this->handleError('upload_context_or_chunk_sequence_changed_start_new_upload', $file);
+                }
+                $part = $directory . '/part-' . $this->chunk;
+                if (!move_uploaded_file($uploadedFile, $part)) $this->handleError('cannot_save_upload_chunk', $file);
+                clearstatcache(true, $part);
+                $bytes = filesize($part);
+                if ($bytes !== $this->options['FileSize']) $this->handleError('invalid_chunk_byte_count', $file);
+                $state['received'] += $bytes;
+                $state['nextChunk']++;
+                if ($this->chunk < $this->count) {
+                    if ($state['received'] >= $this->uploadSize) $this->handleError('invalid_total_upload_size', $file);
+                    $this->writeUploadState($metadataFile, $state);
+                    echo json_encode(['filename' => basename($file), 'error' => null, 'merged' => false,
+                        'chunk' => $this->chunk, 'count' => $this->count, 'receivedBytes' => $state['received'], 'uploadId' => $this->uploadId]);
+                    return;
+                }
+                if ($state['received'] !== $this->uploadSize) $this->handleError('incomplete_upload', $file);
+                $merged = $directory . '/' . basename($file);
+                $output = fopen($merged, 'wb');
+                if ($output === false) $this->handleError('cannot_open_merged_upload', $file);
+                try {
+                    for ($number = 1; $number <= $this->count; $number++) {
+                        $path = $directory . '/part-' . $number;
+                        $input = fopen($path, 'rb');
+                        if ($input === false) $this->handleError('missing_upload chunk', $file);
+                        try {
+                            if (stream_copy_to_stream($input, $output) !== filesize($path)) $this->handleError('incomplete_chunk_write', $file);
+                        } finally { fclose($input); }
+                    }
+                    if (!fflush($output)) $this->handleError('cannot_flush_merged_upload', $file);
+                } finally { fclose($output); }
+                clearstatcache(true, $merged);
+                if (filesize($merged) !== $this->uploadSize) $this->handleError('invalid_merged_file_size', $file);
+                $this->chunkValidate($merged, $merged, UPLOAD_ERR_OK, true);
+                // Finalization is single-use, even if image processing or persistence later fails.
+                $state['finished'] = true;
+                $this->writeUploadState($metadataFile, $state);
+                // Serialize filename allocation in the destination, including different upload IDs.
+                $targetLock = fopen($root . '/destination-' . hash('sha256', dirname($file)) . '.lock', 'c');
+                if ($targetLock === false || !flock($targetLock, LOCK_EX)) {
+                    if (is_resource($targetLock)) fclose($targetLock);
+                    $this->handleError('cannot_lock_upload_destination', $file);
+                }
+                try {
+                    $target = $this->checkDuplicateFile($file) ?? $file;
+                    if (!rename($merged, $target)) $this->handleError('cannot_move_merged_upload', $file);
+                    $this->options['FileName'] = $target;
+                    $this->options['FileSize'] = $this->uploadSize;
+                    $this->options['FileType'] = self::getMimeType($target) ?: 'application/octet-stream';
+                    try {
+                        $this->resizeImageProcess($target);
+                        $this->uploadInfo();
+                    } catch (\Throwable $error) {
+                        $this->removeDerivedFiles($target);
+                        // Increment mode creates a new original; never remove an existing overwrite target.
+                        if ($this->options['UploadExists'] !== 'overwrite' && is_file($target)) unlink($target);
+                        throw $error;
+                    }
+                } finally { flock($targetLock, LOCK_UN); fclose($targetLock); }
+                $this->rememberCompletedUpload($receipt);
+                $completed = true;
+            } finally {
+                if ($completed || ($state['finished'] ?? false)) {
+                    // Finalized failures are not resumable; discard their parts as well.
+                    // Cleanup errors must not turn an already committed upload into HTTP 500.
+                    $this->removeUploadDirectory($directory);
+                } else {
+                    touch($directory);
+                }
+                flock($lock, LOCK_UN);
+                fclose($lock);
+            }
+        }
+
+        /**
+         * Tracks and stores information about a completed upload in the session to prevent duplicate handling.
+         *
+         * @param string $receipt A unique identifier for the completed upload.
+         *
+         * @return void
+         */
+        protected function rememberCompletedUpload(string $receipt): void
+        {
+            $receipts = $_SESSION['galleryCompletedUploads'] ?? [];
+            $receipts = array_filter($receipts, static fn($time) => is_int($time) && $time >= time() - 86400);
+            $receipts[$receipt] = time();
+            $_SESSION['galleryCompletedUploads'] = array_slice($receipts, -4096, null, true);
+        }
+
+        /**
+         * Removes the specified upload directory and its contents, including files and subdirectories.
+         * If any files or the directory itself cannot be deleted, it logs the related errors.
+         *
+         * @param string $directory The path of the upload directory to be removed.
+         *
+         * @return void
+         */
+        protected function removeUploadDirectory(string $directory): void
+        {
+            try {
+                foreach (glob($directory . '/*') ?: [] as $path) {
+                    if (is_file($path) && !is_link($path) && !@unlink($path)) {
+                        error_log('Upload temporary file cleanup failed: ' . $path);
+                    }
+                }
+                if (is_dir($directory) && !@rmdir($directory)) error_log('Upload temporary directory cleanup failed: ' . $directory);
+            } catch (\Throwable $error) {
+                error_log('Upload cleanup error: ' . $error->getMessage());
+            }
+        }
+
+        /**
+         * Writes the upload state to a specified file in JSON format, ensuring atomicity with file locking.
+         *
+         * @param string $path The file path where the upload state will be saved.
+         * @param array $state The upload state data to be serialized and stored.
+         *
+         * @return void
+         * @throws \JsonException
+         */
+        protected function writeUploadState(string $path, array $state): void
+        {
+            $json = json_encode($state, JSON_THROW_ON_ERROR);
+            if (file_put_contents($path, $json, LOCK_EX) !== strlen($json)) $this->handleError('cannot_save_upload_state');
+        }
+
+        /**
+         * Cleans up expired or completed upload directories based on their last activity timestamps or state.
+         * It checks for expired uploads, removes directories if necessary, and records completed uploads.
+         *
+         * @param int $maxAge The maximum age (in seconds) of an upload directory before it is considered expired. Defaults to 86400 seconds (24 hours).
+         *
+         * @return void
+         */
+        public function cleanupExpiredUploads(int $maxAge = 86400): void
+        {
+            foreach (glob($this->options['ChunkPath'] . '/upload-*', GLOB_ONLYDIR) ?: [] as $directory) {
+                $lastActivity = filemtime($directory);
+                if (is_link($directory)) continue;
+                $lock = fopen($directory . '/lock', 'c');
+                if ($lock === false) continue;
+                if (flock($lock, LOCK_EX | LOCK_NB)) {
+                    $statePath = $directory . '/state.json';
+                    clearstatcache(true, $statePath);
+                    if (is_file($statePath)) $lastActivity = max($lastActivity, filemtime($statePath));
+                    $state = is_file($statePath) ? json_decode(file_get_contents($statePath), true) : null;
+                    // Older successful uploads already deleted all part-N files but kept lock/state.
+                    $finished = is_array($state) && ($state['finished'] ?? false) === true &&
+                        ($state['received'] ?? null) === ($state['totalSize'] ?? null) &&
+                        !glob($directory . '/part-*') && count(glob($directory . '/*') ?: []) === 2;
+                    if ($lastActivity < time() - $maxAge || $finished) {
+                        $owner = hash('sha256', session_id() . '|' . $this->options['RootPath']);
+                        $prefix = 'upload-' . $owner . '-';
+                        if ($finished && str_starts_with(basename($directory), $prefix)) {
+                            $this->rememberCompletedUpload(substr(basename($directory), strlen('upload-')));
+                        }
+                        $this->removeUploadDirectory($directory);
+                    }
+                    flock($lock, LOCK_UN);
+                }
+                fclose($lock);
             }
         }
 
@@ -464,6 +751,7 @@
          *
          * @return string|null Returns the original or newly generated filename if a duplicate is handled,
          *                     or null if the file is overwritten.
+         * @throws \Exception
          */
         protected function checkDuplicateFile(string $fileName): ?string
         {
@@ -524,43 +812,123 @@
          * @return void
          * @throws Exception
          */
-
         protected function resizeImageProcess(string $fileName): void
         {
-            $associatedParameters = array_combine($this->options['TempFolders'], $this->options['ResizeDimensions']);
-
-            $ext = strtolower($this->getExtension($fileName));
-
-            // Only "visually observable" images in temp folders
-            if (is_file($fileName) && in_array($ext, $this->getImageExtensions(), true)) {
-                // For SVG just copy to all temp folders
-                if ($ext === 'svg') {
-                    foreach ($associatedParameters as $tempFolder => $resizeDimension) {
-                        if ($this->options['DestinationPath'] == null) {
-                            $newPath = $this->options['FullStoragePath'] . '/' . $tempFolder . '/' . basename($fileName);
-                        } else {
-                            $newPath = $this->options['FullStoragePath'] . '/' . $tempFolder . '/' . $this->options['DestinationPath'] . '/' . basename($fileName);
-                        }
-                        copy($fileName, $newPath);
+            $folders = $this->options['TempFolders'];
+            $dimensions = $this->options['ResizeDimensions'];
+            if (count($folders) !== count($dimensions)) $this->handleError('image_folders_and_dimensions_must_have_equal_counts', $fileName);
+            $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            if (!in_array($extension, self::getImageExtensions(), true)) return;
+            $created = [];
+            // Turn GD/filesystem warnings into catchable failures, allowing the upload
+            // rollback to remove the new original and any partial derivatives.
+            set_error_handler(static function (int $severity, string $message, string $file, int $line): never {
+                throw new \ErrorException($message, 0, $severity, $file, $line);
+            }, E_WARNING | E_NOTICE);
+            try {
+                foreach (array_combine($folders, $dimensions) as $folder => $dimension) {
+                    if (!is_string($folder) || !preg_match('/^[a-zA-Z0-9_-]+$/D', $folder) || (int)$dimension < 1) {
+                        $this->handleError('invalid_image_output_configuration', $fileName);
                     }
-                    return;
-                }
-
-                // Raster image (jpeg/png/gif/bmp/webp): resize or copy depending on size
-                $size = getimagesize($fileName);
-                foreach ($associatedParameters as $tempFolder => $resizeDimension) {
-                    if ($this->options['DestinationPath'] == null) {
-                        $newPath = $this->options['FullStoragePath'] . '/' . $tempFolder . '/' . basename($fileName);
+                    $target = $this->options['FullStoragePath'] . '/' . $folder . '/';
+                    if ($this->options['DestinationPath']) $target .= trim($this->options['DestinationPath'], '/') . '/';
+                    if (!is_dir($target) && !mkdir($target, 0755, true) && !is_dir($target)) $this->handleError('Cannot create image output directory.', $fileName);
+                    $path = $target . basename($fileName);
+                    $created[] = $path;
+                    if ($extension === 'svg') {
+                        if (!copy($fileName, $path)) $this->handleError('cannot_copy_image', $fileName);
                     } else {
-                        $newPath = $this->options['FullStoragePath'] . '/' . $tempFolder . '/' . $this->options['DestinationPath'] . '/' . basename($fileName);
-                    }
-
-                    if (($resizeDimension > $size[0]) && $size[0] !== 0) {
-                        copy($fileName, $newPath);
-                    } else {
-                        $this->resizeImage($fileName, $newPath, $resizeDimension);
+                        // Always process raster images: small EXIF images must also be oriented.
+                        $this->resizeImage($fileName, $path, (int)$dimension);
                     }
                 }
+            } catch (\Throwable $error) {
+                foreach ($created as $path) if (is_file($path)) unlink($path);
+                throw $error;
+            } finally {
+                restore_error_handler();
+            }
+        }
+
+        /**
+         * Retrieves the EXIF orientation value from a JPEG file's metadata.
+         * If the file is not a JPEG, EXIF data cannot be read, or the orientation is invalid, a default value is returned.
+         *
+         * @param string $path The file path of the image to read the EXIF orientation from.
+         *
+         * @return int The orientation value (1-8) based on the EXIF data, or 1 if not available or invalid.
+         */
+        public static function getExifOrientation(string $path): int
+        {
+            $type = @getimagesize($path);
+            if (!$type || $type[2] !== IMAGETYPE_JPEG || !function_exists('exif_read_data')) return 1;
+            // EXIF is optional. QCubed may render even @-suppressed warnings as HTML,
+            // so isolate malformed metadata from its application-wide error handler.
+            set_error_handler(static function (): bool { return true; }, E_WARNING | E_NOTICE);
+            try {
+                $data = exif_read_data($path, 'IFD0', true, false);
+            } catch (\Throwable $error) {
+                return 1;
+            } finally {
+                restore_error_handler();
+            }
+            $orientation = (int)($data['IFD0']['Orientation'] ?? $data['Orientation'] ?? 1);
+            return $orientation >= 1 && $orientation <= 8 ? $orientation : 1;
+        }
+
+        /**
+         * Adjusts the orientation of a given image based on the specified orientation value.
+         * The method handles rotation and flipping of the image as required.
+         *
+         * @param GdImage $image The image resource to be oriented.
+         * @param int $orientation The orientation value determining the required transformations.
+         *
+         * @return GdImage The oriented image resource.
+         * @throws \Exception
+         */
+        protected function orientImage(GdImage $image, int $orientation): GdImage
+        {
+            $angle = match ($orientation) {3 => 180, 5, 6, 7 => -90, 8 => 90, default => 0};
+            if ($angle !== 0) {
+                $rotated = imagerotate($image, $angle, 0);
+                if ($rotated === false) $this->handleError('cannot_rotate_image');
+                $image = $rotated;
+            }
+            $flip = match ($orientation) {2, 5 => IMG_FLIP_HORIZONTAL, 4, 7 => IMG_FLIP_VERTICAL, default => null};
+            if ($flip !== null && !imageflip($image, $flip)) $this->handleError('cannot_mirror_image');
+            return $image;
+        }
+
+        /**
+         * Retrieves the display dimensions of an image, taking its EXIF orientation into account.
+         *
+         * @param string $path The file path to the image whose dimensions are to be retrieved.
+         *
+         * @return array|null An array containing the width and height of the image, adjusted for orientation,
+         *                    or null if the image dimensions could not be determined.
+         */
+        public static function getDisplayDimensions(string $path): ?array
+        {
+            $size = @getimagesize($path);
+            if (!$size) return null;
+            return self::getExifOrientation($path) >= 5 ? [$size[1], $size[0]] : [$size[0], $size[1]];
+        }
+
+        /**
+         * Removes files derived from the original file by traversing temporary folders and deleting
+         * matching files in the specified storage path.
+         *
+         * @param string $original The name of the original file whose derived files should be removed.
+         *
+         * @return void
+         */
+        protected function removeDerivedFiles(string $original): void
+        {
+            foreach ($this->options['TempFolders'] as $folder) {
+                $path = $this->options['FullStoragePath'] . '/' . $folder . '/';
+                if ($this->options['DestinationPath']) $path .= trim($this->options['DestinationPath'], '/') . '/';
+                $path .= basename($original);
+                if (is_file($path)) unlink($path);
             }
         }
 
@@ -580,7 +948,7 @@
                 IMAGETYPE_JPEG => imagecreatefromjpeg($path),
                 IMAGETYPE_PNG  => imagecreatefrompng($path),
                 IMAGETYPE_GIF  => imagecreatefromgif($path),
-                18             => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($path) : false, // IMAGETYPE_WEBP
+                IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($path) : false,
                 IMAGETYPE_BMP  => function_exists('imagecreatefrombmp') ? imagecreatefrombmp($path) : false,
                 default        => false,
             };
@@ -617,77 +985,49 @@
          */
         protected function resizeImage(string $path, string $newPath, int $resizeDimensions): void
         {
-            if (!function_exists('exif_imagetype') || exif_imagetype($path) === false) {
-                $this->handleError($this->getErrorMessage('invalid_image'), $path);
-                return;
-            }
-
-            $size = getimagesize($path);
-            if (empty($size) || !is_array($size)) {
-                $this->handleError($this->getErrorMessage('invalid_image'), $path);
-                return;
-            }
-
-            $resizeRatio = max($size[0], $size[1]) / $resizeDimensions;
-
-            $resizeWidth = round($size[0] / $resizeRatio);
-            $resizeHeight = round($size[1] / $resizeRatio);
-
-            $newImage = imagecreatetruecolor($resizeWidth, $resizeHeight);
-            if ($newImage === false) {
-                $this->handleError($this->getErrorMessage('failed_to_create_image'), $path);
-                return;
-            }
-
+            $size = @getimagesize($path);
+            if (!$size || $size[0] < 1 || $size[1] < 1 || $resizeDimensions < 1) $this->handleError($this->getErrorMessage('invalid_image'), $path);
+            $types = ['jpg' => IMAGETYPE_JPEG, 'jpeg' => IMAGETYPE_JPEG, 'png' => IMAGETYPE_PNG,
+                'gif' => IMAGETYPE_GIF, 'bmp' => IMAGETYPE_BMP, 'webp' => IMAGETYPE_WEBP];
+            if (($types[strtolower(pathinfo($path, PATHINFO_EXTENSION))] ?? null) !== $size[2]) $this->handleError('image_content_does_not_match_its_extension', $path);
+            $ratio = min(1, $resizeDimensions / max($size[0], $size[1]));
+            $width = max(1, (int)round($size[0] * $ratio));
+            $height = max(1, (int)round($size[1] * $ratio));
+            $pixels = (float)$size[0] * $size[1];
+            if ($this->options['MaxImagePixels'] && $pixels > $this->options['MaxImagePixels']) $this->handleError('image_resolution_exceeds_the_allowed_pixel_count', $path);
+            // Conservative estimate, not a guarantee: GD allocation varies by build/format.
+            // Rotate the resized result, avoiding a second full-resolution image allocation.
+            $estimate = $pixels * 5 + $width * $height * 12 + 8 * 1024 * 1024;
+            $limit = self::configBytes(ini_get('memory_limit'));
+            if ($limit > 0 && memory_get_usage(true) + $estimate > $limit) $this->handleError('not_enough_server_memory_to_process_this_image_resolution' , $path);
+            $orientation = $this->options['AutoOrient'] ? self::getExifOrientation($path) : 1;
             $image = $this->imageCreateFrom($path, $size[2]);
-            if ($image === false) {
-                $this->handleError($this->getErrorMessage('failed_to_load_image'), $path);
-                imagedestroy($newImage);
-                return;
-            }
-
-            imageAlphaBlending($newImage, false);
-            imageSaveAlpha($newImage, true);
-
-            if (!call_user_func($this->options['ImageResizeFunction'], $newImage, $image, 0, 0, 0, 0, $resizeWidth, $resizeHeight, $size[0], $size[1])) {
+            if ($image === false) $this->handleError($this->getErrorMessage('failed_to_load_image'), $path);
+            $output = imagecreatetruecolor($width, $height);
+            if ($output === false) $this->handleError($this->getErrorMessage('failed_to_create_image'), $path);
+            imagealphablending($output, false);
+            imagesavealpha($output, true);
+            $transparent = imagecolorallocatealpha($output, 0, 0, 0, 127);
+            imagefill($output, 0, 0, $transparent);
+            $resize = $this->options['ImageResizeFunction'];
+            if (!in_array($resize, ['imagecopyresampled', 'imagecopyresized'], true) ||
+                !$resize($output, $image, 0, 0, 0, 0, $width, $height, $size[0], $size[1])) {
                 $this->handleError($this->getErrorMessage('failed_to_resize_image'), $path);
-                imagedestroy($image);
-                imagedestroy($newImage);
-                return;
             }
-
-            imagedestroy($image);
-
-            if ($this->options['ImageResizeSharpen']) {
-                $this->sharpenImage($newImage);
-            }
-
-            // Handling quality/processing
-            $quality = isset($this->options['ImageResizeQuality']) ? (int)$this->options['ImageResizeQuality'] : null;
-
-            switch ($size[2]) {
-                case IMAGETYPE_JPEG:
-                    // For JPEG, only the ImageResizeQuality value is used (default 90)
-                    imagejpeg($newImage, $newPath, $quality ?? 90);
-                    break;
-                case IMAGETYPE_GIF:
-                    // You cannot provide parameters for saving a GIF
-                    imagegif($newImage, $newPath);
-                    break;
-                case IMAGETYPE_PNG:
-                    // PNG compression level (0–9) is taken only from PngLevel, regardless of JPEG quality
-                    $pngLevel = isset($this->options['PngLevel']) ? (int)$this->options['PngLevel'] : 6;
-                    // Make sure the value is within the allowed range
-                    $pngLevel = min(max($pngLevel, 0), 9);
-                    imagepng($newImage, $newPath, $pngLevel);
-                    break;
-                default:
-                    imagedestroy($newImage);
-                    throw new Exception(t("Unable to deal with an image type"));
-            }
-
-            // destroy image
-            imagedestroy($newImage);
+            unset($image);
+            $output = $this->orientImage($output, $orientation);
+            if ($this->options['ImageResizeSharpen']) $this->sharpenImage($output);
+            $quality = min(100, max(0, (int)$this->options['ImageResizeQuality']));
+            $saved = match ($size[2]) {
+                IMAGETYPE_JPEG => imagejpeg($output, $newPath, $quality),
+                IMAGETYPE_PNG => imagepng($output, $newPath, min(9, max(0, (int)$this->options['PngLevel']))),
+                IMAGETYPE_GIF => imagegif($output, $newPath),
+                IMAGETYPE_WEBP => function_exists('imagewebp') && imagewebp($output, $newPath, $quality),
+                IMAGETYPE_BMP => function_exists('imagebmp') && imagebmp($output, $newPath),
+                default => false,
+            };
+            clearstatcache(true, $newPath);
+            if (!$saved || !is_file($newPath) || filesize($newPath) === 0) $this->handleError('cannot_save_resized_image', $path);
         }
 
         /**
@@ -717,29 +1057,18 @@
          * @param string|null $file The path to the file associated with the error, if available.
          *
          * @return void
+         * @throws \Exception
          */
         public function handleError(string $errorMessage, ?string $file = null): void
         {
-            $json['filename'] = basename($file);
-            $json['size'] = $this->options['FileSize'];
-            $json['type'] = $this->options['FileType'];
-            $json['error'] = $errorMessage;
-            print json_encode($json);
+            $json = array(
+                'filename' => $file ? basename($file) : null,
+                'size' => $this->options['FileSize'] ?? 0,
+                'type' => $this->options['FileType'] ?? null,
+                'error' => $errorMessage
+            );
 
-            // Check and remove temporary files
-
-            // If there is an error, delete the final file and all temporary parts
-            if (!empty($this->options['ChunkPath']) && $file) {
-                $chunkFile = $this->options['ChunkPath'] . '/' . basename($file);
-
-                if ($errorMessage && file_exists($chunkFile)) {
-                    unlink($chunkFile);
-                }
-            }
-
-            // NB! If you want testability, don't use exit here,
-            // just throw an Exception or return some value - this is already need-based.
-            //exit;
+            throw new Exception(json_encode($json, JSON_UNESCAPED_UNICODE));
         }
 
         /**
@@ -788,23 +1117,8 @@
          */
         public function getConfigBytes(mixed $val): int
         {
-            $val = trim((string)$val);
-
-            if (is_numeric($val)) {
-                return (int)$val;
-            }
-
-            $last = strtolower($val[strlen($val)-1]);
-            $num = (int)substr($val, 0, -1);
-
-            return match ($last) {
-                'g' => $num * 1024 * 1024 * 1024,
-                'm' => $num * 1024 * 1024,
-                'k' => $num * 1024,
-                default => (int)$val,
-            };
+            return self::configBytes($val);
         }
-
 
         /**
          * Removes the file name from the given file path, returning the directory path.
@@ -916,7 +1230,7 @@
             }
 
             // Other visual image (e.g. jpg, png, etc.)
-            $imageSize = getimagesize($path);
+            $imageSize = self::getDisplayDimensions($path);
 
             if ($imageSize && in_array($ext, self::getImageExtensions(), true)) {
                 $width = ($imageSize[0] ?? '0');
@@ -949,6 +1263,16 @@
             $i = floor(log($bytes) / log(1024));
             $sizes = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
             return sprintf('%.02F', $bytes / pow(1024, $i)) * 1 . ' ' . $sizes[$i];
+        }
+
+        /**
+         * Converts an uploaded filename to portable ASCII while preserving letter case.
+         * Spaces, hyphens and other unsupported characters become underscores.
+         * The final extension is preserved; no optional PHP extensions are required.
+         */
+        public static function sanitizeForFile(string $filename): string
+        {
+            return QString::sanitizeForFile($filename);
         }
 
         /**

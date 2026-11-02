@@ -43,7 +43,7 @@
         {
             $this->AddJavascriptFile(QCUBED_FILEMANAGER_ASSETS_URL . "/js/qcubed.fileinfo.js");
             $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/qcubed.fileinfo.css");
-            $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom.css");
+            //$this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom.css");
         }
 
         /**

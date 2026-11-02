@@ -1,72 +1,110 @@
 <?php
 
-    require_once('../qcubed.inc.php');
+    $uploadBufferLevel = ob_get_level();
+    ob_start();
+    try {
+        require_once('../qcubed.inc.php');
+        //require_once(__DIR__ . '/../src/Control/CroppieHandler.php');
+    } catch (Throwable $error) {
+        while (ob_get_level() > $uploadBufferLevel) ob_end_clean();
+        error_log('Upload bootstrap error: ' . $error->getMessage());
+        if (http_response_code() < 400) http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'Failed to initialize upload handler.']);
+        exit;
+    }
+    // Keep warnings in the log instead of corrupting the JSON response.
+    ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+    ob_clean();
 
-    use QCubed\Plugin\CroppieHandler;
     use QCubed\Exception\Caller;
     use QCubed\Exception\InvalidCast;
+    use QCubed\Plugin\Control\CroppieHandler;
 
-    $options = array(
-        //'TempFolders' =>  ['thumbnail', 'medium', 'large'], // Please read the CroppieHandler description and manual
-        'ResizeDimensions' => [320, 480, 800], // Please read the CroppieHandler description and manual
-    );
+    $options = [
+        'ResizeDimensions' => [320, 480, 800],
+    ];
 
     /**
-     * Class CustomCroppieHandler
-     *
-     * This class extends CroppieHandler and overrides the uploadInfo method to perform additional functionality,
-     * specifically for handling file uploads and associated metadata updates.
+     * Handles custom operations related to image cropping and uploading using the Croppie library.
      */
     class CustomCroppieHandler extends CroppieHandler
     {
-        /**
-         * Processes and uploads file information based on the provided options.
-         * It sets file properties such as name, type, path, and dimensions and saves the related folder updates if applicable.
-         *
-         * @return void
-         * @throws Caller
-         * @throws InvalidCast
-         */
         protected function uploadInfo(): void
         {
-            parent::uploadInfo();
+            $path = $this->options['OriginalImageName'];
+            if (!$path || !is_file($path)) $this->uploadError('Cropped image was not saved.', 500);
 
-            if ($this->options['OriginalImageName']) {
+            $folder = Folders::loadById($this->options['FolderId']);
 
-                $obj = new Files();
-                $obj->setFolderId($this->options['FolderId']);
-                $obj->setName(basename($this->options['OriginalImageName']));
-                $obj->setType('file');
-                $obj->setPath($this->getRelativePath($this->replaceDoubleSlashWithSlash($this->options['OriginalImageName'])));
-                $obj->setDescription(null);
-                $obj->setExtension($this->getExtension($this->options['OriginalImageName']));
-                $obj->setMimeType($this->getMimeType($this->options['OriginalImageName']));
-                $obj->setSize(filesize($this->options['OriginalImageName']));
-                $obj->setMtime(filemtime($this->options['OriginalImageName']));
-                $obj->setDimensions($this->getDimensions($this->options['OriginalImageName']));
-                $obj->setWidth($this->getImageWidth($this->options['OriginalImageName']));
-                $obj->setHeight($this->getImageHeight($this->options['OriginalImageName']));
-                $obj->save(true);
-
-                if ($this->options['FolderId']) {
-                    $objFolder = Folders::loadById($this->options['FolderId']);
-
-                    // Check if the folder exists before updating properties
-                    if ($objFolder) {
-                        $objFolder->setLockedFile(1);
-                        $objFolder->setMtime(filemtime($this->options['OriginalImageName']));
-                        $objFolder->save();
-                    }
-                }
+            if (!$folder || trim((string)$folder->getPath(), '/') !== trim($this->options['RelativePath'], '/')) {
+                $this->uploadError('The crop destination has changed.', 409);
             }
+
+            $database = Files::getDatabase();
+            $database->transactionBegin();
+            try {
+                $file = new Files();
+                $file->setFolderId($this->options['FolderId']);
+                $file->setName(basename($path));
+                $file->setType('file');
+                $file->setPath($this->getRelativePath($path));
+                $file->setDescription(null);
+                $file->setExtension($this->getExtension($path));
+                $file->setMimeType('image/png');
+                $file->setSize(filesize($path));
+                $file->setMtime(filemtime($path));
+                $file->setDimensions($this->getDimensions($path));
+                $file->setWidth($this->getImageWidth($path));
+                $file->setHeight($this->getImageHeight($path));
+                $file->save(true);
+                $folder->setLockedFile(1);
+                $folder->setMtime(filemtime($path));
+                $folder->save();
+                $database->transactionCommit();
+            } catch (Throwable $error) {
+                $database->transactionRollBack();
+                throw $error;
+            }
+            parent::uploadInfo();
         }
     }
 
     try {
-        $objHandler = new CustomCroppieHandler($options);
-    } catch (Exception $e) {
-        http_response_code(500);
-        error_log('Upload handler creation error: ' . $e->getMessage());
-        echo json_encode(['error' => 'Failed to start the file/s upload system.']);
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            throw new RuntimeException(json_encode(['error' => 'Only POST image uploads are accepted.']), 405);
+        }
+
+        $postLimit = max(0, ini_parse_quantity((string)ini_get('post_max_size')));
+
+        if ($postLimit > 0 && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > $postLimit) {
+            throw new RuntimeException(json_encode(['error' => 'Image request exceeds post_max_size.']), 413);
+        }
+
+        if (!isset($_POST['folderId'], $_POST['relativePath']) || !is_scalar($_POST['folderId']) ||
+            filter_var($_POST['folderId'], FILTER_VALIDATE_INT) === false || !is_string($_POST['relativePath'])) {
+            throw new RuntimeException(json_encode(['error' => 'Crop destination is missing.']), 400);
+        }
+
+        $folder = Folders::loadById((int)$_POST['folderId']);
+
+        if (!$folder || trim((string)$folder->getPath(), '/') !== trim($_POST['relativePath'], '/')) {
+            throw new RuntimeException(json_encode(['error' => 'Crop destination has changed. Select the folder again.']), 409);
+        }
+        $handler = new CustomCroppieHandler($options);
+        $payload = ob_get_clean();
+        json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        echo $payload;
+    } catch (Throwable $error) {
+        while (ob_get_level() > $uploadBufferLevel) ob_end_clean();
+        $status = in_array($error->getCode(), [400, 403, 404, 405, 409, 413, 422], true) ? $error->getCode() : 500;
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        error_log('Image upload error: ' . $error->getMessage());
+        error_log($error->getTraceAsString());
+        $response = json_decode($error->getMessage(), true);
+        echo json_encode(is_array($response) && isset($response['error']) ? $response : ['error' => 'The image could not be saved. See the server error log for details.'], JSON_UNESCAPED_UNICODE);
         exit;
     }

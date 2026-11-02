@@ -203,7 +203,7 @@
          * @return mixed The value of the requested property.
          * @throws Caller If the requested property does not exist or is inaccessible.
          */
-        public function __get($strName): mixed
+        public function __get(string $strName): mixed
         {
             switch ($strName) {
                 case "RootPath": return $this->strRootPath;

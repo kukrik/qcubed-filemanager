@@ -1,47 +1,43 @@
 (function ($) {
-    $.fn.uploadHandler = function (options) {
-        options = $.extend({
-            language: null,
-            showIcons: false,
-            acceptFileTypes: null,
-            maxNumberOfFiles: null,
-            maxFileSize: null,
-            minFileSize: null,
-            chunkUpload: true,
-            maxChunkSize: 1024 * 1024 * 5, // Default is set to 5 MB. Optionally, the size of the chunked file may be increased or decreased under appropriate conditions.
-            limitConcurrentUploads: 2, // Limited to 2 simultaneous uploads by default. Can be increased if necessary.
-            url: null,
-            previewMaxWidth: 80,
-            previewMaxHeight: 80
-        }, options)
+    'use strict';
 
-        // This unit set to a new array
-        const storedFiles = [];
-        // This unit set to an error array
-        const storedErrors = [];
-        // This unit set to a queued array of files waiting to be uploaded
-        let storedQueue = [];
-        // This unit set to an uploaded files array
-        const uploadedFiles = [];
-        // This unit is set to the number of interrupted upload files
-        let interruptedFiles = 0;
+    $.fn.uploadHandler = function (settings, key, value) {
+        // FileUploadHandler renders only <div class="files"> when UseWrapper=false.
+        // QCubed still calls $('#controlId').uploadHandler(...), which can be an empty selection.
+        // Preserve that legacy entry point and keep instance data on the real container.
+        const targets = this.length ? this : $(document.querySelector('.files'));
+        targets.each(function () {
+            const scope = this.closest('form') || document;
+            const host = this.matches('.files') ? this : this.querySelector('.files') || scope.querySelector('.files');
+            if (!host) return;
+            const existing = $(host).data('uploadHandler');
+            if (typeof settings === 'string') {
+                if (existing && settings === 'option') {
+                    if (key && typeof key === 'object') {
+                        Object.keys(key).forEach(name => existing.setOption(name, key[name]));
+                    } else existing.setOption(key, value);
+                }
+                return;
+            }
+            if (existing) {
+                Object.keys(settings || {}).forEach(name => existing.setOption(name, settings[name]));
+                return;
+            }
+            $(host).data('uploadHandler', createUploader(host, settings));
+        });
+        return this;
+    };
 
-        // Arrays for indexing invalid inputs
-        const storedAcceptFileTypes = []; // data-error_type="1"
-        const storedMaxFileSize = []; // data-error_type="2"
-        const storedMinFileSize = []; // data-error_type="3"
-
-        // his unit set to an alert array
-        let errorMessages = [];
-
-        /////////////////////////////////////////
-
-        // Get a reference to the form
-        const form = document.querySelector("form");
-
-        /////////////////////////////////////////
-
-        let languages = {
+    function createUploader(host, settings) {
+        const options = $.extend({
+            language: 'en', showIcons: false, acceptFileTypes: null,
+            maxNumberOfFiles: null, maxFileSize: null, minFileSize: null,
+            chunkUpload: true, maxChunkSize: 1024 * 1024,
+            limitConcurrentUploads: 2, url: null,
+            previewMaxWidth: 80, previewMaxHeight: 80,
+            requestTimeout: 120000, progressHoldTime: 600, serverLimits: true
+        }, settings);
+                let languages = {
             en: {
                 add_files_Lbl: 'Add files',
                 all_start_Lbl: 'Start upload',
@@ -108,958 +104,421 @@
                 remove_invalid_inputs_maxFileSize_Lbl: 'Максимально допустимый размер для каждого файла составляет до %s',
                 remove_invalid_inputs_minFileSize_Lbl: 'Каждый файл должен превышать минимальный размер %s'
             }
+        };
+
+
+        const extra = {
+            en: {processing: 'Processing file…', invalid: 'Invalid server response', timeout: 'Upload timed out', empty: 'File is empty'},
+            et: {processing: 'Faili töötlemine…', invalid: 'Serveri vastus on vigane', timeout: 'Üleslaadimise aeg sai läbi', empty: 'Fail on tühi'},
+            ru: {processing: 'Обработка файла…', invalid: 'Некорректный ответ сервера', timeout: 'Время загрузки истекло', empty: 'Файл пуст'}
+        };
+        function language() {
+            const code = String(options.language || 'en').split('-')[0];
+            return languages[code] ? code : 'en';
         }
-
-        // The default language is English (en) unless another language is selected
-        options.language = options.language ? options.language : 'en';
-        options.language = options.language in languages ? options.language : options.language.split('-')[0]; // fr-CA fallback to fr
-        options.language = options.language in languages ? options.language : 'en';
-
-        /////////////////////////////////////////
-
-        // Get a reference to the 8 buttons
-        const file_input = document.querySelector(".fileinput-button");
-        const input = file_input.querySelector("#files");
-
-        const all_start = document.querySelector(".all-start");
-        const all_cancel = document.querySelector(".all-cancel");
-        const back = document.querySelector(".back");
-        const fileupload_donebar = document.querySelector(".fileupload-donebar");
-        const done_button = document.querySelector(".done");
-        const files_heading = document.querySelector(".files-heading");
-        const search = document.querySelector("[type='search']");
-
-        /////////////////////////////////////////
-
-        // Get a reference to div of the fileupload-buttonbar
-        const fileupload_buttonbar = document.querySelector(".fileupload-buttonbar");
-        fileupload_buttonbar.classList.add("hidden");
-
-        // Get the div references
-        const body = document.querySelector("body");
-        const upload_wrapper = document.querySelector(".upload-wrapper");
-        const scroll_wrapper = document.querySelector(".scroll-wrapper");
-        const dialog_wrapper = document.querySelector(".dialog-wrapper");
-
-        /////////////////////////////////////////
-
-        // inputs form handler
-        input.addEventListener("change", handleFileSelect);
-        //launch_start.addEventListener("change", handleFileSelect);
-        // all_start upload handler
-        all_start.addEventListener("click", handleForm);
-        // all_cancel files delete handler
-        all_cancel.addEventListener("click", cancelAllUploads);
-        // finished result handler
-        done_button.addEventListener("click", doneForm);
-
-        // Resetting elements
-        all_start.classList.add("disabled");
-        all_start.setAttribute("disabled", "disabled");
-        all_cancel.classList.add("disabled");
-        all_cancel.setAttribute("disabled", "disabled");
-
-        /////////////////////////////////////////
-
-        // Get a reference to the alert/s wrapper
-        const alert_wrapper = document.querySelector("#alert-wrapper");
-        const alert_multi_wrapper = document.querySelector(".alert-multi-wrapper");
-
-        /////////////////////////////////////////
-
-        // Get a reference to div of the table
-        const files = document.querySelector(".files");
-
-        /////////////////////////////////////////
-
-        // Prepare table headers
-        const table = document.createElement("table");
-        table.className = "table table-striped";
-        table.setAttribute("id", "fileUpload");
-        files.appendChild(table);
-
-        const colgroup = document.createElement("colgroup");
-        const col_1 = document.createElement("col");
-        col_1.setAttribute("style", "width:10%");
-        const col_2 = document.createElement("col");
-        col_2.setAttribute("style", "width:55%");
-        const col_3 = document.createElement("col");
-        col_3.setAttribute("style", "width:20%");
-        const col_4 = document.createElement("col");
-        col_4.setAttribute("style", "width:15%");
-        colgroup.appendChild(col_1);
-        colgroup.appendChild(col_2);
-        colgroup.appendChild(col_3);
-        colgroup.appendChild(col_4);
-
-        const tbody = document.createElement("tbody");
-        table.appendChild(colgroup);
-        table.appendChild(tbody);
-
-        /////////////////////////////////////////
-
-        function handleFileSelect(e) {
-            all_start.classList.remove("disabled");
-            all_start.removeAttribute("disabled");
-            all_cancel.classList.remove("disabled");
-            all_cancel.removeAttribute("disabled");
-            back.classList.add("disabled");
-            back.setAttribute("disabled", "disabled");
-            // Clear the alert/alerts
-            alert_wrapper.innerHTML = "";
-            alert_multi_wrapper.innerHTML = "";
-
-            const files = e.target.files;
-            for (var i = 0; i < files.length; i++) {
-                const f = files[i];
-                const url = URL.createObjectURL(f);
-
-                f.started = false;
-                f.complete = false;
-                storedFiles.push(f);
-                storedQueue.push(f);
-
-                tbody.innerHTML += "";
-
-                const list = document.createElement("tr");
-                tbody.appendChild(list);
-
-                const previewTd = document.createElement("td");
-                const previewSpan = document.createElement("span");
-                previewSpan.className = "preview";
-                previewTd.appendChild(previewSpan);
-
-                /////////////////////////////////////////
-
-                const img = document.createElement("img");
-                const ext = f.name.split('.').pop().toLowerCase();
-
-                if (options.showIcons) {
-                    previewSpan.innerHTML = getFileIconExtension(ext);
-                } else if (f.type.match("image.*")) {
-
-                    img.src = url;
-                    img.width = options.previewMaxWidth;
-                    img.height = options.previewMaxHeight;
-                    previewSpan.appendChild(img);
-                } else {
-                    previewSpan.innerHTML = getFileIconExtension(ext);
-                }
-
-                //////////////////////////////////////////
-
-                const nameTd = document.createElement("td");
-                const nameP = document.createElement("p");
-                nameP.className = "name";
-                const namePText = document.createTextNode(f.name);
-                nameP.appendChild(namePText);
-                nameTd.appendChild(nameP);
-
-                const progress_bar = document.createElement("div");
-                progress_bar.setAttribute("data-name", cleanFileName(f.name));
-                progress_bar.className = "progress-bar hidden";
-
-                const progress = document.createElement("div");
-                progress.setAttribute("data-name", cleanFileName(f.name));
-                progress.className = "progress";
-                progress_bar.appendChild(progress);
-                nameTd.appendChild(progress_bar);
-
-                const text_error = document.createElement("strong");
-                text_error.setAttribute("data-name", cleanFileName(f.name));
-                text_error.className = "error text-error";
-                text_error.innerText = validate(f) ? validate(f) : '';
-                nameTd.appendChild(text_error);
-
-                const sizeTd = document.createElement("td");
-                const sizeSpan = document.createElement("span");
-                sizeSpan.className = "size";
-                const sizeText = document.createTextNode(readableBytes(f.size));
-                sizeSpan.appendChild(sizeText);
-                sizeTd.appendChild(sizeSpan);
-
-                const percent_bar = document.createElement("div");
-                percent_bar.setAttribute("data-name", cleanFileName(f.name));
-                percent_bar.className = "percent-bar hidden";
-                const percent = document.createElement("span");
-                percent.setAttribute("data-name", cleanFileName(f.name));
-                percent.className = "percent";
-                percent_bar.appendChild(percent);
-                sizeTd.appendChild(percent_bar);
-
-                const btnTd = document.createElement("td");
-                const cancel = document.createElement("button");
-                cancel.className = "btn btn-warning cancel";
-                cancel.type = "reset";
-                cancel.setAttribute("data-name", cleanFileName(f.name));
-
-                if (validate(f)) {
-                    cancel.setAttribute("data-error", validate(f));
-                }
-
-                if (typeError(f)) {
-                    cancel.setAttribute("data-type_error", typeError(f));
-                }
-
-                cancel.innerText = languages[options.language].cancel_Lbl;
-                btnTd.appendChild(cancel);
-
-                const readySpan = document.createElement("span");
-                readySpan.setAttribute("data-name", cleanFileName(f.name));
-                readySpan.className = "ready hidden";
-                readySpan.innerHTML = '<svg viewBox="0 0 56 56" class="svg-file svg-check files-svg"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg>';
-                btnTd.appendChild(readySpan);
-
-                const errorSpan = document.createElement("span");
-                errorSpan.setAttribute("data-name", cleanFileName(f.name));
-                errorSpan.className = "error error-bubble hidden";
-                errorSpan.innerHTML = '<svg viewBox="0 0 56 56" class="svg-file svg-error files-svg"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path></svg>';
-                btnTd.appendChild(errorSpan);
-
-                // These references add 4 columns to the table
-                list.appendChild(previewTd);
-                list.appendChild(nameTd);
-                list.appendChild(sizeTd);
-                list.appendChild(btnTd);
-            }
-
-            const children = document.querySelectorAll(".cancel");
-            for (let i = 0, len = children.length; i < len; i++) {
-                children[i].addEventListener("click", removeFile, true);
-            }
-            handleUploads();
-            errorsExistenceControl();
+        function text(name) { return languages[language()][name] || extra[language()][name]; }
+        const form = host.closest('form') || document.querySelector('form');
+        const find = selector => (form || document).querySelector(selector);
+        const controls = {
+            picker: find('.fileinput-button'), input: find('#files'), start: find('.all-start'),
+            cancel: find('.all-cancel'), back: find('.back'), donebar: find('.fileupload-donebar'),
+            done: find('.done'), alert: find('#alert-wrapper'), errors: find('.alert-multi-wrapper')
+        };
+        const container = host.matches('.files') ? host : host.querySelector('.files') || find('.files');
+        // QCubed authorizes the destination and opens this layer. Do not open it on
+        // .launch-start: fileManager and PHP must first validate the selected folder.
+        const layers = {
+            upload: container && container.closest('.upload-wrapper'),
+            toolbar: find('.fileupload-buttonbar'), heading: find('.files-heading'),
+            listing: find('.scroll-wrapper'), breadcrumbs: find('.head')
+        };
+        function showUploadView(active) {
+            if (!layers.upload) return;
+            if (layers.toolbar) hidden(layers.toolbar, !active);
+            hidden(layers.upload, !active);
+            if (layers.heading) hidden(layers.heading, active);
+            if (layers.listing) hidden(layers.listing, active);
+            if (layers.breadcrumbs) hidden(layers.breadcrumbs, active);
+            document.body.classList.toggle('no-scroll', !active);
         }
-
-        //////////////////////////////////////////
-
-        function handleForm(e) {
-            e.preventDefault();
-
-            // Clear the input
-            input.value = null;
-            // Clear the alert/alerts
-            alert_wrapper.innerHTML = "";
-            alert_multi_wrapper.innerHTML = "";
-
-            // Clear or reset the inputs
-            if (storedFiles.length > 0 || (storedFiles.length > 0 && storedErrors.length > 0)) {
-                file_input.classList.add("disabled");
-                input.setAttribute('disabled', 'disabled');
-                all_start.classList.add("disabled");
-                all_start.setAttribute('disabled', 'disabled');
-                all_cancel.classList.add("disabled");
-                all_cancel.setAttribute('disabled', 'disabled');
-                back.classList.add("disabled");
-                back.setAttribute('disabled', 'disabled');
-
-                const children = document.querySelectorAll(".cancel");
-                for (let i = 0, len = children.length; i < len; i++) {
-                    children[i].setAttribute('disabled', 'disabled');
-                }
-            }
-
-            // Reject if the file input is empty & throw alert
-            if (storedFiles.length === 0 || (storedFiles.length === 0 && storedErrors.length === 0)) {
-                show_alert(languages[options.language].no_file_selected_Lbl, "warning");
-                file_input.classList.remove("disabled");
-                input.removeAttribute('disabled');
-                return;
-            }
-            checkQueue();
+        if (!container || Object.values(controls).some(element => !element)) {
+            throw new Error('uploadHandler: required upload controls are missing');
         }
+        const table = document.createElement('table');
+        table.className = 'table table-striped';
+        const columns = document.createElement('colgroup');
+        [10, 55, 20, 15].forEach(width => {
+            const col = document.createElement('col');
+            col.style.width = width + '%';
+            columns.appendChild(col);
+        });
+        const body = document.createElement('tbody');
+        table.appendChild(columns);
+        table.appendChild(body);
+        container.appendChild(table);
+        let jobs = [];
+        let running = false;
+        let nextId = 0;
+        let serverChunkLimit = Infinity;
+        let limitsXhr = null;
 
-        //////////////////////////////////////////
-
-        function handleUploads() {
-            const parent_div = document.querySelector(".files");
-            const child_div = document.querySelector(".preview");
-
-            if (parent_div.contains(child_div)) {
-                files_heading.classList.add("hidden");
-                fileupload_buttonbar.classList.remove("hidden");
-                files.classList.remove("hidden");
-             }
+        function hidden(element, hide) { element.classList.toggle('hidden', hide); }
+        function disabled(element, disable) {
+            element.classList.toggle('disabled', disable);
+            if (disable) element.setAttribute('disabled', 'disabled');
+            else element.removeAttribute('disabled');
         }
-
-        //////////////////////////////////////////
-
-        function checkQueue() {
-            let transfering = 0;
-            let newQueue = [];
-
-            //remove lingering items from storedQueue
-            for (const i in storedQueue) {
-                if (storedQueue.hasOwnProperty(i) && !storedQueue[i].complete && !storedQueue[i].error) {
-                    newQueue.push(storedQueue[i]);
-                }
-            }
-            storedQueue = newQueue;
-
-            for (let i in storedQueue) {
-                if (storedQueue.hasOwnProperty(i)) {
-                    if (storedQueue.hasOwnProperty(i) && !storedQueue[i].started) {
-                        uploadFile(storedQueue[i]);
-                    }
-                    transfering++;
-                    
-                    if (transfering >= options.limitConcurrentUploads) {
-                        return;
-                    } else {
-                        i++;
-                    }
-                }
-            }
+        function alert(message, kind) {
+            controls.alert.replaceChildren();
+            if (!message) return;
+            const box = document.createElement('div');
+            box.className = 'alert alert-' + kind + ' alert-dismissible';
+            box.setAttribute('role', 'alert');
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'close';
+            close.textContent = '×';
+            close.setAttribute('aria-label', 'Close');
+            close.addEventListener('click', () => box.remove());
+            box.appendChild(close);
+            box.appendChild(document.createTextNode(message));
+            controls.alert.appendChild(box);
         }
-
-        //////////////////////////////////////////
-
-        function uploadFile(f) {
-            if (options.chunkUpload) {
-                processFilesChunk(f)
+        function validate(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (options.acceptFileTypes && !options.acceptFileTypes.map(v => String(v).toLowerCase()).includes(ext)) return text('acceptFileTypes_Lbl');
+            if (!file.size) return text('empty');
+            if (options.maxFileSize && file.size > options.maxFileSize) return text('maxFileSize_Lbl');
+            if (options.minFileSize && file.size < options.minFileSize) return text('minFileSize_Lbl');
+            return '';
+        }
+        function selectionValid() {
+            return jobs.length > 0 && !jobs.some(job => job.validation) &&
+                !(options.maxNumberOfFiles && jobs.length > options.maxNumberOfFiles);
+        }
+        function refresh() {
+            disabled(controls.picker, running);
+            disabled(controls.input, running);
+            disabled(controls.start, running || !selectionValid() || !jobs.some(job => job.state === 'queued'));
+            disabled(controls.cancel, !jobs.some(job => ['queued', 'uploading', 'processing'].includes(job.state)));
+            disabled(controls.back, running || jobs.length > 0);
+            hidden(controls.donebar, running || !jobs.length || jobs.some(job => job.state === 'queued'));
+            disabled(controls.done, running);
+            controls.errors.replaceChildren();
+        }
+        function selectionMessage() {
+            alert('', 'info');
+            if (options.maxNumberOfFiles && jobs.length > options.maxNumberOfFiles) {
+                alert(text('maxNumberOfFiles_Lbl').replace('%d', options.maxNumberOfFiles), 'danger');
+            } else if (jobs.some(job => job.validation)) alert(text('remove_invalid_inputs_Lbl'), 'danger');
+            refresh();
+        }
+        function addElement(parent, tag, className, content) {
+            const element = document.createElement(tag);
+            element.className = className;
+            if (content !== undefined) element.textContent = content;
+            parent.appendChild(element);
+            return element;
+        }
+        function addFile(file) {
+            const uploadId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+            const job = {id: ++nextId, uploadId, file, state: 'queued', validation: validate(file), xhr: null, timer: null, percent: 0};
+            const row = addElement(body, 'tr', '');
+            row.dataset.uploadId = String(job.id);
+            const preview = addElement(addElement(row, 'td', ''), 'span', 'preview');
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!options.showIcons && file.type.startsWith('image/')) {
+                const image = addElement(preview, 'img', '');
+                job.previewUrl = URL.createObjectURL(file);
+                image.src = job.previewUrl;
+                image.width = options.previewMaxWidth;
+                image.height = options.previewMaxHeight;
+                image.alt = '';
+            } else preview.innerHTML = getFileIconExtension(ext.replace(/[^a-z0-9]/g, ''));
+            const nameCell = addElement(row, 'td', '');
+            addElement(nameCell, 'p', 'name', file.name);
+            const track = addElement(nameCell, 'div', 'progress-bar hidden');
+            track.setAttribute('role', 'progressbar');
+            track.setAttribute('aria-label', file.name);
+            track.setAttribute('aria-valuemin', '0');
+            track.setAttribute('aria-valuemax', '100');
+            const bar = addElement(track, 'div', 'progress');
+            bar.style.transition = 'width 180ms linear';
+            bar.style.width = '0%';
+            const error = addElement(nameCell, 'strong', 'error text-error', job.validation);
+            const size = addElement(row, 'td', '');
+            addElement(size, 'span', 'size', readableBytes(file.size));
+            const percentBox = addElement(size, 'div', 'percent-bar hidden');
+            const percent = addElement(percentBox, 'span', 'percent', '0%');
+            const buttons = addElement(row, 'td', '');
+            const cancel = addElement(buttons, 'button', 'btn btn-warning cancel', text('cancel_Lbl'));
+            cancel.type = 'button';
+            const ready = addElement(buttons, 'span', 'ready hidden');
+            ready.innerHTML = '<svg viewBox="0 0 56 56" class="svg-file svg-check files-svg"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg>';
+            const bubble = addElement(buttons, 'span', 'error error-bubble hidden');
+            bubble.innerHTML = '<svg viewBox="0 0 56 56" class="svg-file svg-error files-svg"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path></svg>';
+            job.ui = {row, track, bar, error, percentBox, percent, cancel, ready, bubble};
+            cancel.addEventListener('click', event => {
+                event.preventDefault();
+                if (!running && job.state === 'queued') {
+                    release(job);
+                    jobs = jobs.filter(item => item !== job);
+                    selectionMessage();
+                } else if (['queued', 'uploading', 'processing'].includes(job.state)) {
+                    const xhr = job.xhr;
+                    finish(job, 'cancelled', text('upload_cancelled_Lbl'));
+                    if (xhr) xhr.abort();
+                }
+            });
+            jobs.push(job);
+        }
+        function release(job) {
+            clearTimeout(job.timer);
+            if (job.previewUrl) URL.revokeObjectURL(job.previewUrl);
+            job.ui.row.remove();
+        }
+        function progress(job, bytes) {
+            job.percent = Math.max(job.percent, Math.min(99, Math.floor(bytes / job.file.size * 100)));
+            job.ui.bar.style.width = job.percent + '%';
+            job.ui.track.setAttribute('aria-valuenow', String(job.percent));
+            job.ui.percent.textContent = job.state === 'processing' ? text('processing') : job.percent + '%';
+        }
+        function terminal(job) { return ['success', 'error', 'cancelled'].includes(job.state); }
+        function finish(job, state, message) {
+            if (terminal(job)) return;
+            job.state = state;
+            job.xhr = null;
+            hidden(job.ui.cancel, true);
+            hidden(job.ui.ready, state !== 'success');
+            hidden(job.ui.bubble, state !== 'error');
+            job.ui.error.textContent = message || '';
+            if (state === 'success') {
+                job.ui.bar.style.width = '100%';
+                job.ui.track.setAttribute('aria-valuenow', '100');
+                job.ui.percent.textContent = '100%';
+                job.timer = setTimeout(() => {
+                    hidden(job.ui.track, true);
+                    hidden(job.ui.percentBox, true);
+                }, Math.max(200, Number(options.progressHoldTime) || 600));
             } else {
-                const xhr = new XMLHttpRequest();
-                let data = new FormData();
-
-                f.started = true;
-                data.append("files", f);
-                data.append("chunkEnabled", "false");
-
-                updateProgress(xhr, cleanFileName(f.name));
-                uploadFailed(xhr, cleanFileName(f.name));
-                uploadComplete(xhr, cleanFileName(f.name));
-                if (options.url) {
-                    xhr.open('POST', options.url, true);
-                } else {
-                    xhr.open('POST', form.getAttribute("action"), true);
-                }
-                xhr.send(data);
+                hidden(job.ui.track, true);
+                hidden(job.ui.percentBox, true);
             }
+            pump();
         }
-
-        //////////////////////////////////////////
-
-        function processFilesChunk(f) {
-            f.started = true;
-            const chunkSize = options.maxChunkSize;
-            const numberOfChunks = Math.ceil(f.size / chunkSize);
-            let chunkCounter = 0;
-            const start = 0;
-
-            createChunk(start);
-
-            function createChunk(start) {
-                chunkCounter++;
-
-                const chunkEnd = Math.min(start + chunkSize, f.size);
-                const chunk = f.slice(start, chunkEnd);
-
-                const data = new FormData();
-                data.append("chunkEnabled", "true");
-                data.append('files', chunk, f.name);
-                data.append('chunk', chunkCounter);
+        function errorMessage(response, fallback) {
+            if (!response || !response.error) return fallback;
+            return typeof response.error === 'string' ? response.error : response.error.message || fallback;
+        }
+        function send(job, start, chunkNumber) {
+            if (terminal(job)) return;
+            const chunked = options.chunkUpload !== false;
+            const chunkSize = Math.max(1, Math.floor(Math.min(serverChunkLimit, Number(options.maxChunkSize) || 1024 * 1024)));
+            const end = chunked ? Math.min(start + chunkSize, job.file.size) : job.file.size;
+            const count = chunked ? Math.ceil(job.file.size / chunkSize) : 1;
+            const last = end === job.file.size;
+            const data = new FormData();
+            data.append('chunkEnabled', chunked ? 'true' : 'false');
+            data.append('files', chunked ? job.file.slice(start, end) : job.file, job.file.name);
+            if (chunked) {
+                data.append('chunk', chunkNumber);
                 data.append('index', start);
-                data.append('count', numberOfChunks);
-
-                //created the chunk, now upload it
-                uploadChunk(data, start, chunkEnd);
+                data.append('count', count);
+                data.append('uploadId', job.uploadId);
+                data.append('totalSize', job.file.size);
             }
-
-            function uploadChunk(data, start, chunkEnd) {
-                const xhr = new XMLHttpRequest();
-
-                if (options.url) {
-                    xhr.open('POST', options.url, true);
-                } else {
-                    xhr.open('POST', form.getAttribute("action"));
-                }
-                xhr.upload.addEventListener("progress", updateProgress);
-
-                const blobEnd = chunkEnd - 1;
+            const xhr = new XMLHttpRequest();
+            job.xhr = xhr;
+            const current = () => job.xhr === xhr && !terminal(job);
+            try {
+                xhr.open('POST', options.url || form.getAttribute('action'), true);
+                xhr.timeout = Math.max(0, Number(options.requestTimeout) || 0);
+                xhr.upload.addEventListener('progress', event => {
+                    if (!current() || !event.lengthComputable || !event.total) return;
+                    progress(job, start + (end - start) * event.loaded / event.total);
+                    if (last && event.loaded >= event.total) {
+                        job.state = 'processing';
+                        job.ui.percent.textContent = text('processing');
+                    }
+                });
+                xhr.onload = () => {
+                    if (!current()) return;
+                    let response;
+                    try { response = JSON.parse(xhr.responseText); } catch (_) {
+                        finish(job, 'error', text('invalid') + ' (HTTP ' + xhr.status + ')');
+                        return;
+                    }
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        finish(job, 'error', errorMessage(response, text('error_uploading_file_Lbl')) + ' (HTTP ' + xhr.status + ')');
+                        return;
+                    }
+                    if (!response || typeof response !== 'object' || Array.isArray(response) ||
+                        !Object.prototype.hasOwnProperty.call(response, 'error')) {
+                        finish(job, 'error', text('invalid'));
+                        return;
+                    }
+                    if (response.error) { finish(job, 'error', errorMessage(response, text('error_uploading_file_Lbl'))); return; }
+                    if (!last) {
+                        if (response.merged !== false || Number(response.chunk) !== chunkNumber || Number(response.count) !== count) {
+                            finish(job, 'error', text('invalid'));
+                            return;
+                        }
+                        progress(job, end);
+                        send(job, end, chunkNumber + 1);
+                    } else {
+                        // The current PHP endpoint omits merged on final success.
+                        if (response.merged === false || typeof response.filename !== 'string' ||
+                            !response.path || Number(response.size) !== job.file.size) {
+                            finish(job, 'error', text('invalid'));
+                            return;
+                        }
+                        finish(job, 'success');
+                    }
+                };
+                xhr.onerror = () => { if (current()) finish(job, 'error', text('error_uploading_file_Lbl')); };
+                xhr.ontimeout = () => { if (current()) finish(job, 'error', text('timeout')); };
+                xhr.onabort = () => { if (current()) finish(job, 'cancelled', text('upload_cancelled_Lbl')); };
                 xhr.send(data);
-
-                let progress_bar = document.querySelector('.progress-bar[data-name="' + cleanFileName(f.name) + '"]');
-                let progress = document.querySelector('.progress[data-name="' + cleanFileName(f.name) + '"]');
-                let percent_bar = document.querySelector('.percent-bar[data-name="' + cleanFileName(f.name) + '"]');
-                let percent = document.querySelector('.percent[data-name="' + cleanFileName(f.name) + '"]');
-                let cancel = document.querySelector('.cancel[data-name="' + cleanFileName(f.name) + '"]');
-                let ready = document.querySelector('.ready[data-name="' + cleanFileName(f.name) + '"]');
-                let error_bubble = document.querySelector('.error-bubble[data-name="' + cleanFileName(f.name) + '"]');
-                let text_error = document.querySelector('.text-error[data-name="' + cleanFileName(f.name) + '"]');
-
-                progress_bar.classList.remove("hidden");
-                percent_bar.classList.remove("hidden");
-
-                function updateProgress(e) {
-                    if (e.lengthComputable) {
-                        const totalPercentComplete = Math.ceil((chunkCounter / numberOfChunks) * 100);
-
-                        // Update the progress text and progress bar
-                        progress.setAttribute("style", `width: ${Math.floor(totalPercentComplete) + "%"}`);
-
-                        if (totalPercentComplete > 0) {
-                            percent.innerText = `${Math.floor(totalPercentComplete) + "%"}`;
-                        }
-
-                        if (this.response) {
-                            const response = JSON.parse(this.response);
-
-                            response.started = true;
-                            response.complete = false;
-
-                            let output = {
-                                "filename": response.filename,
-                                "error": response.error,
-                            }
-
-                            if (response.error) {
-                                text_error.innerText = response.error;
-                                error_bubble.classList.remove("hidden");
-
-                                progress_bar.classList.add("hidden");
-                                percent_bar.classList.add("hidden");
-                                cancel.classList.add("hidden");
-                                ready.classList.add("hidden");
-                            }
-                        } else if (chunkCounter === numberOfChunks) {
-                            progress_bar.classList.add("hidden");
-                            percent_bar.classList.add("hidden");
-                            cancel.classList.add("hidden");
-                            ready.classList.remove("hidden");
-
-                            all_start.classList.add("disabled");
-                            all_cancel.classList.add("disabled");
-                            fileupload_donebar.classList.remove("hidden");
-                        }
-                    }
-                }
-
-                xhr.onload = function (e) {
-                    if (this.response) {
-                        const response = JSON.parse(this.response);
-
-                        response.started = true;
-                        response.complete = true;
-
-                        let output = {
-                            "filename": response.filename,
-                            "error": response.error,
-                        }
-
-                        if (response.error) {
-                            text_error.innerText = response.error;
-                            interruptedFiles++;
-                        }
-
-                        uploadedFiles.push(output);
-                        storedQueue.shift(output);
-                    }
-
-                    //We start one chunk in, as we have uploaded the first one.
-                    //Next chunk starts at + chunkSize from start
-                    start += chunkSize;
-                    //If start is smaller than file size - we have more to still upload
-                    if (start < f.size) {
-                        //create the new chunk
-                        createChunk(start);
-                    } else {
-                        f.complete = true;
-                        checkQueue();
-                    }
-                    uploadResponses(storedFiles, uploadedFiles, interruptedFiles);
-                }
-
-                xhr.onerror = function (e) {
-                    text_error.innerText = options.error_uploading_file_Lbl ? options.error_uploading_file_Lbl : '';
-                    progress_bar.classList.add("hidden");
-                    percent_bar.classList.add("hidden");
-                    percent.classList.add("hidden");
-                    cancel.classList.add("hidden");
-                    error_bubble.classList.remove("hidden");
-                    interruptedFiles++;
-                }
-            }
+            } catch (_) { if (current()) finish(job, 'error', text('error_uploading_file_Lbl')); }
         }
-
-        //////////////////////////////////////////
-
-        function updateProgress(xhr, i) {
-            let progress_bar = document.querySelector('.progress-bar[data-name="' + i + '"]');
-            let progress = document.querySelector('.progress[data-name="' + i + '"]');
-            let percent_bar = document.querySelector('.percent-bar[data-name="' + i + '"]');
-            let percent = document.querySelector('.percent[data-name="' + i + '"]');
-            let cancel = document.querySelector('.cancel[data-name="' + i + '"]');
-            let ready = document.querySelector('.ready[data-name="' + i + '"]');
-            let error_bubble = document.querySelector('.error-bubble[data-name="' + i + '"]');
-            let text_error = document.querySelector('.text-error[data-name="' + i + '"]');
-
-            progress_bar.classList.remove("hidden");
-            percent_bar.classList.remove("hidden");
-
-            xhr.upload.addEventListener("progress", function (e) {
-                if (e.lengthComputable) {
-                    // Calculate percent uploaded
-                    let percent_complete = (e.loaded / e.total) * 100;
-
-                    // Update the progress text and progress bar
-                    progress.setAttribute("style", `width: ${Math.floor(percent_complete) + "%"}`);
-                    percent.innerText = `${Math.floor(percent_complete) + "%"}`;
-
-                    if (e.loaded === e.total) {
-                        progress_bar.classList.add("hidden");
-                        percent_bar.classList.add("hidden");
-                        cancel.classList.add("hidden");
-                        ready.classList.remove("hidden");
-
-                        all_start.classList.add("disabled");
-                        all_start.setAttribute('disabled', 'disabled');
-                        all_cancel.classList.add("disabled");
-                        all_cancel.setAttribute('disabled', 'disabled');
-                        fileupload_donebar.classList.remove("hidden");
-                    }
-                }
-            });
-
-            xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    const response = JSON.parse(xhr.responseText);
-
-                    if (response.error) {
-                        text_error.innerText = response.error;
-                        ready.classList.add("hidden");
-                        error_bubble.classList.remove("hidden");
-
-                        progress_bar.classList.add("hidden");
-                        percent_bar.classList.add("hidden");
-                        cancel.classList.add("hidden");
-                        interruptedFiles++;
-                    }
-                } else {
-                    text_error.innerText = response.error;
-                    error_bubble.classList.remove("hidden");
-                }
+        function pump() {
+            if (!running) return;
+            if (limitsXhr) { refresh(); return; }
+            const active = () => jobs.filter(job => ['uploading', 'processing'].includes(job.state));
+            const limit = Math.max(1, Math.floor(Number(options.limitConcurrentUploads) || 1));
+            for (const job of jobs) {
+                if (active().length >= limit) break;
+                if (job.state !== 'queued') continue;
+                // Legacy PHP keys temporary parts by basename, so identical names must run serially.
+                if (active().some(other => other.file.name.toLowerCase() === job.file.name.toLowerCase())) continue;
+                job.state = 'uploading';
+                hidden(job.ui.track, false);
+                hidden(job.ui.percentBox, false);
+                progress(job, 0);
+                send(job, 0, 1);
             }
-
-            uploadResponses(storedFiles, uploadedFiles, interruptedFiles);
-
-            xhr.onerror = function () {
-                text_error.innerText = "An error occurred during the upload.";
-                error_bubble.classList.remove("hidden");
+            if (jobs.every(terminal)) {
+                running = false;
+                const failed = jobs.filter(job => job.state === 'error').length;
+                const cancelled = jobs.some(job => job.state === 'cancelled');
+                if (failed) alert(text(failed === jobs.length ? 'file_transfer_failed_completely_Lbl' : 'file_transfer_failed_partially_Lbl'), failed === jobs.length ? 'danger' : 'warning');
+                else if (cancelled) alert(text('upload_cancelled_Lbl'), 'info');
+                else alert(text('file_transfer_completed_successfully_Lbl'), 'success');
+            }
+            refresh();
+        }
+        function reset() {
+            running = false;
+            if (limitsXhr) { const pending = limitsXhr; limitsXhr = null; pending.abort(); }
+            jobs.forEach(job => {
+                const xhr = job.xhr;
+                job.state = 'cancelled';
+                job.xhr = null;
+                if (xhr) xhr.abort();
+                release(job);
+            });
+            jobs = [];
+            controls.input.value = '';
+            alert('', 'info');
+            refresh();
+        }
+        function negotiateLimits() {
+            if (!options.serverLimits) { pump(); return; }
+            const xhr = new XMLHttpRequest();
+            limitsXhr = xhr;
+            const url = String(options.url || form.getAttribute('action')).split('#')[0];
+            const current = () => running && limitsXhr === xhr;
+            const fail = message => {
+                if (!current()) return;
+                limitsXhr = null;
+                running = false;
+                jobs.filter(job => !terminal(job)).forEach(job => finish(job, 'error', message));
+                running = true;
+                pump();
             };
-        }
-
-        // xhr load handler (transfer complete)
-        function uploadComplete(xhr, i) {
-            xhr.upload.addEventListener("load", function () {
-                xhr.onload = function () { // Määra onload otse siia
-                    if (xhr.status === 200) { // Vaid siis, kui üleslaadimine on edukas
-                        if (xhr.response) {
-                            const response = JSON.parse(xhr.response);
-                            response.started = true;
-                            response.complete = true;
-
-                            let text_error = document.querySelector('.text-error[data-name="' + cleanFileName(response.filename) + '"]');
-                            let ready = document.querySelector('.ready[data-name="' + cleanFileName(response.filename) + '"]');
-                            let error_bubble = document.querySelector('.error-bubble[data-name="' + cleanFileName(response.filename) + '"]');
-
-                            if (response.hasOwnProperty("filename")) {
-                                let output = {
-                                    "filename": response.filename,
-                                    "error": response.error,
-                                };
-
-                                if (response.error) {
-                                    text_error.innerText = response.error;
-                                }
-
-                                if (response.error) {
-                                    text_error.innerText = response.error;
-                                    ready.classList.add("hidden");
-                                    error_bubble.classList.remove("hidden");
-                                    interruptedFiles++;
-                                }
-
-                                uploadedFiles.push(output);
-                                storedQueue.shift(output);
-                                i.complete = true;
-                                checkQueue();
-                            }
-
-                            uploadResponses(storedFiles, uploadedFiles, interruptedFiles);
-                        }
-                    } else {
-                        console.error('Upload failed with status:', xhr.status);
+            try {
+                xhr.open('GET', url + (url.includes('?') ? '&' : '?') + 'uploadCapabilities=1', true);
+                xhr.timeout = Math.max(1000, Number(options.requestTimeout) || 120000);
+                xhr.onload = () => {
+                    if (!current()) return;
+                    let response;
+                    try { response = JSON.parse(xhr.responseText); } catch (_) { fail(text('invalid')); return; }
+                    if (xhr.status < 200 || xhr.status >= 300 || !response || response.error ||
+                        response.protocol !== 2 || response.uploadsEnabled !== true ||
+                        !Number.isSafeInteger(response.maxChunkSize) || response.maxChunkSize < 1) {
+                        fail(errorMessage(response, text('error_uploading_file_Lbl')));
+                        return;
                     }
-                }
-            })
+                    serverChunkLimit = response.maxChunkSize;
+                    limitsXhr = null;
+                    pump();
+                };
+                xhr.onerror = () => fail(text('error_uploading_file_Lbl'));
+                xhr.ontimeout = () => fail(text('timeout'));
+                xhr.onabort = () => fail(text('upload_cancelled_Lbl'));
+                refresh();
+                xhr.send();
+            } catch (_) { fail(text('error_uploading_file_Lbl')); }
         }
-
-        // xhr error handler
-        function uploadFailed(xhr, i) {
-            let progress_bar = document.querySelector('.progress-bar[data-name="' + i + '"]');
-            let percent_bar = document.querySelector('.percent-bar[data-name="' + i + '"]');
-            let percent = document.querySelector('.percent[data-name="' + i + '"]');
-            let cancel = document.querySelector('.cancel[data-name="' + i + '"]');
-            let error_bubble = document.querySelector('.error-bubble[data-name="' + i + '"]');
-            let text_error = document.querySelector('.text-error[data-name="' + i + '"]');
-
-            xhr.upload.addEventListener("error", function () {
-                text_error.innerText = languages[options.language].error_uploading_file_Lbl ? languages[options.language].error_uploading_file_Lbl : '';
-                progress_bar.classList.add("hidden");
-                percent_bar.classList.add("hidden");
-                percent.classList.add("hidden");
-                cancel.classList.add("hidden");
-                error_bubble.classList.remove("hidden");
-                interruptedFiles++;
+        controls.input.addEventListener('change', event => {
+            if (running) return;
+            // Only accept selection after QCubed has opened the upload view.
+            if (layers.upload && layers.upload.classList.contains('hidden')) return;
+            showUploadView(true);
+            Array.from(event.target.files).forEach(addFile);
+            controls.input.value = '';
+            selectionMessage();
+        });
+        controls.start.addEventListener('click', event => {
+            event.preventDefault();
+            if (running) return;
+            if (!selectionValid()) { selectionMessage(); return; }
+            if (!jobs.some(job => job.state === 'queued')) return;
+            running = true;
+            alert('', 'info');
+            negotiateLimits();
+        });
+        controls.cancel.addEventListener('click', event => {
+            event.preventDefault();
+            if (!running) { reset(); alert(text('upload_cancelled_Lbl'), 'info'); return; }
+            // Stop scheduling first: aborting one file must not start another queued file.
+            running = false;
+            if (limitsXhr) { const pending = limitsXhr; limitsXhr = null; pending.abort(); }
+            jobs.filter(job => !terminal(job)).forEach(job => {
+                const xhr = job.xhr;
+                finish(job, 'cancelled', text('upload_cancelled_Lbl'));
+                if (xhr) xhr.abort();
             });
-
-            uploadResponses(storedFiles, uploadedFiles, interruptedFiles);
+            alert(text('upload_cancelled_Lbl'), 'info');
+            refresh();
+        });
+        // Leave QCubed's Done/Back AJAX actions intact: they refresh fileManager,
+        // clear the destination session and handle the manager's own selection state.
+        function returnToManager() {
+            if (running) return;
+            reset();
+            showUploadView(false);
         }
-
-        //////////////////////////////////////////
-
-        function uploadResponses(s, u, i) {
-            if (s.length === u.length) {
-                if ((s.length === u.length) && i === 0) {
-                    show_alert(languages[options.language].file_transfer_completed_successfully_Lbl, "success");
-                    fileupload_donebar.classList.remove("hidden");
-                } else if (u.length === u.length && u.length === i) {
-                    show_alert(languages[options.language].file_transfer_failed_completely_Lbl, "danger");
-                    fileupload_donebar.classList.remove("hidden");
-                } else if ((s.length === u.length) && u.length !== i) {
-                    show_alert(languages[options.language].file_transfer_failed_partially_Lbl, "warning");
-                    fileupload_donebar.classList.remove("hidden");
-                }
-            }
-        }
-
-        //////////////////////////////////////////
-
-        function validate(e) {
-            fileExt = e.name.split('.').pop().toLowerCase();
-            if (options.acceptFileTypes &&
-                (options.acceptFileTypes.includes(fileExt)) === false) {
-                return languages[options.language].acceptFileTypes_Lbl;
-            }
-
-            if (options.maxFileSize && options.maxFileSize < e.size) {
-                return languages[options.language].maxFileSize_Lbl;
-            }
-
-            if (options.minFileSize && options.minFileSize > e.size) {
-                return languages[options.language].minFileSize_Lbl;
-            }
-        }
-
-        function typeError(e) {
-            fileExt = e.name.split('.').pop().toLowerCase();
-
-            if (options.acceptFileTypes &&
-                (options.acceptFileTypes.includes(fileExt)) === false) {
-                return 1;
-            }
-
-            if (options.maxFileSize && options.maxFileSize < e.size) {
-                return 2;
-            }
-
-            if (options.minFileSize && options.minFileSize > e.size) {
-                return 3;
-            }
-        }
-
-        function errorsExistenceControl() {
-
-            const Errors = document.querySelectorAll(".text-error");
-            for (let i = 0, len = Errors.length; i < len; i++) {
-                if (Errors[i].firstChild) {
-                    storedErrors.push(Errors[i].firstChild);
-                }
-            }
-
-            const Error_1 = document.querySelectorAll('.cancel[data-type_error="1"]');
-            for (let i = 0, len = Error_1.length; i < len; i++) {
-                if (Error_1[i].dataset["type_error"] === "1") {
-                    storedAcceptFileTypes.push(Error_1[i].dataset["type_error"]);
-                }
-            }
-
-            const Error_2 = document.querySelectorAll('.cancel[data-type_error="2"]');
-            for (let i = 0, len = Error_2.length; i < len; i++) {
-                if (Error_2[i].dataset["type_error"] === "2") {
-                    storedMaxFileSize.push(Error_2[i].dataset["type_error"]);
-                }
-            }
-
-            const Error_3 = document.querySelectorAll('.cancel[data-type_error="3"]');
-            for (let i = 0, len = Error_3.length; i < len; i++) {
-                if (Error_3[i].dataset["type_error"] === "3") {
-                    storedMinFileSize.push(Error_3[i].dataset["type_error"]);
-                }
-            }
-
-            if (storedErrors.length === 0 && options.maxNumberOfFiles &&
-                options.maxNumberOfFiles < storedFiles.length) {
-                restrictionInfluencing();
-                show_alert(sprintf(languages[options.language].maxNumberOfFiles_Lbl, options.maxNumberOfFiles), "danger");
-                alert_multi_wrapper.innerHTML = "";
-            } else {
-                restrictionRemoving();
-            }
-
-            if(options.acceptFileTypes && storedAcceptFileTypes.length > 0){
-                errorMessages.push(sprintf(languages[options.language].remove_invalid_inputs_acceptFileTypes_Lbl, removeSpecialChars(options.acceptFileTypes)));
-            }
-
-            if(options.maxFileSize && storedMaxFileSize.length > 0){
-                errorMessages.push(sprintf(languages[options.language].remove_invalid_inputs_maxFileSize_Lbl, readableBytes(options.maxFileSize)));
-            }
-
-            if(options.minFileSize && storedMinFileSize.length > 0){
-                errorMessages.push(sprintf(languages[options.language].remove_invalid_inputs_minFileSize_Lbl, readableBytes(options.minFileSize)));
-            }
-
-            show_multi_alert(errorMessages);
-
-            if (storedErrors.length > 0) {
-                restrictionInfluencing();
-                show_alert(sprintf(languages[options.language].remove_invalid_inputs_Lbl, null), "danger");
-            } else {
-                restrictionRemoving();
-                alert_multi_wrapper.innerHTML = "";
-            }
-        }
-
-        //////////////////////////////////////////
-
-        function cancelAllUploads() {
-            // If undo the action back, throw an alert
-            if (storedFiles.length > 0 || (storedFiles.length > 0 && storedErrors.length > 0)) {
-                show_alert(languages[options.language].upload_cancelled_Lbl, "info");
-                while (storedFiles.length > 0) {
-                    storedFiles.pop();
-                    storedQueue.pop();
-                    storedErrors.pop();
-                    errorMessages.pop();
-                }
-                while (storedErrors.length > 0) {
-                    storedErrors.pop();
-                }
-                while (storedAcceptFileTypes.length > 0) {
-                    storedAcceptFileTypes.pop();
-                }
-                while (storedMaxFileSize.length > 0) {
-                    storedMaxFileSize.pop();
-                }
-                while (storedMinFileSize.length > 0) {
-                    storedMinFileSize.pop();
-                }
-
-                // Clear or reset the inputs and alerts
-                tbody.innerHTML = "";
-                input.value = null;
-                alert_multi_wrapper.innerHTML = "";
-                input.removeAttribute('disabled');
-                file_input.classList.remove("disabled");
-                all_start.classList.add("disabled");
-                all_start.removeAttribute('disabled');
-                all_cancel.classList.add("disabled");
-                back.classList.remove("disabled");
-                back.removeAttribute('disabled');
-                return;
-            }
-
-            // Let know if the content is empty & throw alert
-            if (storedFiles.length === 0 || (storedFiles.length === 0 && storedErrors.length === 0)) {
-                show_alert(languages[options.language].no_file_selected_to_delete_Lbl, "info");
-                file_input.classList.remove("disabled");
-                all_start.classList.add("disabled");
-                all_cancel.classList.add("disabled");
-            }
-        }
-
-        function removeFile() {
-            let dataName = this.getAttribute("data-name");
-            for (let i = 0; i < storedFiles.length; i++) {
-                if (cleanFileName(storedFiles[i].name) === dataName) {
-                    storedFiles.splice(i, 1);
-                    storedQueue.splice(i, 1);
-                    break;
-                }
-            }
-
-            let errorData = this.getAttribute("data-error");
-            if (errorData) {
-                for (let i = 0, len = storedErrors[i].length; i < len; i++) {
-                    if (storedErrors[i].data === errorData) {
-                        storedErrors.splice(i, 1);
-                        break;
-                    }
-                }
-            }
-
-            let errorType = this.getAttribute("data-type_error");
-            if (errorType) {
-                for (let i = 0; i < storedAcceptFileTypes.length; i++) {
-                    if (storedAcceptFileTypes[i] === errorType) {
-                        storedAcceptFileTypes.splice(i, 1);
-                        break;
-                    }
-                }
-
-                for (let i = 0; i < storedMaxFileSize.length; i++) {
-                    if (storedMaxFileSize[i] === errorType) {
-                        storedMaxFileSize.splice(i, 1);
-                        break;
-                    }
-                }
-
-                for (let i = 0; i < storedMinFileSize.length; i++) {
-                    if (storedMinFileSize[i] === errorType) {
-                        storedMinFileSize.splice(i, 1);
-                        break;
-                    }
-                }
-            }
-
-            if (storedErrors.length === 0 && options.maxNumberOfFiles &&
-                options.maxNumberOfFiles < storedFiles.length) {
-                restrictionInfluencing();
-                alert_multi_wrapper.innerHTML = "";
-                show_alert(sprintf(languages[options.language].maxNumberOfFiles_Lbl, options.maxNumberOfFiles), "danger");
-            } else if (storedErrors.length !== 0) {
-                restrictionInfluencing();
-                show_alert(sprintf(languages[options.language].remove_invalid_inputs_Lbl, null), "danger");
-            } else {
-                restrictionRemoving();
-                // Clear alerts and data
-                errorMessages.pop();
-                alert_multi_wrapper.innerHTML = "";
-            }
-
-            if (storedFiles.length === 0) {
-                all_start.classList.add("disabled");
-                all_cancel.classList.add("disabled");
-                back.classList.remove("disabled");
-                back.removeAttribute('disabled');
-            }
-            this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);
-        }
-
-        //////////////////////////////////////////
-
-        function restrictionInfluencing() {
-            file_input.classList.add("disabled");
-            input.setAttribute('disabled', 'disabled');
-            all_start.classList.add("disabled");
-            all_start.setAttribute('disabled', 'disabled');
-        }
-
-        function  restrictionRemoving() {
-            file_input.classList.remove("disabled");
-            input.removeAttribute('disabled');
-            all_start.classList.remove("disabled");
-            all_start.removeAttribute('disabled');
-            alert_wrapper.innerHTML = "";
-        }
-
-        //////////////////////////////////////////
-
-        function doneForm() {
-            // Clear or reset the inputs and alerts
-            file_input.value = null;
-            alert_wrapper.innerHTML = "";
-            alert_multi_wrapper.innerHTML = "";
-            tbody.innerHTML = "";
-
-            file_input.classList.remove("disabled");
-            input.removeAttribute('disabled');
-            all_start.removeAttribute('disabled');
-            all_cancel.removeAttribute('disabled');
-            back.classList.remove("disabled");
-            back.removeAttribute("disabled");
-
-            while (storedFiles.length > 0) {
-                storedFiles.pop();
-                storedQueue.pop();
-                uploadedFiles.pop();
-            }
-        }
-
-        //////////////////////////////////////////
-
-        // Function to show alerts
-        // Use to color the alert: success, info, warning, danger
-        function show_alert(message, alert) {
-            alert_wrapper.innerHTML = `
-    <div class="alert alert-${alert} alert-dismissible" role="alert">
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      ${message}
-    </div>`
-        }
-
-        // Function to show alerts
-        function show_multi_alert(messages) {
-            let messageHtml = "";
-            messageHtml += '<div class="alert alert-warning alert-dismissible" role="alert">' +
-                '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
-            messageHtml += "<ul>";
-
-            messages.forEach(function (message) {
-                messageHtml += "<li>" + message + "</li>";
+        controls.done.addEventListener('click', returnToManager);
+        controls.back.addEventListener('click', returnToManager);
+        refresh();
+        return {setOption(name, value) {
+            if (running) return;
+            options[name] = value;
+            jobs.filter(job => job.state === 'queued').forEach(job => {
+                job.validation = validate(job.file);
+                job.ui.error.textContent = job.validation;
             });
-
-            messageHtml += "</ul>";
-            messageHtml += "</div>";
-
-            alert_multi_wrapper.innerHTML = messageHtml;
-        }
-
-        function cleanFileName(str) {
-            if (str) {
-                return str = str.replace(/(\W+)/gi, '-');
-            }
-        }
-
-        function removeSpecialChars(str) {
-            if (str) {
-                return str.join(', ');
-            }
-        }
+            selectionMessage();
+        }};
 
         function readableBytes(bytes) {
-            const i = Math.floor(Math.log(bytes) / Math.log(1024));
-            const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-            return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+            if (!bytes) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const index = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
+            return (bytes / Math.pow(1024, index)).toFixed(2) + ' ' + units[index];
         }
-
-        function sprintf() {
-            let args = arguments,
-                string = args[0],
-                i = 1;
-            return string.replace(/%((%)|s|d)/g, function (m) {
-                // m is the matched format, e.g. %s, %d
-                let val = null;
-                if (m[2]) {
-                    val = m[2];
-                } else {
-                    val = args[i];
-                    // A switch statement so that the formatter can be extended. Default is %s
-                    switch (m) {
-                        case '%d':
-                            val = parseFloat(val);
-                            if (isNaN(val)) {
-                                val = 0;
-                            }
-                            break;
-                    }
-                    i++;
-                }
-                return val;
-            });
-        }
-
-        function getFileIconExtension(ext) {
+                function getFileIconExtension(ext) {
             let icon;
             switch (ext) {
                 case 'gif':
@@ -1075,7 +534,6 @@
                     break;
                 case 'docx':
                 case 'doc':
-                case 'odt':
                     icon = '<svg class="svg-file svg-word files-svg" viewBox="0 0 56 56"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><g class="svg-file-icon"><path d="M12.5,13h6c0.553,0,1-0.448,1-1s-0.447-1-1-1h-6c-0.553,0-1,0.448-1,1S11.947,13,12.5,13z"></path><path d="M12.5,18h9c0.553,0,1-0.448,1-1s-0.447-1-1-1h-9c-0.553,0-1,0.448-1,1S11.947,18,12.5,18z"></path><path d="M25.5,18c0.26,0,0.52-0.11,0.71-0.29c0.18-0.19,0.29-0.45,0.29-0.71c0-0.26-0.11-0.52-0.29-0.71 c-0.38-0.37-1.04-0.37-1.42,0c-0.181,0.19-0.29,0.44-0.29,0.71s0.109,0.52,0.29,0.71C24.979,17.89,25.24,18,25.5,18z"></path><path d="M29.5,18h8c0.553,0,1-0.448,1-1s-0.447-1-1-1h-8c-0.553,0-1,0.448-1,1S28.947,18,29.5,18z"></path><path d="M11.79,31.29c-0.181,0.19-0.29,0.44-0.29,0.71s0.109,0.52,0.29,0.71 C11.979,32.89,12.229,33,12.5,33c0.27,0,0.52-0.11,0.71-0.29c0.18-0.19,0.29-0.45,0.29-0.71c0-0.26-0.11-0.52-0.29-0.71 C12.84,30.92,12.16,30.92,11.79,31.29z"></path><path d="M24.5,31h-8c-0.553,0-1,0.448-1,1s0.447,1,1,1h8c0.553,0,1-0.448,1-1S25.053,31,24.5,31z"></path><path d="M41.5,18h2c0.553,0,1-0.448,1-1s-0.447-1-1-1h-2c-0.553,0-1,0.448-1,1S40.947,18,41.5,18z"></path><path d="M12.5,23h22c0.553,0,1-0.448,1-1s-0.447-1-1-1h-22c-0.553,0-1,0.448-1,1S11.947,23,12.5,23z"></path><path d="M43.5,21h-6c-0.553,0-1,0.448-1,1s0.447,1,1,1h6c0.553,0,1-0.448,1-1S44.053,21,43.5,21z"></path><path d="M12.5,28h4c0.553,0,1-0.448,1-1s-0.447-1-1-1h-4c-0.553,0-1,0.448-1,1S11.947,28,12.5,28z"></path><path d="M30.5,26h-10c-0.553,0-1,0.448-1,1s0.447,1,1,1h10c0.553,0,1-0.448,1-1S31.053,26,30.5,26z"></path><path d="M43.5,26h-9c-0.553,0-1,0.448-1,1s0.447,1,1,1h9c0.553,0,1-0.448,1-1S44.053,26,43.5,26z"></path></g><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext" x="28" y="51.5">' + ext + '</text></svg>';
                     break;
                 case 'xlsx':
@@ -1110,24 +568,11 @@
                 case 'cdoc':
                     icon = '<svg viewBox="0 0 56 56" class="svg-file svg-archive files-svg"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><g class="svg-file-icon"><path d="M28.5,24v-2h2v-2h-2v-2h2v-2h-2v-2h2v-2h-2v-2h2V8h-2V6h-2v2h-2v2h2v2h-2v2h2v2h-2v2h2v2h-2v2h2v2 h-4v5c0,2.757,2.243,5,5,5s5-2.243,5-5v-5H28.5z M30.5,29c0,1.654-1.346,3-3,3s-3-1.346-3-3v-3h6V29z"></path><path d="M26.5,30h2c0.552,0,1-0.447,1-1s-0.448-1-1-1h-2c-0.552,0-1,0.447-1,1S25.948,30,26.5,30z"></path></g><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext" x="28" y="51.5">' + ext + '</text></svg>';
                     break;
-
-                case 'php':
-                case 'js':
-                case 'css':
-                case 'json':
-                case 'xml':
-                case 'html':
-                case 'htm':
-                case 'sql':
-                case 'yml':
-                    icon = '<svg viewBox="0 0 56 56" class="svg-file svg-code files-svg"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><g class="svg-file-icon"><path d="M15.5,24c-0.256,0-0.512-0.098-0.707-0.293c-0.391-0.391-0.391-1.023,0-1.414l6-6 c0.391-0.391,1.023-0.391,1.414,0s0.391,1.023,0,1.414l-6,6C16.012,23.902,15.756,24,15.5,24z"></path><path d="M21.5,30c-0.256,0-0.512-0.098-0.707-0.293l-6-6c-0.391-0.391-0.391-1.023,0-1.414 s1.023-0.391,1.414,0l6,6c0.391,0.391,0.391,1.023,0,1.414C22.012,29.902,21.756,30,21.5,30z"></path><path d="M33.5,30c-0.256,0-0.512-0.098-0.707-0.293c-0.391-0.391-0.391-1.023,0-1.414l6-6 c0.391-0.391,1.023-0.391,1.414,0s0.391,1.023,0,1.414l-6,6C34.012,29.902,33.756,30,33.5,30z"></path><path d="M39.5,24c-0.256,0-0.512-0.098-0.707-0.293l-6-6c-0.391-0.391-0.391-1.023,0-1.414 s1.023-0.391,1.414,0l6,6c0.391,0.391,0.391,1.023,0,1.414C40.012,23.902,39.756,24,39.5,24z"></path><path d="M24.5,32c-0.11,0-0.223-0.019-0.333-0.058c-0.521-0.184-0.794-0.755-0.61-1.276l6-17 c0.185-0.521,0.753-0.795,1.276-0.61c0.521,0.184,0.794,0.755,0.61,1.276l-6,17C25.298,31.744,24.912,32,24.5,32z"></path></g><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext" x="28" y="51.5">' + ext + '</text></svg>';
-                    break;
                 default:
                     icon = '<svg viewBox="0 0 56 56" class="svg-file svg-none files-svg"><path class="svg-file-bg" d="M36.985,0H7.963C7.155,0,6.5,0.655,6.5,1.926V55c0,0.345,0.655,1,1.463,1h40.074 c0.808,0,1.463-0.655,1.463-1V12.978c0-0.696-0.093-0.92-0.257-1.085L37.607,0.257C37.442,0.093,37.218,0,36.985,0z"></path><polygon class="svg-file-flip" points="37.5,0.151 37.5,12 49.349,12"></polygon><path class="svg-file-text-bg" d="M48.037,56H7.963C7.155,56,6.5,55.345,6.5,54.537V39h43v15.537C49.5,55.345,48.845,56,48.037,56z"></path><text class="svg-file-ext f_10" x="28" y="51.5">' + ext + '</text></svg>';
             }
+
             return icon
         }
-
-        return this;
     }
 })(jQuery);

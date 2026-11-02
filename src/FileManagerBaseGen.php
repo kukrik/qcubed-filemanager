@@ -97,7 +97,7 @@
          * @return mixed The value of the requested property if it exists, otherwise the result of the parent::__get method.
          * @throws Caller If the property is not found and the parent method throws an exception.
          */
-        public function __get($strName): mixed
+        public function __get(string $strName): mixed
         {
             switch ($strName) {
                 case 'Language': return $this->strLanguage;
@@ -136,7 +136,7 @@
          * @throws Caller
          * @throws InvalidCast
          */
-        public function __set($strName, mixed $mixValue): void
+        public function __set(string $strName, mixed $mixValue): void
         {
             switch ($strName) {
                 case 'Language':

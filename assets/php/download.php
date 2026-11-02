@@ -1,24 +1,30 @@
 <?php
 
-require_once('../../../../../qcubed.inc.php');
-
-$rootPath = APP_UPLOADS_DIR;
-
-if (isset($_GET['download'])) {
-    $download = $_GET['download'];
-
-    header('Content-Description: File Transfer');
-    header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename="' . basename($download) . '"');
-    header("Accept-Ranges: bytes");
-    header('Content-Transfer-Encoding: binary');
-    header('Connection: Keep-Alive');
-    header('Expires: 0');
-    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-    header('Pragma: public');
-    header('Content-Length: ' . filesize($rootPath . $download));
-    ob_flush();
-    flush();
-    readfile($rootPath . $download);
-    exit;
+ob_start();
+try {
+    require_once __DIR__ . '/../../../qcubed.inc.php';
+    require_once __DIR__ . '/../../src/Control/DownloadResponse.php';
+    ini_set('display_errors', '0');
+    $token = $_GET['token'] ?? '';
+    if (!is_string($token) || !preg_match('/^[a-f0-9]{32}$/D', $token)) {
+        throw new RuntimeException('Invalid download link.', 400);
+    }
+    $download = $_SESSION['vauuDownloads'][$token] ?? null;
+    if (!is_array($download) || ($download['expires'] ?? 0) < time() || ($download['kind'] ?? '') !== 'file') {
+        throw new RuntimeException('The download link has expired. Start the download again.', 410);
+    }
+    $root = realpath(APP_UPLOADS_DIR);
+    $path = realpath($download['path']);
+    if ($root === false || $path === false || !str_starts_with($path, rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) || !is_file($path)) {
+        throw new RuntimeException('The download file is no longer available.', 404);
+    }
+    DownloadResponse::send($path, basename($path), 'application/octet-stream', false, $token);
+} catch (Throwable $error) {
+    error_log('Download error: ' . $error->getMessage());
+    while (ob_get_level() > 0) if (!@ob_end_clean()) break;
+    $status = in_array($error->getCode(), [400, 404, 410], true) ? $error->getCode() : 500;
+    http_response_code($status);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo $status === 500 ? 'The download could not be started. Please try again.' : $error->getMessage();
 }
+exit;

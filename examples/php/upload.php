@@ -1,123 +1,186 @@
 <?php
 
-    require_once('../qcubed.inc.php');
-    require_once ('../../src/FileHandler.php');
+    $uploadBufferLevel = ob_get_level();
+    ob_start();
+    try {
+        require_once('../qcubed.inc.php');
+        //require_once(__DIR__ . '/../src/Control/VauuFileHandler.php');
+    } catch (Throwable $error) {
+        while (ob_get_level() > $uploadBufferLevel) ob_end_clean();
+        error_log('Upload bootstrap error: ' . $error->getMessage());
+        if (http_response_code() < 400) http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'Failed to initialize upload handler.']);
+        exit;
+    }
+    // Keep warnings in the log instead of corrupting the JSON response.
+    ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+    ob_clean();
 
-    use QCubed\Plugin\FileHandler;
     use QCubed\Exception\Caller;
     use QCubed\Exception\InvalidCast;
+    use QCubed\Plugin\FileHandler;
+
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['uploadCapabilities'])) {
+        while (ob_get_level() > $uploadBufferLevel) ob_end_clean();
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store');
+        echo json_encode(FileHandler::uploadCapabilities());
+        exit;
+    }
 
     $options = array(
+        'AutoOrient' => true, // Normalize derived images; preserve the original file.
+        'MaxImagePixels' => 40000000, // Additional memory preflight also applies.
         //'ImageResizeQuality' => 75, // Default 90
         //'ImageResizeFunction' => 'imagecopyresized', // Default imagecopyresampled
         //'ImageResizeSharpen' => false, // Default true
-        //'TempFolders' => ['thumbnail', 'medium', 'large'], // Please read the UploadHandler description and manual
-        //'ResizeDimensions' => [320, 480, 1500], // Please read the UploadHandler description and manual
-        //'DestinationPath' => null, // Please read the UploadHandler description and manual
-        'AcceptFileTypes' => ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'ppt', 'docx', 'xlsx', 'txt', 'mp4', 'mov', 'svg', 'zip'], // Default null
+        //'TempFolders' => ['thumbnail', 'medium', 'large'], // Please read the FileHandler description and manual
+        //'ResizeDimensions' => [320, 480, 1500], // Please read the FileHandler description and manual
+        //'DestinationPath' => null, // Please read the FileHandler description and manual
+        'AcceptFileTypes' => ['gif', 'jpg', 'jpeg', 'png', 'webp', 'pdf', 'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'mp4', 'mov', 'svg', 'zip'], // Default null
         'DestinationPath' => !empty($_SESSION["filePath"]) ? $_SESSION["filePath"] : null, // Default null
-        //'MaxFileSize' => 1024 * 1024 * 2 // 2 MB // Default null
+        //'MaxFileSize' => 1024 * 1024 * 2, // 2 MB // Default null
+        //'MinFileSize' => 500000, // 500 kb // Default null
         //'UploadExists' => 'overwrite', // increment || overwrite Default 'increment'
     );
 
-
     /**
-     * Class CustomFileUploadHandler
-     *
-     * Handles file uploads, processes and stores file metadata,
-     * and updates associated folder information.
+     * Stores file-manager uploads in the selected folder and saves file metadata.
+     * Image processing, chunk validation and temporary cleanup remain in FileHandler.
      */
     class CustomFileUploadHandler extends FileHandler
     {
-        /**
-         * Uploads file information and updates file records in the database.
-         *
-         * This method processes a file by setting its metadata, saves the file to the database,
-         * and associates files without a folder ID with a default folder.
-         *
-         * @return void
-         * @throws Caller
-         * @throws InvalidCast
-         */
+        /** Save file-manager metadata atomically; output success only after commit. */
         protected function uploadInfo(): void
         {
-            parent::uploadInfo();
-
-            if ($this->options['FileError'] == 0) {
-                $obj = new Files();
-                $obj->setName(basename($this->options['FileName']));
-                $obj->setType('file');
-                $obj->setPath($this->getRelativePath($this->options['FileName']));
-                $obj->setDescription(null);
-                $obj->setExtension($this->getExtension($this->options['FileName']));
-                $obj->setMimeType($this->getMimeType($this->options['FileName']));
-                $obj->setSize($this->options['FileSize']);
-                $obj->setMtime(filemtime($this->options['FileName']));
-                $obj->setDimensions($this->getDimensions($this->options['FileName']));
-                $obj->setWidth($this->getImageWidth($this->options['FileName']));
-                $obj->setHeight($this->getImageHeight($this->options['FileName']));
-                $obj->save(true);
+            $fullPath = $this->options['FileName'] ?? null;
+            if (($this->options['FileError'] ?? 0) != 0) {
+                $this->handleError(t('File upload contains an error state.'), $fullPath);
+            }
+            if (!$fullPath || !is_file($fullPath)) {
+                $this->handleError(t('An uploaded file isn\'t found after upload.'), $fullPath);
             }
 
-            $filesWithoutFolder = [];
+            clearstatcache(true, $fullPath);
+            $extension = $this->getExtension($fullPath);
+            $mimeType = $this->getMimeType($fullPath) ?: 'application/octet-stream';
+            $size = filesize($fullPath);
+            $mtime = filemtime($fullPath);
+            if ($size === false || $mtime === false) $this->handleError(t('Cannot read uploaded file metadata.'), $fullPath);
+            $isImage = in_array($extension, self::getImageExtensions(), true);
+            $dimensions = $isImage ? $this->getDimensions($fullPath) : null;
+            $displaySize = $isImage && $extension !== 'svg' ? self::getDisplayDimensions($fullPath) : null;
+            $width = $displaySize[0] ?? 0;
+            $height = $displaySize[1] ?? 0;
+            $relativePath = $this->getRelativePath($fullPath);
 
-            // Find files without a folder ID
-            foreach (Files::loadAll() as $file) {
-                if ($file->FolderId === null) {
-                    $filesWithoutFolder[] = $file->Id;
-                }
+            $folder = Folders::loadById($_SESSION['folderId']);
+            if (!$folder || trim((string)$folder->getPath(), '/') !== trim((string)$this->options['DestinationPath'], '/')) {
+                $this->handleError(t('Upload destination has changed. Select the folder again.'), $fullPath);
             }
 
-            // Update folderId for files without a folder ID
-            foreach ($filesWithoutFolder as $fileId) {
-                $file = Files::loadById($fileId);
+            // Encode before committing: an encoding failure must not leave a committed record.
+            $payload = json_encode([
+                'filename' => basename($fullPath),
+                'path' => $relativePath,
+                'extension' => $extension,
+                'type' => $mimeType,
+                'complete' => true,
+                'merged' => true,
+                'orientation' => $isImage ? self::getExifOrientation($fullPath) : 1,
+                'displayDimensions' => $displaySize,
+                'error' => 0,
+                'size' => $size,
+                'mtime' => $mtime,
+                'dimensions' => $dimensions
+            ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+
+            $database = Files::getDatabase();
+            $database->transactionBegin();
+            try {
+                $file = new Files();
                 $file->setFolderId($_SESSION['folderId']);
-                $file->save();
+                $file->setName(basename($fullPath));
+                $file->setType('file');
+                $file->setPath($relativePath);
+                $file->setDescription(null);
+                $file->setExtension($extension);
+                $file->setMimeType($mimeType);
+                $file->setSize($size);
+                $file->setMtime($mtime);
+                $file->setDimensions($dimensions);
+                $file->setWidth($width);
+                $file->setHeight($height);
+                $file->save(true);
+                $database->transactionCommit();
+            } catch (Throwable $error) {
+                $database->transactionRollBack();
+                throw $error;
             }
+
+            echo $payload;
         }
 
         /**
-         * Get the width of an image file
+         * Get the width of an image file.
          *
-         * @param string $path The file path of the image
-         *
-         * @return int|string The width of the image in pixels, or '0' if the width is not available
+         * @param string $path
+         * @return int|string
          */
         public static function getImageWidth(string $path): mixed
         {
-            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-            $ImageSize = getimagesize($path);
+            if (!is_file($path)) {
+                return '0';
+            }
 
-            if (in_array($ext, self::getImageExtensions())) {
-                return ($ImageSize[0] ?? '0');
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+            if ($ext === 'svg') {
+                return '0';
+            }
+
+            $imageSize = self::getDisplayDimensions($path);
+
+            if ($imageSize && in_array($ext, self::getImageExtensions(), true)) {
+                return ($imageSize[0] ?? '0');
             }
 
             return '0';
         }
 
         /**
-         * Get the height of an image specified by its file path.
+         * Get the height of an image file.
          *
-         * @param string $path The file path of the image.
-         *
-         * @return mixed The height of the image as an integer, or '0' if the height cannot be determined.
+         * @param string $path
+         * @return int|string
          */
         public static function getImageHeight(string $path): mixed
         {
-            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-            $ImageSize = getimagesize($path);
+            if (!is_file($path)) {
+                return '0';
+            }
 
-            if (in_array($ext, self::getImageExtensions())) {
-                return ($ImageSize[1] ?? '0');
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+            if ($ext === 'svg') {
+                return '0';
+            }
+
+            $imageSize = self::getDisplayDimensions($path);
+
+            if ($imageSize && in_array($ext, self::getImageExtensions(), true)) {
+                return ($imageSize[1] ?? '0');
             }
 
             return '0';
         }
 
         /**
-         * Returns an array of supported image file extensions.
+         * Supported image extensions.
          *
-         * @return array An array of strings representing image file extensions.
+         * @return array
          */
         public static function getImageExtensions(): array
         {
@@ -126,10 +189,43 @@
     }
 
     try {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            throw new RuntimeException('Only POST uploads are accepted.');
+        }
+        // An empty filePath is the repository root, so do not test it with empty().
+        if (empty($_SESSION['folderId']) || !array_key_exists('filePath', $_SESSION) || !is_string($_SESSION['filePath'])) {
+            http_response_code(409);
+            throw new RuntimeException(json_encode(['error' => 'Upload destination is missing. Select a folder in the file manager again.']));
+        }
+        $folder = Folders::loadById($_SESSION['folderId']);
+        if (!$folder || trim((string)$folder->getPath(), '/') !== trim($_SESSION['filePath'], '/')) {
+            http_response_code(409);
+            throw new RuntimeException(json_encode(['error' => 'Upload destination has changed. Select the folder again.']));
+        }
         $objHandler = new CustomFileUploadHandler($options);
-    } catch (Exception $e) {
-        http_response_code(500);
-        error_log('Upload handler creation error: ' . $e->getMessage());
-        echo json_encode(['error' => 'Failed to start the file/s upload system.']);
+        $payload = ob_get_clean();
+        // Discard bootstrap chatter, but reject invalid response bodies.
+        json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        echo $payload;
+    } catch (Throwable $e) {
+        while (ob_get_level() > $uploadBufferLevel) ob_end_clean();
+        if (http_response_code() < 400) http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+
+        error_log('Upload error: ' . $e->getMessage());
+        error_log($e->getTraceAsString());
+
+        $decoded = json_decode($e->getMessage(), true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            echo json_encode($decoded, JSON_UNESCAPED_UNICODE);
+        } else {
+            echo json_encode([
+                'error' => 'Failed to start the file/s upload system.',
+                'details' => 'See the server error log for details.'
+            ], JSON_UNESCAPED_UNICODE);
+        }
+
         exit;
     }

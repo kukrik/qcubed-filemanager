@@ -94,7 +94,7 @@
         {
             $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/croppie.css");
             $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom-switch.css");
-            $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom.css");
+            //$this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/custom.css");
             $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/font-awesome.css");
             $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/awesome-bootstrap-checkbox.css");
             $this->addCssFile(QCUBED_FILEMANAGER_ASSETS_URL . "/css/select2.css");
@@ -128,7 +128,7 @@
             $strHtml .= _nl(_indent('<button type="button" class="close" data-dismiss="modal" aria-label="Close">', 4));
             $strHtml .= _nl(_indent('<span aria-hidden="true">×</span>', 5));
             $strHtml .= _nl(_indent('</button>', 4));
-            $strHtml .= _nl(_indent('<h4 class="modal-title" id="gridSystemModalLabel">' . t($this->strHeaderTitle) . '</h4>', 4));
+            $strHtml .= _nl(_indent('<h4 class="modal-title" id="gridSystemModalLabel">' . $this->strHeaderTitle . '</h4>', 4));
             $strHtml .= _nl(_indent('</div>', 3));
             $strHtml .= _nl(_indent('<div class="modal-body">', 3));
             $strHtml .= _nl(_indent('<div class="row">', 4));
@@ -180,8 +180,8 @@
             $strHtml .= _nl(_indent('</div>', 4));
             $strHtml .= _nl(_indent('</div>', 3));
             $strHtml .= _nl(_indent('<div class="modal-footer">', 3));
-            $strHtml .= _nl(_indent('<button type="button" class="btn ' . $this->strSaveClass . ' btn-crop">' . t($this->strSaveText) . '</button>', 4));
-            $strHtml .= _nl(_indent('<button type="button" class="btn ' . $this->strCancelClass . '" data-btnid="Cancel" data-dismiss="modal">' . t($this->strCancelText) . '</button>', 4));
+            $strHtml .= _nl(_indent('<button type="button" class="btn ' . $this->strSaveClass . ' btn-crop">' . $this->strSaveText . '</button>', 4));
+            $strHtml .= _nl(_indent('<button type="button" class="btn ' . $this->strCancelClass . '" data-btnid="Cancel" data-dismiss="modal">' . $this->strCancelText . '</button>', 4));
             $strHtml .= _nl(_indent('</div>', 3));
             $strHtml .= _nl(_indent('</div>', 2));
             $strHtml .= _nl(_indent('</div>', 1));

@@ -3,9 +3,9 @@
     require_once ('../src/FileInfo.php');
     require_once ('../src/DestinationInfo.class.php');
 
-    error_reporting(E_ALL); // Error engine - always ON!
-    ini_set('display_errors', TRUE); // Error display - OFF in production env or real server
-    ini_set('log_errors', TRUE); // Error logging
+//    error_reporting(E_ALL); // Error engine - always ON!
+//    ini_set('display_errors', TRUE); // Error display - OFF in production env or real server
+//    ini_set('log_errors', TRUE); // Error logging
 
     use QCubed as Q;
     use QCubed\Project\Control\FormBase as Form;

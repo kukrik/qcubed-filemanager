@@ -327,6 +327,8 @@
                         var response = JSON.parse(xhr.responseText);
                         finalPath = response.path;
 
+                        console.log(finalPath);
+
                         if (finalPath) {
                             qcubed.recordControlModification(elementId, "_finalPath", finalPath);
                         }

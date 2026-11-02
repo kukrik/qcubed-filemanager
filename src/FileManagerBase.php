@@ -456,7 +456,7 @@ FUNC;
          * @return mixed The value of the requested property or the result of the parent's __get method.
          * @throws Caller
          */
-        public function __get($strName): mixed
+        public function __get(string $strName): mixed
         {
             switch ($strName) {
                 case 'SelectedItems': return $this->arrSelectedItems;
@@ -489,7 +489,7 @@ FUNC;
          * @throws InvalidCast If the value cannot be cast to the required type.
          * @throws Caller If the property does not exist or is inaccessible.
          */
-        public function __set($strName, mixed $mixValue): void
+        public function __set(string $strName, mixed $mixValue): void
         {
             switch ($strName) {
                 case '_SelectedItems': // Internal only. Do not use. Used by JS above to track selections.

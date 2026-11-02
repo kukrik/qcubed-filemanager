@@ -67,8 +67,7 @@
         /////////////////////////////////////////
 
         async function fetchLanguageJson(language) {
-            const response = await fetch(options.path + `/lang/${language}.json`);
-            // const response = await fetch(`../backend/assets/lang/${language}.json`);
+            const response = await fetch(`../backend/assets/lang/${language}.json`);
 
             if (!response.ok) {
                 console.error(`Failed to fetch ${language}.json`);
@@ -108,8 +107,7 @@
 
         /////////////////////////////////////////
 
-        fetch(options.path + '/php/json.php')
-        // fetch("../backend/assets/php/json.php")
+        fetch("../backend/assets/php/json.php")
             .then((response) => {
                 if(!response.ok){ // Before parsing (i.e. decoding) the JSON data,
                     // check for any errors.

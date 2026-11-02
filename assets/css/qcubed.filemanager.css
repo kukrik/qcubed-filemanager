@@ -6,38 +6,20 @@ body, html {
     color: #000;
 }
 
-/* The jQuery UI Selectable helper element must not intercept pointer events. */
-
-.ui-selectable-helper {
-    pointer-events: none !important;
-}
-
-/* Keep the pointer cursor visible when hovering over a folder. */
-
-.folder-a,
-.folder-a * {
-    cursor: pointer;
-}
-
 /** THEY MUST NOT BE DELETED BELOW **/
 
 .scroll-wrapper {
-    height: calc(100vh - 230px); /* Default value. Overwite this if you want. // 160 */
+    height: calc(100vh - 175px); /* Default value. Overwite this if you want. // 160 */
     width: 100%; /* Default value. Overwite this if you want. */
 }
 
 .dialog-wrapper {
-    min-height: calc(100vh - 145px); /* Default value. Overwite this if you want. // 135 */
+    min-height: calc(100vh - 135px); /* Default value. Overwite this if you want. // 135 */
     width: 100%; /* Default value. Overwite this if you want. */
 }
 
 .upload-wrapper {
-    min-height: 86vh;
-    width: 100%; /* Default value. Overwite this if you want. */
-}
-
-.gallery-upload-wrapper {
-    min-height: 86vh;
+    min-height: calc(100vh - 130px); /* Default value. Overwite this if you want. // 160 */
     width: 100%; /* Default value. Overwite this if you want. */
 }
 
@@ -53,7 +35,7 @@ body, html {
 /** THE ABOVE HALF THEY SHOULD NOT BE DELETED **/
 
 .no-scroll {
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 .files-a.locked {
     cursor: not-allowed !important;
@@ -98,6 +80,7 @@ body, html {
     border-radius: 4px;
     *zoom: 1;
 }
+
 .form-body {
     padding: 15px;
     margin-right: auto;
@@ -141,7 +124,7 @@ input.search-trigger {
 }
 a {
     text-shadow: none;
-    color: #405261 !important;
+    color: #405261;
     text-decoration: none;
     outline: none;
 }
@@ -162,10 +145,6 @@ a:focus, a:hover, a:active {
     padding-right: 5px;
     color: #405261;
 }
-.head a {
-    color: #405261;
-    text-decoration: none;
-}
 .head a:hover {
     color: #da2004;
     text-decoration: none;
@@ -174,7 +153,7 @@ a:focus, a:hover, a:active {
 .breadcrumbs {
     display: block;
     float: left;
-    padding-top: 3px;
+    padding-top: 2px;
     padding-left: 4px;
     color: #405261;
     font-size: 14px;
@@ -344,7 +323,6 @@ div.files-a:hover, a.files-a:hover {
     width: 41%;
     padding: 0 15px;
     overflow: hidden;
-    color: #455A64;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -377,7 +355,6 @@ div.files-a:hover, a.files-a:hover {
     float: left;
     display: block;
     width: 16%;
-    color: #455A64;
 }
 
 /* BOX_LAYOUT STYLE */

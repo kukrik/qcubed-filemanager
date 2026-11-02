@@ -114,10 +114,10 @@
          *               if the property is not defined.
          * @throws Caller
          */
-        public function __get($strName): mixed
+        public function __get(string $strName): mixed
         {
             switch ($strName) {
-                case 'Language': return t($this->strLanguage);
+                case 'Language': return $this->strLanguage;
                 case 'MultipleUploads': return $this->blnMultipleUploads;
                 case 'ShowIcons': return $this->blnShowIcons;
                 case 'AcceptFileTypes': return $this->arrAcceptFileTypes;
