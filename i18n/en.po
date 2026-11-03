@@ -1,165 +1,211 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: FileHandler translation\n"
-"POT-Creation-Date: 2024-06-28 00:15+0300\n"
-"PO-Revision-Date: 2024-06-28 00:15+0300\n"
+"POT-Creation-Date: 2026-11-03 00:11+0200\n"
+"PO-Revision-Date: 2026-11-03 00:22+0200\n"
 "Last-Translator: Tiit Papp <tiit.papp@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.4.2\n"
+"X-Generator: Poedit 3.10\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: t;p\n"
 "X-Poedit-SearchPath-0: examples\n"
 "X-Poedit-SearchPath-1: src\n"
 
-#: examples/dialog.php:183 examples/filemanager.php:186 examples/finder.php:185
+#: examples/dialog.php:218 examples/filemanager.php:208 examples/finder.php:214
+#: examples/php/dialog.php:242
 msgid "- Select a destination -"
 msgstr "- Select a destination -"
 
-#: examples/dialog.php:185 examples/filemanager.php:188 examples/finder.php:187
+#: examples/dialog.php:220 examples/filemanager.php:210 examples/finder.php:216
+#: examples/php/dialog.php:244
 msgid "Crop image"
 msgstr "Crop image"
 
-#: examples/dialog.php:186 examples/filemanager.php:189 examples/finder.php:188
+#: examples/dialog.php:221 examples/filemanager.php:211 examples/finder.php:217
+#: examples/php/dialog.php:245
 msgid "Crop and save"
 msgstr "Crop and save"
 
-#: examples/dialog.php:187 examples/dialog.php:394 examples/filemanager.php:190
-#: examples/finder.php:189 examples/finder.php:397
+#: examples/dialog.php:222 examples/dialog.php:456 examples/filemanager.php:212
+#: examples/finder.php:218 examples/finder.php:453 examples/php/dialog.php:246
+#: examples/php/dialog.php:480
 msgid "Cancel"
 msgstr "Cancel"
 
-#: examples/dialog.php:205 examples/filemanager.php:208 examples/finder.php:207
+#: examples/dialog.php:240 examples/filemanager.php:230 examples/finder.php:236
+#: examples/php/dialog.php:264
 msgid "Search results:"
 msgstr "Search results:"
 
-#: examples/dialog.php:271 examples/filemanager.php:243 examples/finder.php:274
+#: examples/dialog.php:327 examples/filemanager.php:342 examples/finder.php:324
+#: examples/php/dialog.php:351
 msgid " Add files"
 msgstr " Add files"
 
-#: examples/dialog.php:278 examples/filemanager.php:250 examples/finder.php:281
+#: examples/dialog.php:334 examples/filemanager.php:350 examples/finder.php:331
+#: examples/php/dialog.php:358
 msgid "Start upload"
 msgstr "Start upload"
 
-#: examples/dialog.php:284 examples/filemanager.php:256 examples/finder.php:287
+#: examples/dialog.php:340 examples/filemanager.php:356 examples/finder.php:337
+#: examples/php/dialog.php:364
 msgid "Cancel all uploads"
 msgstr "Cancel all uploads"
 
-#: examples/dialog.php:289 examples/filemanager.php:261 examples/finder.php:292
+#: examples/dialog.php:345 examples/filemanager.php:361 examples/finder.php:342
+#: examples/php/dialog.php:369
 msgid "Back to file manager"
 msgstr "Back to file manager"
 
-#: examples/dialog.php:296 examples/filemanager.php:270 examples/finder.php:299
+#: examples/dialog.php:352 examples/filemanager.php:368 examples/finder.php:349
+#: examples/php/dialog.php:376
+msgid "Done"
+msgstr "Done"
+
+#: examples/dialog.php:358 examples/filemanager.php:376 examples/finder.php:355
+#: examples/php/dialog.php:382
 msgid " Upload"
 msgstr " Upload"
 
-#: examples/dialog.php:304 examples/filemanager.php:280 examples/finder.php:307
+#: examples/dialog.php:366 examples/filemanager.php:386 examples/finder.php:363
+#: examples/php/dialog.php:390
 msgid " Add folder"
 msgstr " Add folder"
 
-#: examples/dialog.php:318 examples/filemanager.php:294 examples/finder.php:321
+#: examples/dialog.php:380 examples/filemanager.php:400 examples/finder.php:377
+#: examples/php/dialog.php:404
 msgid " Rename"
 msgstr " Rename"
 
-#: examples/dialog.php:326 examples/filemanager.php:302 examples/finder.php:329
+#: examples/dialog.php:388 examples/filemanager.php:408 examples/finder.php:385
+#: examples/php/dialog.php:412
 msgid " Crop"
 msgstr " Crop"
 
-#: examples/dialog.php:334 examples/filemanager.php:310 examples/finder.php:337
+#: examples/dialog.php:396 examples/filemanager.php:416 examples/finder.php:393
+#: examples/php/dialog.php:420
 msgid " Copy"
 msgstr " Copy"
 
-#: examples/dialog.php:342 examples/filemanager.php:318 examples/finder.php:345
+#: examples/dialog.php:404 examples/filemanager.php:424 examples/finder.php:401
+#: examples/php/dialog.php:428
 msgid " Delete"
 msgstr " Delete"
 
-#: examples/dialog.php:350 examples/filemanager.php:326 examples/finder.php:353
+#: examples/dialog.php:412 examples/filemanager.php:432 examples/finder.php:409
+#: examples/php/dialog.php:436
 msgid " Move"
 msgstr " Move"
 
-#: examples/dialog.php:379 examples/filemanager.php:363 examples/finder.php:382
+#: examples/dialog.php:441 examples/filemanager.php:469 examples/finder.php:438
+#: examples/php/dialog.php:465
 msgid "Search..."
 msgstr "Search…"
 
-#: examples/dialog.php:386 examples/finder.php:389
+#: examples/dialog.php:448 examples/finder.php:445 examples/php/dialog.php:472
 msgid "Insert"
 msgstr "Insert"
 
-#: examples/dialog.php:401
+#: examples/dialog.php:463 examples/php/dialog.php:205
+#: examples/php/dialog.php:487
 msgid "Small"
 msgstr "Small"
 
-#: examples/dialog.php:401
+#: examples/dialog.php:463 examples/php/dialog.php:206
+#: examples/php/dialog.php:487
 msgid "Medium"
 msgstr "Medium"
 
-#: examples/dialog.php:401
+#: examples/dialog.php:463 examples/php/dialog.php:207
+#: examples/php/dialog.php:487
 msgid "Large"
 msgstr "Large"
 
-#: examples/dialog.php:412 examples/dialog.php:496 examples/dialog.php:541
-#: examples/dialog.php:553 examples/dialog.php:568 examples/dialog.php:590
-#: examples/dialog.php:606 examples/dialog.php:628 examples/dialog.php:637
-#: examples/dialog.php:669 examples/dialog.php:713 examples/filemanager.php:372
-#: examples/filemanager.php:456 examples/filemanager.php:501
-#: examples/filemanager.php:513 examples/filemanager.php:528
-#: examples/filemanager.php:550 examples/filemanager.php:566
-#: examples/filemanager.php:588 examples/filemanager.php:597
-#: examples/filemanager.php:627 examples/filemanager.php:635
-#: examples/filemanager.php:642 examples/filemanager.php:648
-#: examples/filemanager.php:654 examples/filemanager.php:695
-#: examples/finder.php:407 examples/finder.php:491 examples/finder.php:536
-#: examples/finder.php:548 examples/finder.php:563 examples/finder.php:585
-#: examples/finder.php:601 examples/finder.php:623 examples/finder.php:632
-#: examples/finder.php:664 examples/finder.php:708
+#: examples/dialog.php:485 examples/dialog.php:569 examples/dialog.php:614
+#: examples/dialog.php:626 examples/dialog.php:641 examples/dialog.php:663
+#: examples/dialog.php:679 examples/dialog.php:701 examples/dialog.php:710
+#: examples/dialog.php:740 examples/dialog.php:784 examples/dialog.php:791
+#: examples/dialog.php:807 examples/filemanager.php:484
+#: examples/filemanager.php:568 examples/filemanager.php:613
+#: examples/filemanager.php:625 examples/filemanager.php:640
+#: examples/filemanager.php:662 examples/filemanager.php:678
+#: examples/filemanager.php:700 examples/filemanager.php:709
+#: examples/filemanager.php:739 examples/filemanager.php:747
+#: examples/filemanager.php:754 examples/filemanager.php:760
+#: examples/filemanager.php:766 examples/filemanager.php:807
+#: examples/filemanager.php:814 examples/filemanager.php:830
+#: examples/finder.php:474 examples/finder.php:558 examples/finder.php:603
+#: examples/finder.php:615 examples/finder.php:630 examples/finder.php:652
+#: examples/finder.php:668 examples/finder.php:690 examples/finder.php:699
+#: examples/finder.php:729 examples/finder.php:773 examples/finder.php:780
+#: examples/php/dialog.php:510 examples/php/dialog.php:594
+#: examples/php/dialog.php:639 examples/php/dialog.php:651
+#: examples/php/dialog.php:666 examples/php/dialog.php:688
+#: examples/php/dialog.php:704 examples/php/dialog.php:726
+#: examples/php/dialog.php:735 examples/php/dialog.php:765
+#: examples/php/dialog.php:809 examples/php/dialog.php:816
+#: examples/php/dialog.php:832
 msgid "Warning"
 msgstr "Warning"
 
-#: examples/dialog.php:413 examples/filemanager.php:373 examples/finder.php:408
+#: examples/dialog.php:486 examples/filemanager.php:485 examples/finder.php:475
+#: examples/php/dialog.php:511
 msgid ""
-"<p style=\"margin-top: 15px;\">Corrupted table \"folders\" in the database "
+"<p style=\"margin-top: 15px;\">A corrupted table \"folders\" in the database "
 "or folder \"upload\" in the file system!</p>\n"
 "                                    <p style=\"margin-top: 15px;\">The table "
 "and the file system must be in sync.</p>\n"
 "                                    <p style=\"margin-top: 15px;\">Please "
 "contact the developer or webmaster!</p>"
 msgstr ""
-"<p style=“margin-top: 15px;”>Corrupted table “folders” in the database or "
-"folder “upload” in the file system!</p>\n"
-"                                    <p style=“margin-top: 15px;”>The table "
+"<p style=\"margin-top: 15px;\">A corrupted table \"folders\" in the database "
+"or folder \"upload\" in the file system!</p>\n"
+"                                    <p style=\"margin-top: 15px;\">The table "
 "and the file system must be in sync.</p>\n"
-"                                    <p style=“margin-top: 15px;”>Please "
+"                                    <p style=\"margin-top: 15px;\">Please "
 "contact the developer or webmaster!</p>"
 
-#: examples/dialog.php:417 examples/filemanager.php:377 examples/finder.php:412
+#: examples/dialog.php:490 examples/filemanager.php:489 examples/finder.php:479
+#: examples/php/dialog.php:515
 msgid "I take note and ask for help"
 msgstr "I take note and ask for help"
 
-#: examples/dialog.php:423 examples/dialog.php:430 examples/dialog.php:436
-#: examples/dialog.php:456 examples/dialog.php:463 examples/dialog.php:505
-#: examples/dialog.php:512 examples/dialog.php:518 examples/dialog.php:561
-#: examples/dialog.php:598 examples/dialog.php:642 examples/dialog.php:677
-#: examples/dialog.php:687 examples/dialog.php:693 examples/dialog.php:700
-#: examples/filemanager.php:383 examples/filemanager.php:390
-#: examples/filemanager.php:396 examples/filemanager.php:416
-#: examples/filemanager.php:423 examples/filemanager.php:465
-#: examples/filemanager.php:472 examples/filemanager.php:478
-#: examples/filemanager.php:521 examples/filemanager.php:558
-#: examples/filemanager.php:602 examples/filemanager.php:659
-#: examples/filemanager.php:669 examples/filemanager.php:675
-#: examples/filemanager.php:682 examples/finder.php:418 examples/finder.php:425
-#: examples/finder.php:431 examples/finder.php:451 examples/finder.php:458
-#: examples/finder.php:500 examples/finder.php:507 examples/finder.php:513
-#: examples/finder.php:556 examples/finder.php:593 examples/finder.php:637
-#: examples/finder.php:672 examples/finder.php:682 examples/finder.php:688
-#: examples/finder.php:695
+#: examples/dialog.php:496 examples/dialog.php:503 examples/dialog.php:509
+#: examples/dialog.php:529 examples/dialog.php:536 examples/dialog.php:578
+#: examples/dialog.php:585 examples/dialog.php:591 examples/dialog.php:634
+#: examples/dialog.php:671 examples/dialog.php:715 examples/dialog.php:748
+#: examples/dialog.php:758 examples/dialog.php:764 examples/dialog.php:771
+#: examples/dialog.php:796 examples/filemanager.php:495
+#: examples/filemanager.php:502 examples/filemanager.php:508
+#: examples/filemanager.php:528 examples/filemanager.php:535
+#: examples/filemanager.php:577 examples/filemanager.php:584
+#: examples/filemanager.php:590 examples/filemanager.php:633
+#: examples/filemanager.php:670 examples/filemanager.php:714
+#: examples/filemanager.php:771 examples/filemanager.php:781
+#: examples/filemanager.php:787 examples/filemanager.php:794
+#: examples/filemanager.php:819 examples/finder.php:485 examples/finder.php:492
+#: examples/finder.php:498 examples/finder.php:518 examples/finder.php:525
+#: examples/finder.php:567 examples/finder.php:574 examples/finder.php:580
+#: examples/finder.php:623 examples/finder.php:660 examples/finder.php:704
+#: examples/finder.php:737 examples/finder.php:747 examples/finder.php:753
+#: examples/finder.php:760 examples/finder.php:785 examples/php/dialog.php:521
+#: examples/php/dialog.php:528 examples/php/dialog.php:534
+#: examples/php/dialog.php:554 examples/php/dialog.php:561
+#: examples/php/dialog.php:603 examples/php/dialog.php:610
+#: examples/php/dialog.php:616 examples/php/dialog.php:659
+#: examples/php/dialog.php:696 examples/php/dialog.php:740
+#: examples/php/dialog.php:773 examples/php/dialog.php:783
+#: examples/php/dialog.php:789 examples/php/dialog.php:796
+#: examples/php/dialog.php:821
 msgid "Tip"
 msgstr "Tip"
 
-#: examples/dialog.php:424 examples/filemanager.php:384 examples/finder.php:419
+#: examples/dialog.php:497 examples/filemanager.php:496 examples/finder.php:486
+#: examples/php/dialog.php:522
 msgid ""
 "<p style=\"margin-top: 15px;\">Sorry, files cannot be added to this reserved "
 "folder!</p>\n"
@@ -171,33 +217,44 @@ msgstr ""
 "                                    <p style=“margin-top: 15px;”>Choose "
 "another folder!</p>"
 
-#: examples/dialog.php:427 examples/dialog.php:433 examples/dialog.php:439
-#: examples/dialog.php:460 examples/dialog.php:466 examples/dialog.php:493
-#: examples/dialog.php:509 examples/dialog.php:515 examples/dialog.php:521
-#: examples/dialog.php:537 examples/dialog.php:549 examples/dialog.php:564
-#: examples/dialog.php:602 examples/dialog.php:646 examples/dialog.php:681
-#: examples/dialog.php:690 examples/dialog.php:697 examples/dialog.php:703
-#: examples/dialog.php:709 examples/filemanager.php:387
-#: examples/filemanager.php:393 examples/filemanager.php:399
-#: examples/filemanager.php:420 examples/filemanager.php:426
-#: examples/filemanager.php:453 examples/filemanager.php:469
-#: examples/filemanager.php:475 examples/filemanager.php:481
-#: examples/filemanager.php:497 examples/filemanager.php:509
-#: examples/filemanager.php:524 examples/filemanager.php:562
-#: examples/filemanager.php:606 examples/filemanager.php:663
-#: examples/filemanager.php:672 examples/filemanager.php:679
-#: examples/filemanager.php:685 examples/filemanager.php:691
-#: examples/finder.php:422 examples/finder.php:428 examples/finder.php:434
-#: examples/finder.php:455 examples/finder.php:461 examples/finder.php:488
-#: examples/finder.php:504 examples/finder.php:510 examples/finder.php:516
-#: examples/finder.php:532 examples/finder.php:544 examples/finder.php:559
-#: examples/finder.php:597 examples/finder.php:641 examples/finder.php:676
-#: examples/finder.php:685 examples/finder.php:692 examples/finder.php:698
-#: examples/finder.php:704
+#: examples/dialog.php:500 examples/dialog.php:506 examples/dialog.php:512
+#: examples/dialog.php:533 examples/dialog.php:539 examples/dialog.php:566
+#: examples/dialog.php:582 examples/dialog.php:588 examples/dialog.php:594
+#: examples/dialog.php:610 examples/dialog.php:622 examples/dialog.php:637
+#: examples/dialog.php:675 examples/dialog.php:719 examples/dialog.php:752
+#: examples/dialog.php:761 examples/dialog.php:768 examples/dialog.php:774
+#: examples/dialog.php:780 examples/dialog.php:800 examples/filemanager.php:499
+#: examples/filemanager.php:505 examples/filemanager.php:511
+#: examples/filemanager.php:532 examples/filemanager.php:538
+#: examples/filemanager.php:565 examples/filemanager.php:581
+#: examples/filemanager.php:587 examples/filemanager.php:593
+#: examples/filemanager.php:609 examples/filemanager.php:621
+#: examples/filemanager.php:636 examples/filemanager.php:674
+#: examples/filemanager.php:718 examples/filemanager.php:775
+#: examples/filemanager.php:784 examples/filemanager.php:791
+#: examples/filemanager.php:797 examples/filemanager.php:803
+#: examples/filemanager.php:823 examples/finder.php:489 examples/finder.php:495
+#: examples/finder.php:501 examples/finder.php:522 examples/finder.php:528
+#: examples/finder.php:555 examples/finder.php:571 examples/finder.php:577
+#: examples/finder.php:583 examples/finder.php:599 examples/finder.php:611
+#: examples/finder.php:626 examples/finder.php:664 examples/finder.php:708
+#: examples/finder.php:741 examples/finder.php:750 examples/finder.php:757
+#: examples/finder.php:763 examples/finder.php:769 examples/finder.php:789
+#: examples/php/dialog.php:525 examples/php/dialog.php:531
+#: examples/php/dialog.php:537 examples/php/dialog.php:558
+#: examples/php/dialog.php:564 examples/php/dialog.php:591
+#: examples/php/dialog.php:607 examples/php/dialog.php:613
+#: examples/php/dialog.php:619 examples/php/dialog.php:635
+#: examples/php/dialog.php:647 examples/php/dialog.php:662
+#: examples/php/dialog.php:700 examples/php/dialog.php:744
+#: examples/php/dialog.php:777 examples/php/dialog.php:786
+#: examples/php/dialog.php:793 examples/php/dialog.php:799
+#: examples/php/dialog.php:805 examples/php/dialog.php:825
 msgid "I close the window"
 msgstr "I close the window"
 
-#: examples/dialog.php:431 examples/filemanager.php:391 examples/finder.php:426
+#: examples/dialog.php:504 examples/finder.php:493 examples/php/dialog.php:208
+#: examples/php/dialog.php:529
 msgid ""
 "<p style=\"margin-top: 15px;\">Please choose only specific folder to upload "
 "files!</p>"
@@ -205,7 +262,8 @@ msgstr ""
 "<p style=“margin-top: 15px;”>Please choose only specific folder to upload "
 "files!</p>"
 
-#: examples/dialog.php:437 examples/filemanager.php:397 examples/finder.php:432
+#: examples/dialog.php:510 examples/filemanager.php:509 examples/finder.php:499
+#: examples/php/dialog.php:535
 msgid ""
 "<p style=\"margin-top: 15px;\">Cannot select multiple folders to upload "
 "files!</p>"
@@ -213,13 +271,15 @@ msgstr ""
 "<p style=“margin-top: 15px;”>Cannot select multiple folders to upload files!"
 "</p>"
 
-#: examples/dialog.php:443 examples/dialog.php:470 examples/filemanager.php:403
-#: examples/filemanager.php:430 examples/finder.php:438 examples/finder.php:465
+#: examples/dialog.php:516 examples/dialog.php:543 examples/filemanager.php:515
+#: examples/filemanager.php:542 examples/finder.php:505 examples/finder.php:532
+#: examples/php/dialog.php:541 examples/php/dialog.php:568
 msgid "Info"
 msgstr "Info"
 
-#: examples/dialog.php:444 examples/dialog.php:471 examples/filemanager.php:404
-#: examples/filemanager.php:431 examples/finder.php:439 examples/finder.php:466
+#: examples/dialog.php:517 examples/dialog.php:544 examples/filemanager.php:516
+#: examples/filemanager.php:543 examples/finder.php:506 examples/finder.php:533
+#: examples/php/dialog.php:542 examples/php/dialog.php:569
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 10px;\">Please check if the "
 "destination is correct!</p>"
@@ -227,28 +287,34 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 10px;”>Please check if the "
 "destination is correct!</p>"
 
-#: examples/dialog.php:446 examples/dialog.php:473 examples/dialog.php:576
-#: examples/dialog.php:614 examples/dialog.php:655 examples/filemanager.php:406
-#: examples/filemanager.php:433 examples/filemanager.php:536
-#: examples/filemanager.php:574 examples/filemanager.php:613
-#: examples/finder.php:441 examples/finder.php:468 examples/finder.php:571
-#: examples/finder.php:609 examples/finder.php:650
+#: examples/dialog.php:519 examples/dialog.php:546 examples/dialog.php:649
+#: examples/dialog.php:687 examples/dialog.php:726 examples/filemanager.php:518
+#: examples/filemanager.php:545 examples/filemanager.php:648
+#: examples/filemanager.php:686 examples/filemanager.php:725
+#: examples/finder.php:508 examples/finder.php:535 examples/finder.php:638
+#: examples/finder.php:676 examples/finder.php:715 examples/php/dialog.php:544
+#: examples/php/dialog.php:571 examples/php/dialog.php:674
+#: examples/php/dialog.php:712 examples/php/dialog.php:751
 msgid "I will continue"
 msgstr "I will continue"
 
-#: examples/dialog.php:448 examples/dialog.php:475 examples/dialog.php:485
-#: examples/dialog.php:529 examples/dialog.php:578 examples/dialog.php:616
-#: examples/dialog.php:657 examples/filemanager.php:408
-#: examples/filemanager.php:435 examples/filemanager.php:445
-#: examples/filemanager.php:489 examples/filemanager.php:538
-#: examples/filemanager.php:576 examples/filemanager.php:615
-#: examples/finder.php:443 examples/finder.php:470 examples/finder.php:480
-#: examples/finder.php:524 examples/finder.php:573 examples/finder.php:611
-#: examples/finder.php:652
+#: examples/dialog.php:521 examples/dialog.php:548 examples/dialog.php:558
+#: examples/dialog.php:602 examples/dialog.php:651 examples/dialog.php:689
+#: examples/dialog.php:728 examples/filemanager.php:520
+#: examples/filemanager.php:547 examples/filemanager.php:557
+#: examples/filemanager.php:601 examples/filemanager.php:650
+#: examples/filemanager.php:688 examples/filemanager.php:727
+#: examples/finder.php:510 examples/finder.php:537 examples/finder.php:547
+#: examples/finder.php:591 examples/finder.php:640 examples/finder.php:678
+#: examples/finder.php:717 examples/php/dialog.php:546
+#: examples/php/dialog.php:573 examples/php/dialog.php:583
+#: examples/php/dialog.php:627 examples/php/dialog.php:676
+#: examples/php/dialog.php:714 examples/php/dialog.php:753
 msgid "I'll cancel"
 msgstr "I’ll cancel"
 
-#: examples/dialog.php:457 examples/filemanager.php:417 examples/finder.php:452
+#: examples/dialog.php:530 examples/filemanager.php:529 examples/finder.php:519
+#: examples/php/dialog.php:555
 msgid ""
 "<p style=\"margin-top: 15px;\">Sorry, a new folder cannot be added to this "
 "reserved folder!</p>\n"
@@ -260,7 +326,8 @@ msgstr ""
 "                                    <p style=“margin-top: 15px;”>Choose "
 "another folder!</p>"
 
-#: examples/dialog.php:464 examples/filemanager.php:424 examples/finder.php:459
+#: examples/dialog.php:537 examples/filemanager.php:536 examples/finder.php:526
+#: examples/php/dialog.php:562
 msgid ""
 "<p style=\"margin-top: 15px;\">Please select only one folder to create a new "
 "folder in!</p>"
@@ -268,57 +335,73 @@ msgstr ""
 "<p style=“margin-top: 15px;”>Please select only one folder to create a new "
 "folder in!</p>"
 
-#: examples/dialog.php:481 examples/filemanager.php:441 examples/finder.php:476
-msgid "Name of new folder"
-msgstr "Name of new folder"
+#: examples/dialog.php:554 examples/filemanager.php:553 examples/finder.php:543
+#: examples/php/dialog.php:579
+msgid "Name of a new folder"
+msgstr "Name of a new folder"
 
-#: examples/dialog.php:483 examples/dialog.php:527 examples/filemanager.php:443
-#: examples/filemanager.php:487 examples/finder.php:478 examples/finder.php:522
+#: examples/dialog.php:556 examples/dialog.php:600 examples/filemanager.php:555
+#: examples/filemanager.php:599 examples/finder.php:545 examples/finder.php:589
+#: examples/php/dialog.php:581 examples/php/dialog.php:625
 msgid "I accept"
 msgstr "I accept"
 
-#: examples/dialog.php:490 examples/filemanager.php:450 examples/finder.php:485
+#: examples/dialog.php:563 examples/filemanager.php:562 examples/finder.php:552
+#: examples/php/dialog.php:588
 msgid ""
-"<p style=\"line-height: 25px; margin-bottom: 2px;\">New folder created "
+"<p style=\"line-height: 25px; margin-bottom: 2px;\">A new folder created "
 "successfully!</p>"
 msgstr ""
-"<p style=“line-height: 25px; margin-bottom: 2px;”>New folder created "
+"<p style=\"line-height: 25px; margin-bottom: 2px;\">A new folder created "
 "successfully!</p>"
 
-#: examples/dialog.php:491 examples/dialog.php:535 examples/dialog.php:547
-#: examples/dialog.php:584 examples/dialog.php:622 examples/dialog.php:663
-#: examples/dialog.php:707 examples/filemanager.php:451
-#: examples/filemanager.php:495 examples/filemanager.php:507
-#: examples/filemanager.php:544 examples/filemanager.php:582
-#: examples/filemanager.php:621 examples/filemanager.php:689
-#: examples/finder.php:486 examples/finder.php:530 examples/finder.php:542
-#: examples/finder.php:579 examples/finder.php:617 examples/finder.php:658
-#: examples/finder.php:702
+#: examples/dialog.php:564 examples/dialog.php:608 examples/dialog.php:620
+#: examples/dialog.php:657 examples/dialog.php:695 examples/dialog.php:734
+#: examples/dialog.php:778 examples/filemanager.php:563
+#: examples/filemanager.php:607 examples/filemanager.php:619
+#: examples/filemanager.php:656 examples/filemanager.php:694
+#: examples/filemanager.php:733 examples/filemanager.php:801
+#: examples/finder.php:553 examples/finder.php:597 examples/finder.php:609
+#: examples/finder.php:646 examples/finder.php:684 examples/finder.php:723
+#: examples/finder.php:767 examples/php/dialog.php:589
+#: examples/php/dialog.php:633 examples/php/dialog.php:645
+#: examples/php/dialog.php:682 examples/php/dialog.php:720
+#: examples/php/dialog.php:759 examples/php/dialog.php:803
 msgid "Success"
 msgstr "Success"
 
-#: examples/dialog.php:497 examples/filemanager.php:457 examples/finder.php:492
-msgid "<p style=\"margin-top: 15px;\">Failed to create new folder!</p>"
-msgstr "<p style=“margin-top: 15px;”>Failed to create new folder!</p>"
+#: examples/dialog.php:570 examples/filemanager.php:569 examples/finder.php:559
+#: examples/php/dialog.php:595
+msgid "<p style=\"margin-top: 15px;\">Failed to create a new folder!</p>"
+msgstr "<p style=\"margin-top: 15px;\">Failed to create a new folder!</p>"
 
-#: examples/dialog.php:499 examples/dialog.php:543 examples/dialog.php:555
-#: examples/dialog.php:570 examples/dialog.php:592 examples/dialog.php:608
-#: examples/dialog.php:630 examples/dialog.php:639 examples/dialog.php:671
-#: examples/dialog.php:715 examples/filemanager.php:459
-#: examples/filemanager.php:503 examples/filemanager.php:515
-#: examples/filemanager.php:530 examples/filemanager.php:552
-#: examples/filemanager.php:568 examples/filemanager.php:590
-#: examples/filemanager.php:599 examples/filemanager.php:629
-#: examples/filemanager.php:638 examples/filemanager.php:644
-#: examples/filemanager.php:650 examples/filemanager.php:656
-#: examples/filemanager.php:697 examples/finder.php:494 examples/finder.php:538
-#: examples/finder.php:550 examples/finder.php:565 examples/finder.php:587
-#: examples/finder.php:603 examples/finder.php:625 examples/finder.php:634
-#: examples/finder.php:666 examples/finder.php:710
+#: examples/dialog.php:572 examples/dialog.php:616 examples/dialog.php:628
+#: examples/dialog.php:643 examples/dialog.php:665 examples/dialog.php:681
+#: examples/dialog.php:703 examples/dialog.php:712 examples/dialog.php:742
+#: examples/dialog.php:786 examples/dialog.php:793 examples/dialog.php:809
+#: examples/filemanager.php:571 examples/filemanager.php:615
+#: examples/filemanager.php:627 examples/filemanager.php:642
+#: examples/filemanager.php:664 examples/filemanager.php:680
+#: examples/filemanager.php:702 examples/filemanager.php:711
+#: examples/filemanager.php:741 examples/filemanager.php:750
+#: examples/filemanager.php:756 examples/filemanager.php:762
+#: examples/filemanager.php:768 examples/filemanager.php:809
+#: examples/filemanager.php:816 examples/filemanager.php:832
+#: examples/finder.php:561 examples/finder.php:605 examples/finder.php:617
+#: examples/finder.php:632 examples/finder.php:654 examples/finder.php:670
+#: examples/finder.php:692 examples/finder.php:701 examples/finder.php:731
+#: examples/finder.php:775 examples/finder.php:782 examples/php/dialog.php:597
+#: examples/php/dialog.php:641 examples/php/dialog.php:653
+#: examples/php/dialog.php:668 examples/php/dialog.php:690
+#: examples/php/dialog.php:706 examples/php/dialog.php:728
+#: examples/php/dialog.php:737 examples/php/dialog.php:767
+#: examples/php/dialog.php:811 examples/php/dialog.php:818
+#: examples/php/dialog.php:834
 msgid "I understand"
 msgstr "I understand"
 
-#: examples/dialog.php:506 examples/filemanager.php:466 examples/finder.php:501
+#: examples/dialog.php:579 examples/filemanager.php:578 examples/finder.php:568
+#: examples/php/dialog.php:604
 msgid ""
 "<p style=\"margin-top: 15px;\">Sorry, this reserved folder or file cannot be "
 "renamed!</p>\n"
@@ -330,11 +413,13 @@ msgstr ""
 "                                    <p style=“margin-top: 15px;”>Choose "
 "another folder or file!</p>"
 
-#: examples/dialog.php:513 examples/filemanager.php:473 examples/finder.php:508
+#: examples/dialog.php:586 examples/filemanager.php:585 examples/finder.php:575
+#: examples/php/dialog.php:611
 msgid "<p style=\"margin-top: 15px;\">Please select a folder or file!</p>"
 msgstr "<p style=“margin-top: 15px;”>Please select a folder or file!</p>"
 
-#: examples/dialog.php:519 examples/filemanager.php:479 examples/finder.php:514
+#: examples/dialog.php:592 examples/filemanager.php:591 examples/finder.php:581
+#: examples/php/dialog.php:617
 msgid ""
 "<p style=\"margin-top: 15px;\">Please select only one folder or file to "
 "rename!</p>"
@@ -342,11 +427,13 @@ msgstr ""
 "<p style=“margin-top: 15px;”>Please select only one folder or file to rename!"
 "</p>"
 
-#: examples/dialog.php:525 examples/filemanager.php:485 examples/finder.php:520
+#: examples/dialog.php:598 examples/filemanager.php:597 examples/finder.php:587
+#: examples/php/dialog.php:623
 msgid "Rename the folder or file name"
 msgstr "Rename the folder or file name"
 
-#: examples/dialog.php:534 examples/filemanager.php:494 examples/finder.php:529
+#: examples/dialog.php:607 examples/filemanager.php:606 examples/finder.php:596
+#: examples/php/dialog.php:632
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">Folder name changed "
 "successfully!</p>"
@@ -354,15 +441,17 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Folder name changed "
 "successfully!</p>"
 
-#: examples/dialog.php:540 examples/filemanager.php:500 examples/finder.php:535
+#: examples/dialog.php:613 examples/filemanager.php:612 examples/finder.php:602
+#: examples/php/dialog.php:638
 msgid ""
-"<p style=\"line-height: 25px; margin-bottom: 2px;\">Failed to rename folder!"
-"</p>"
+"<p style=\"line-height: 25px; margin-bottom: 2px;\">Failed to rename a "
+"folder!</p>"
 msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Failed to rename folder!</"
 "p>"
 
-#: examples/dialog.php:546 examples/filemanager.php:506 examples/finder.php:541
+#: examples/dialog.php:619 examples/filemanager.php:618 examples/finder.php:608
+#: examples/php/dialog.php:644
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">File name changed "
 "successfully!</p>"
@@ -370,14 +459,17 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>File name changed "
 "successfully!</p>"
 
-#: examples/dialog.php:552 examples/filemanager.php:512 examples/finder.php:547
+#: examples/dialog.php:625 examples/filemanager.php:624 examples/finder.php:614
+#: examples/php/dialog.php:650
 msgid ""
-"<p style=\"line-height: 25px; margin-bottom: 2px;\">Failed to rename file!</"
-"p>"
+"<p style=\"line-height: 25px; margin-bottom: 2px;\">Failed to rename a file!"
+"</p>"
 msgstr ""
-"<p style=“line-height: 25px; margin-bottom: 2px;”>Failed to rename file!</p>"
+"<p style=\"line-height: 25px; margin-bottom: 2px;\">Failed to rename a file!"
+"</p>"
 
-#: examples/dialog.php:562 examples/filemanager.php:522 examples/finder.php:557
+#: examples/dialog.php:635 examples/filemanager.php:634 examples/finder.php:624
+#: examples/php/dialog.php:660
 msgid ""
 "<p style=\"margin-top: 15px;\">Please select a specific folder(s) or file(s)!"
 "</p>"
@@ -385,7 +477,8 @@ msgstr ""
 "<p style=“margin-top: 15px;”>Please select a specific folder(s) or file(s)!</"
 "p>"
 
-#: examples/dialog.php:567 examples/filemanager.php:527 examples/finder.php:562
+#: examples/dialog.php:640 examples/filemanager.php:639 examples/finder.php:629
+#: examples/php/dialog.php:665
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">It is not possible to "
 "copy the main directory!</p>"
@@ -393,11 +486,13 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>It is not possible to copy "
 "the main directory!</p>"
 
-#: examples/dialog.php:574 examples/filemanager.php:534 examples/finder.php:569
+#: examples/dialog.php:647 examples/filemanager.php:646 examples/finder.php:636
+#: examples/php/dialog.php:672
 msgid "Copy files or folders"
 msgstr "Copy files or folders"
 
-#: examples/dialog.php:583 examples/filemanager.php:543 examples/finder.php:578
+#: examples/dialog.php:656 examples/filemanager.php:655 examples/finder.php:645
+#: examples/php/dialog.php:681
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">Selected files and "
 "folders have been copied successfully!</p>"
@@ -405,14 +500,16 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Selected files and folders "
 "have been copied successfully!</p>"
 
-#: examples/dialog.php:586 examples/dialog.php:624 examples/dialog.php:665
-#: examples/filemanager.php:546 examples/filemanager.php:584
-#: examples/filemanager.php:623 examples/finder.php:581 examples/finder.php:619
-#: examples/finder.php:660
+#: examples/dialog.php:659 examples/dialog.php:697 examples/dialog.php:736
+#: examples/filemanager.php:658 examples/filemanager.php:696
+#: examples/filemanager.php:735 examples/finder.php:648 examples/finder.php:686
+#: examples/finder.php:725 examples/php/dialog.php:684
+#: examples/php/dialog.php:722 examples/php/dialog.php:761
 msgid "Ok"
 msgstr "Ok"
 
-#: examples/dialog.php:589 examples/filemanager.php:549 examples/finder.php:584
+#: examples/dialog.php:662 examples/filemanager.php:661 examples/finder.php:651
+#: examples/php/dialog.php:687
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">Error while copying "
 "items!</p>"
@@ -420,7 +517,8 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Error while copying items!"
 "</p>"
 
-#: examples/dialog.php:599 examples/filemanager.php:559 examples/finder.php:594
+#: examples/dialog.php:672 examples/filemanager.php:671 examples/finder.php:661
+#: examples/php/dialog.php:697
 msgid ""
 "<p style=\"margin-top: 15px;\">Sorry, this reserved folder or file cannot be "
 "deleted!</p>\n"
@@ -432,7 +530,8 @@ msgstr ""
 "                                    <p style=“margin-top: 15px;”>Choose "
 "another folder or file!</p>"
 
-#: examples/dialog.php:605 examples/filemanager.php:565 examples/finder.php:600
+#: examples/dialog.php:678 examples/filemanager.php:677 examples/finder.php:667
+#: examples/php/dialog.php:703
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">It is not possible to "
 "delete the main directory!</p>"
@@ -440,11 +539,13 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>It is not possible to "
 "delete the main directory!</p>"
 
-#: examples/dialog.php:612 examples/filemanager.php:572 examples/finder.php:607
+#: examples/dialog.php:685 examples/filemanager.php:684 examples/finder.php:674
+#: examples/php/dialog.php:710
 msgid "Delete files or folders"
 msgstr "Delete files or folders"
 
-#: examples/dialog.php:621 examples/filemanager.php:581 examples/finder.php:616
+#: examples/dialog.php:694 examples/filemanager.php:693 examples/finder.php:683
+#: examples/php/dialog.php:719
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">The selected files and "
 "folders have been successfully deleted!</p>"
@@ -452,7 +553,8 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>The selected files and "
 "folders have been successfully deleted!</p>"
 
-#: examples/dialog.php:627 examples/filemanager.php:587 examples/finder.php:622
+#: examples/dialog.php:700 examples/filemanager.php:699 examples/finder.php:689
+#: examples/php/dialog.php:725
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">Error while deleting "
 "items!</p>"
@@ -460,7 +562,8 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Error while deleting items!"
 "</p>"
 
-#: examples/dialog.php:636 examples/filemanager.php:596 examples/finder.php:631
+#: examples/dialog.php:709 examples/filemanager.php:708 examples/finder.php:698
+#: examples/php/dialog.php:734
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">It is not possible to "
 "move the main directory!</p>"
@@ -468,7 +571,8 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>It is not possible to move "
 "the main directory!</p>"
 
-#: examples/dialog.php:643 examples/filemanager.php:603 examples/finder.php:638
+#: examples/dialog.php:716 examples/filemanager.php:715 examples/finder.php:705
+#: examples/php/dialog.php:741
 msgid ""
 "<p style=\"margin-top: 15px;\">Sorry, this reserved folder or file cannot be "
 "moved!</p>\n"
@@ -480,11 +584,13 @@ msgstr ""
 "                                    <p style=“margin-top: 15px;”>Choose "
 "another folder or file!</p>"
 
-#: examples/dialog.php:650 examples/filemanager.php:610 examples/finder.php:645
+#: examples/dialog.php:723 examples/filemanager.php:722 examples/finder.php:712
+#: examples/php/dialog.php:748
 msgid "Move files or folders"
 msgstr "Move files or folders"
 
-#: examples/dialog.php:662 examples/filemanager.php:620 examples/finder.php:657
+#: examples/dialog.php:733 examples/filemanager.php:732 examples/finder.php:722
+#: examples/php/dialog.php:758
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">The selected files and "
 "folders have been successfully moved!</p>"
@@ -492,7 +598,8 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>The selected files and "
 "folders have been successfully moved!</p>"
 
-#: examples/dialog.php:668 examples/filemanager.php:626 examples/finder.php:663
+#: examples/dialog.php:739 examples/filemanager.php:738 examples/finder.php:728
+#: examples/php/dialog.php:764
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">Error while moving items!"
 "</p>"
@@ -500,7 +607,7 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Error while moving items!</"
 "p>"
 
-#: examples/dialog.php:678 examples/finder.php:673
+#: examples/dialog.php:749 examples/finder.php:738
 msgid ""
 "<p style=\"margin-top: 15px;\">Sorry, be cannot insert into a reserved file!"
 "</p>\n"
@@ -512,11 +619,13 @@ msgstr ""
 "                                    <p style=“margin-top: 15px;”>Choose "
 "another folder!</p>"
 
-#: examples/dialog.php:688 examples/filemanager.php:670 examples/finder.php:683
-msgid "<p style=\"margin-top: 15px;\">Please select a image!</p>"
-msgstr "<p style=“margin-top: 15px;”>Please select a folder or file!</p>"
+#: examples/dialog.php:759 examples/filemanager.php:782 examples/finder.php:748
+#: examples/php/dialog.php:784
+msgid "<p style=\"margin-top: 15px;\">Please select an image!</p>"
+msgstr "<p style=\"margin-top: 15px;\">Please select an image!</p>"
 
-#: examples/dialog.php:694 examples/filemanager.php:676 examples/finder.php:689
+#: examples/dialog.php:765 examples/filemanager.php:788 examples/finder.php:754
+#: examples/php/dialog.php:790
 msgid ""
 "<p style=\"margin-top: 15px;\">Please select only one image to crop!</p>\n"
 "                                    <p style=\"margin-top: 15px;\">Allowed "
@@ -526,12 +635,14 @@ msgstr ""
 "                                    <p style=“margin-top: 15px;”>Allowed "
 "file types: jpg, jpeg, png.</p>"
 
-#: examples/dialog.php:701 examples/filemanager.php:683 examples/finder.php:696
+#: examples/dialog.php:772 examples/filemanager.php:795 examples/finder.php:761
+#: examples/php/dialog.php:797
 msgid ""
 "<p style=\"margin-top: 15px;\">Please select only one image to crop!</p>"
 msgstr "<p style=“margin-top: 15px;”>Please select only one image to crop!</p>"
 
-#: examples/dialog.php:706 examples/filemanager.php:688 examples/finder.php:701
+#: examples/dialog.php:777 examples/filemanager.php:800 examples/finder.php:766
+#: examples/php/dialog.php:802
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">Image cropping succeeded!"
 "</p>"
@@ -539,103 +650,163 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Image cropping succeeded!</"
 "p>"
 
-#: examples/dialog.php:712 examples/filemanager.php:694 examples/finder.php:707
+#: examples/dialog.php:783 examples/filemanager.php:806 examples/finder.php:772
+#: examples/php/dialog.php:808
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">Image cropping failed!</"
 "p>"
 msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Image cropping failed!</p>"
 
-#: examples/dialog.php:727 examples/filemanager.php:709 examples/finder.php:723
-msgid "Folder cannot be created without name!"
-msgstr "Folder cannot be created without name!"
+#: examples/dialog.php:789 examples/filemanager.php:812 examples/finder.php:778
+#: examples/php/dialog.php:814
+msgid ""
+"<p style=\"margin-top: 15px;\">The image is invalid for cropping!</p>\n"
+"                                    <p style=\"margin-top: 15px;\">It is "
+"recommended to delete this image and upload it again!</p>"
+msgstr ""
+"<p style=\"margin-top: 15px;\">The image is invalid for cropping!</p>\n"
+"                                    <p style=\"margin-top: 15px;\">It is "
+"recommended to delete this image and upload it again!</p>"
 
-#: examples/dialog.php:735 examples/filemanager.php:717 examples/finder.php:731
+#: examples/dialog.php:797 examples/filemanager.php:820 examples/finder.php:786
+#: examples/php/dialog.php:822
+msgid ""
+"<p style=\"margin-top: 15px;\">Sorry, be cannot crop a reserved file!</p>\n"
+"                                    <p style=\"margin-top: 15px;\">Select "
+"and copy this file to another location, then crop!</p>"
+msgstr ""
+"<p style=\"margin-top: 15px;\">Sorry, be cannot crop a reserved file!</p>\n"
+"                                    <p style=\"margin-top: 15px;\">Select "
+"and copy this file to another location, then crop!</p>"
+
+#: examples/dialog.php:806 examples/filemanager.php:829
+#: examples/php/dialog.php:831
+msgid ""
+"<p style=\"margin-top: 15px;\">CSRF Token is invalid! The request was "
+"aborted.</p>"
+msgstr ""
+"<p style=\"margin-top: 15px;\">CSRF Token is invalid! The request was "
+"aborted.</p>"
+
+#: examples/dialog.php:833 examples/filemanager.php:859 examples/finder.php:813
+#: examples/php/dialog.php:858
+msgid "Folder cannot be created without a name!"
+msgstr "Folder cannot be created without a name!"
+
+#: examples/dialog.php:841 examples/filemanager.php:867 examples/finder.php:821
+#: examples/php/dialog.php:866
 msgid "Cannot create a folder with the same name!"
 msgstr "Cannot create a folder with the same name!"
 
-#: examples/dialog.php:754 examples/filemanager.php:736 examples/finder.php:750
+#: examples/dialog.php:869 examples/filemanager.php:892 examples/finder.php:849
+#: examples/php/dialog.php:894
 msgid "The name of the main directory cannot be changed!"
 msgstr "The name of the main directory cannot be changed!"
 
-#: examples/dialog.php:761 examples/filemanager.php:743 examples/finder.php:757
+#: examples/dialog.php:876 examples/filemanager.php:899 examples/finder.php:856
+#: examples/php/dialog.php:901
 msgid "Cannot rename a folder or file without a name!"
 msgstr "Cannot rename a folder or file without a name!"
 
-#: examples/dialog.php:769 examples/filemanager.php:751 examples/finder.php:765
+#: examples/dialog.php:884 examples/filemanager.php:907 examples/finder.php:864
+#: examples/php/dialog.php:909
 msgid "This name cannot be used because it is already in use!"
 msgstr "This name cannot be used because it is already in use!"
 
-#: examples/dialog.php:788 examples/dialog.php:905 examples/filemanager.php:770
-#: examples/filemanager.php:886 examples/finder.php:784 examples/finder.php:901
+#: examples/dialog.php:910 examples/dialog.php:1042
+#: examples/filemanager.php:932 examples/filemanager.php:1063
+#: examples/finder.php:890 examples/finder.php:1022 examples/php/dialog.php:935
+#: examples/php/dialog.php:1067
 msgid "Please select a destination folder!"
 msgstr "Please select a destination folder!"
 
-#: examples/dialog.php:797 examples/dialog.php:913 examples/filemanager.php:779
-#: examples/filemanager.php:894 examples/finder.php:793 examples/finder.php:909
+#: examples/dialog.php:919 examples/dialog.php:1050
+#: examples/filemanager.php:941 examples/filemanager.php:1071
+#: examples/finder.php:899 examples/finder.php:1030 examples/php/dialog.php:944
+#: examples/php/dialog.php:1075
 msgid "Source folder: "
 msgstr "Source folder: "
 
-#: examples/dialog.php:814 examples/dialog.php:928 examples/filemanager.php:796
-#: examples/filemanager.php:909 examples/finder.php:810 examples/finder.php:924
+#: examples/dialog.php:936 examples/dialog.php:1065
+#: examples/filemanager.php:958 examples/filemanager.php:1086
+#: examples/finder.php:916 examples/finder.php:1045 examples/php/dialog.php:961
+#: examples/php/dialog.php:1090
 msgid "Destination folder: "
 msgstr "Destination folder: "
 
-#: examples/dialog.php:825 examples/dialog.php:939 examples/dialog.php:1794
-#: examples/dialog.php:2327 examples/dialog.php:2383
-#: examples/filemanager.php:807 examples/filemanager.php:920
-#: examples/filemanager.php:1776 examples/filemanager.php:2309
-#: examples/filemanager.php:2497 examples/finder.php:821
-#: examples/finder.php:935 examples/finder.php:1790 examples/finder.php:2323
-#: examples/finder.php:2379
+#: examples/dialog.php:947 examples/dialog.php:1077 examples/dialog.php:2356
+#: examples/dialog.php:3113 examples/dialog.php:3200
+#: examples/filemanager.php:969 examples/filemanager.php:1098
+#: examples/filemanager.php:2373 examples/filemanager.php:3134
+#: examples/filemanager.php:3383 examples/finder.php:927
+#: examples/finder.php:1057 examples/finder.php:2298 examples/finder.php:3041
+#: examples/finder.php:3128 examples/php/dialog.php:972
+#: examples/php/dialog.php:1102 examples/php/dialog.php:2462
+#: examples/php/dialog.php:3215 examples/php/dialog.php:3302
 msgid "- Select One -"
 msgstr "- Select One -"
 
-#: examples/dialog.php:834 examples/filemanager.php:815 examples/finder.php:830
+#: examples/dialog.php:963 examples/filemanager.php:984 examples/finder.php:943
+#: examples/php/dialog.php:988
 msgid "Are you sure you want to permanently delete these files and folders?"
 msgstr "Are you sure you want to permanently delete these files and folders?"
 
-#: examples/dialog.php:843 examples/filemanager.php:824 examples/finder.php:839
+#: examples/dialog.php:972 examples/filemanager.php:993 examples/finder.php:952
+#: examples/php/dialog.php:997
 msgid "Can\\'t undo it afterwards!"
 msgstr "Can\\’t undo it afterwards!"
 
-#: examples/dialog.php:852 examples/filemanager.php:833 examples/finder.php:848
+#: examples/dialog.php:981 examples/filemanager.php:1002
+#: examples/finder.php:961 examples/php/dialog.php:1006
 msgid "Files are locked or cannot be deleted together with folders!"
 msgstr "Files are locked or cannot be deleted together with folders!"
 
-#: examples/dialog.php:861 examples/filemanager.php:842 examples/finder.php:857
+#: examples/dialog.php:990 examples/filemanager.php:1011
+#: examples/finder.php:970 examples/php/dialog.php:1015
 msgid "Unlocked files can be deleted!"
 msgstr "Unlocked files can be deleted!"
 
-#: examples/dialog.php:870 examples/filemanager.php:851 examples/finder.php:866
+#: examples/dialog.php:999 examples/filemanager.php:1020
+#: examples/finder.php:979 examples/php/dialog.php:1024
 msgid "Files and folders to be deleted: "
 msgstr "Files and folders to be deleted: "
 
-#: examples/dialog.php:887 examples/filemanager.php:868 examples/finder.php:883
-msgid "Files are locked or cannot be moved together  with folders!"
-msgstr "Files are locked or cannot be moved together  with folders!"
+#: examples/dialog.php:1024 examples/filemanager.php:1045
+#: examples/finder.php:1004 examples/php/dialog.php:1049
+msgid "Files are locked or cannot be moved together with folders!"
+msgstr "Files are locked or cannot be moved together with folders!"
 
-#: examples/dialog.php:896 examples/filemanager.php:877 examples/finder.php:892
+#: examples/dialog.php:1033 examples/filemanager.php:1054
+#: examples/finder.php:1013 examples/php/dialog.php:1058
 msgid "Unlocked files can be moved!"
 msgstr "Unlocked files can be moved!"
 
-#: examples/dialog.php:1744 examples/filemanager.php:1726
-#: examples/finder.php:1740
+#: examples/dialog.php:2283 examples/filemanager.php:2296
+#: examples/finder.php:2221 examples/php/dialog.php:2389
 msgid "It is not possible to copy the main directory!"
 msgstr "It is not possible to copy the main directory!"
 
-#: examples/filemanager.php:334
+#: examples/filemanager.php:440
 msgid " Download"
 msgstr " Download"
 
-#: examples/filemanager.php:636
+#: examples/filemanager.php:503
+msgid ""
+"<p style=\"margin-top: 15px;\">Please choose only a specific folder to "
+"upload files!</p>"
+msgstr ""
+"<p style=\"margin-top: 15px;\">Please choose only a specific folder to "
+"upload files!</p>"
+
+#: examples/filemanager.php:748
 msgid ""
 "<p style=\"margin-top: 15px;\">Operations with archives are not available!</"
 "p>"
 msgstr ""
 "<p style=“margin-top: 15px;”>Operations with archives are not available!</p>"
 
-#: examples/filemanager.php:647
+#: examples/filemanager.php:759
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">Failed to create archive "
 "for download!</p>"
@@ -643,7 +814,7 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>Failed to create archive "
 "for download!</p>"
 
-#: examples/filemanager.php:653
+#: examples/filemanager.php:765
 msgid ""
 "<p style=\"line-height: 25px; margin-bottom: 2px;\">ZipArchive is not "
 "available!</p>"
@@ -651,7 +822,7 @@ msgstr ""
 "<p style=“line-height: 25px; margin-bottom: 2px;”>ZipArchive is not "
 "available!</p>"
 
-#: examples/filemanager.php:660
+#: examples/filemanager.php:772
 msgid ""
 "<p style=\"margin-top: 15px;\">Empty folder(s) do not contain files!</p>\n"
 "                                    <p style=\"margin-top: 15px;\">Then no "
@@ -661,154 +832,362 @@ msgstr ""
 "                                    <p style=“margin-top: 15px;”>Then no "
 "packing and no downloading!</p>"
 
-#: examples/mediafinder.php:51
+#: examples/folders_checking.php:10
+msgid "Comparative check of database and file system synchronization"
+msgstr "Comparative check of database and file system synchronization"
+
+#: examples/folders_checking.php:14
+msgid "Table \"folders\" in the database"
+msgstr "Table \"folders\" in the database"
+
+#: examples/folders_checking.php:15
+msgid "The folder \"upload\" in the file system"
+msgstr "The folder \"upload\" in the file system"
+
+#: examples/folders_checking.php:22
+msgid "Back"
+msgstr "Back"
+
+#: examples/mediafinder.php:53
 msgid "Choose a picture"
 msgstr "Choose a picture"
 
-#: examples/mediafinder.php:52
+#: examples/mediafinder.php:54
 msgid "Selected picture"
 msgstr "Selected picture"
 
-#: src/Checkbox.php:184
+#: examples/php/dialog.php:774
+msgid ""
+"<p style=\"margin-top: 15px;\">Sorry, be cannot insert into a reserved file!"
+"</p>\n"
+"                                                  <p style=\"margin-top: "
+"15px;\">Select and copy this file to another location, then insert!</p>"
+msgstr ""
+"<p style=\"margin-top: 15px;\">Sorry, be cannot insert into a reserved file!"
+"</p>\n"
+"                                                  <p style=\"margin-top: "
+"15px;\">Select and copy this file to another location, then insert!</p>"
+
+#: examples/php/finder.php:203
+msgid "Repository"
+msgstr "Repository"
+
+#: examples/php/finder.tpl.php:1
+msgid "File management"
+msgstr "File management"
+
+#: examples/php/upload.php:60
+msgid "File upload contains an error state."
+msgstr "File upload contains an error state."
+
+#: examples/php/upload.php:63
+msgid "An uploaded file isn't found after upload."
+msgstr "An uploaded file isn't found after upload."
+
+#: examples/php/upload.php:71
+msgid "Cannot read uploaded file metadata."
+msgstr "Cannot read uploaded file metadata."
+
+#: examples/php/upload.php:81
+msgid "Upload destination has changed. Select the folder again."
+msgstr "Upload destination has changed. Select the folder again."
+
+#: src/Checkbox.php:176
 msgid "is required"
 msgstr "is required"
 
-#: src/Checkbox.php:186
+#: src/Checkbox.php:178
 msgid "Required"
 msgstr "Required"
 
-#: src/DestinationInfo.class.php:28
+#: src/DestinationInfo.class.php:39
 msgid "Destination: "
 msgstr "Destination: "
 
-#: src/FileHandler.php:116
+#: src/FileHandler.php:164
 msgid "Uploaded file exceeds upload_max_filesize directive in php.ini"
 msgstr "Uploaded file exceeds upload_max_filesize directive in php.ini"
 
-#: src/FileHandler.php:117
+#: src/FileHandler.php:165
 msgid ""
-"Uploaded file exceeds MAX_FILE_SIZE directive specified in the HTML form"
+"An uploaded file exceeds the MAX_FILE_SIZE directive specified in the HTML "
+"form"
 msgstr ""
-"Uploaded file exceeds MAX_FILE_SIZE directive specified in the HTML form"
+"An uploaded file exceeds the MAX_FILE_SIZE directive specified in the HTML "
+"form"
 
-#: src/FileHandler.php:118
+#: src/FileHandler.php:166
 msgid "The uploaded file was only partially uploaded"
 msgstr "The uploaded file was only partially uploaded"
 
-#: src/FileHandler.php:119
-msgid "Failed to move uploaded file"
-msgstr "Failed to move uploaded file"
+#: src/FileHandler.php:167
+msgid "No file was uploaded"
+msgstr "No file was uploaded"
 
-#: src/FileHandler.php:120
+#: src/FileHandler.php:168
 msgid "Missing a temporary folder"
 msgstr "Missing a temporary folder"
 
-#: src/FileHandler.php:121
-msgid "Failed to write file to disk"
-msgstr "Failed to write file to disk"
+#: src/FileHandler.php:169
+msgid "Failed to write a file to disk"
+msgstr "Failed to write a file to disk"
 
-#: src/FileHandler.php:122
+#: src/FileHandler.php:170
 msgid "A PHP extension stopped the file upload"
 msgstr "A PHP extension stopped the file upload"
 
-#: src/FileHandler.php:123
+#: src/FileHandler.php:172
+msgid "File is too big"
+msgstr "File is too big"
+
+#: src/FileHandler.php:173
+msgid "File is too small"
+msgstr "File is too small"
+
+#: src/FileHandler.php:174
 msgid "Filetype not allowed"
 msgstr "Filetype not allowed"
 
-#: src/FileHandler.php:124
+#: src/FileHandler.php:175
 msgid "Invalid image type"
 msgstr "Invalid image type"
 
-#: src/FileHandler.php:125
+#: src/FileHandler.php:176
 msgid "Invalid file size"
 msgstr "Invalid file size"
 
-#: src/FileHandler.php:126
+#: src/FileHandler.php:177
 #, php-format
-msgid "File size exceeds max_filesize %s"
-msgstr "File size exceeds max_filesize %s"
+msgid "File size exceeds max filesize %s"
+msgstr "File size exceeds max filesize %s"
 
-#: src/FileHandler.php:127
-#, php-format
-msgid "%s already exists"
-msgstr "%s already exists"
+#: src/FileHandler.php:178
+msgid "This file has been overwritten"
+msgstr "This file has been overwritten"
 
-#: src/FileHandler.php:128
+#: src/FileHandler.php:179
 msgid "Invalid image / failed getimagesize()"
 msgstr "Invalid image / failed getimagesize()"
 
-#: src/FileHandler.php:129
+#: src/FileHandler.php:180
 msgid "Failed to resize image"
 msgstr "Failed to resize image"
 
-#: src/FileHandler.php:130
+#: src/FileHandler.php:181
 msgid "The resizeImage() function failed to create and resize the image"
 msgstr "The resizeImage() function failed to create and resize the image"
 
-#: src/FileHandler.php:131
+#: src/FileHandler.php:182
+msgid "Invalid chunk size"
+msgstr "Invalid chunk size"
+
+#: src/FileHandler.php:183
 msgid "Failed to open stream: No such directory to put into"
 msgstr "Failed to open stream: No such directory to put into"
 
-#: src/FileHandler.php:132
-msgid "Failed to open output stream"
-msgstr "Failed to open output stream"
+#: src/FileHandler.php:184
+msgid "Failed to open the output stream"
+msgstr "Failed to open the output stream"
 
-#: src/FileHandler.php:133
-msgid "Failed to open input stream"
-msgstr "Failed to open input stream"
+#: src/FileHandler.php:185
+msgid "Failed to open the input stream"
+msgstr "Failed to open the input stream"
 
-#: src/FileHandler.php:554
-msgid "Unable to deal with image type"
-msgstr "Unable to deal with image type"
+#: src/FileHandler.php:186
+msgid "Failed to move an uploaded file"
+msgstr "Failed to move an uploaded file"
 
-#: src/PopupCroppie.php:126
+#: src/FileHandler.php:187
+msgid "File not found"
+msgstr "File not found"
+
+#: src/FileHandler.php:188
+msgid "Failed to create GD image"
+msgstr "Failed to create GD image"
+
+#: src/FileHandler.php:189
+msgid "Failed to load image with GD"
+msgstr "Failed to load image with GD"
+
+#: src/FileHandler.php:191
+msgid "Upload request exceeds post_max_size ("
+msgstr "Upload request exceeds post_max_size ("
+
+#: src/FileHandler.php:192
+msgid "Invalid filename."
+msgstr "Invalid filename."
+
+#: src/FileHandler.php:193
+msgid "Invalid destination path."
+msgstr "Invalid destination path."
+
+#: src/FileHandler.php:194
+msgid "Invalid chunk metadata."
+msgstr "Invalid chunk metadata."
+
+#: src/FileHandler.php:195
+msgid "Cannot create upload temporary directory."
+msgstr "Cannot create upload temporary directory."
+
+#: src/FileHandler.php:196
+msgid "This upload has already completed. Start a new upload."
+msgstr "This upload has already completed. Start a new upload."
+
+#: src/FileHandler.php:197
+msgid "Cannot lock upload."
+msgstr "Cannot lock upload."
+
+#: src/FileHandler.php:198
+msgid "Upload must start with chunk 1."
+msgstr "Upload must start with chunk 1."
+
+#: src/FileHandler.php:199
+msgid "Upload context or chunk sequence changed. Start a new upload."
+msgstr "Upload context or chunk sequence changed. Start a new upload."
+
+#: src/FileHandler.php:200
+msgid "Cannot save upload chunk."
+msgstr "Cannot save upload chunk."
+
+#: src/FileHandler.php:201
+msgid "Invalid chunk byte count."
+msgstr "Invalid chunk byte count."
+
+#: src/FileHandler.php:202
+msgid "Invalid total upload size."
+msgstr "Invalid total upload size."
+
+#: src/FileHandler.php:203
+msgid "Incomplete upload."
+msgstr "Incomplete upload."
+
+#: src/FileHandler.php:204
+msgid "Cannot open merged upload."
+msgstr "Cannot open merged upload."
+
+#: src/FileHandler.php:205
+msgid "Missing upload chunk."
+msgstr "Missing upload chunk."
+
+#: src/FileHandler.php:206
+msgid "Incomplete chunk write."
+msgstr "Incomplete chunk write."
+
+#: src/FileHandler.php:207
+msgid "Cannot flush merged upload."
+msgstr "Cannot flush merged upload."
+
+#: src/FileHandler.php:208
+msgid "Invalid merged file size."
+msgstr "Invalid merged file size."
+
+#: src/FileHandler.php:209
+msgid "Cannot lock upload destination."
+msgstr "Cannot lock upload destination."
+
+#: src/FileHandler.php:210
+msgid "Cannot move merged upload."
+msgstr "Cannot move merged upload."
+
+#: src/FileHandler.php:212
+msgid "Cannot save upload state."
+msgstr "Cannot save upload state."
+
+#: src/FileHandler.php:213
+msgid "Image folders and dimensions must have equal counts."
+msgstr "Image folders and dimensions must have equal counts."
+
+#: src/FileHandler.php:214
+msgid "Invalid image output configuration."
+msgstr "Invalid image output configuration."
+
+#: src/FileHandler.php:215
+msgid "Cannot create image output directory."
+msgstr "Cannot create image output directory."
+
+#: src/FileHandler.php:216
+msgid "Cannot copy image."
+msgstr "Cannot copy image."
+
+#: src/FileHandler.php:217
+msgid "Cannot rotate image."
+msgstr "Cannot rotate image."
+
+#: src/FileHandler.php:218
+msgid "Cannot mirror image."
+msgstr "Cannot mirror image."
+
+#: src/FileHandler.php:220
+msgid "Image content does not match its extension."
+msgstr "Image content does not match its extension."
+
+#: src/FileHandler.php:221
+msgid "Image resolution exceeds the allowed pixel count."
+msgstr "Image resolution exceeds the allowed pixel count."
+
+#: src/FileHandler.php:222
+msgid "Not enough server memory to process this image resolution."
+msgstr "Not enough server memory to process this image resolution."
+
+#: src/FileHandler.php:223
+msgid "Cannot save resized image."
+msgstr "Cannot save resized image."
+
+#: src/FilePopupCroppie.php:141
 msgid "Viewport:"
 msgstr "Viewport:"
 
-#: src/PopupCroppie.php:128
+#: src/FilePopupCroppie.php:143
 msgid "Width"
 msgstr "Width"
 
-#: src/PopupCroppie.php:131
+#: src/FilePopupCroppie.php:146
 msgid "Height"
 msgstr "Height"
 
-#: src/PopupCroppie.php:133
+#: src/FilePopupCroppie.php:148
 msgid "Enable resize:"
 msgstr "Enable resize:"
 
-#: src/PopupCroppie.php:136
+#: src/FilePopupCroppie.php:151
 msgid "Inactive"
 msgstr "Inactive"
 
-#: src/PopupCroppie.php:141
+#: src/FilePopupCroppie.php:156
 msgid "Active"
 msgstr "Active"
 
-#: src/PopupCroppie.php:144
+#: src/FilePopupCroppie.php:159
 msgid "Viewport type:"
 msgstr "Viewport type:"
 
-#: src/PopupCroppie.php:147
+#: src/FilePopupCroppie.php:162
 msgid "square"
 msgstr "square"
 
-#: src/PopupCroppie.php:148
+#: src/FilePopupCroppie.php:163
 msgid "circle"
 msgstr "circle"
 
-#: src/PopupCroppie.php:151
+#: src/FilePopupCroppie.php:166
 msgid "Rotate:"
 msgstr "Rotate:"
 
-#: src/PopupCroppie.php:153
+#: src/FilePopupCroppie.php:168
 msgid "Rotate left"
 msgstr "Rotate left"
 
-#: src/PopupCroppie.php:156
+#: src/FilePopupCroppie.php:171
 msgid "Rotate right"
 msgstr "Rotate right"
 
-#: src/PopupCroppie.php:158
+#: src/FilePopupCroppie.php:173
 msgid "Destination:"
 msgstr "Destination:"
+
+#, php-format
+#~ msgid "%s already exists"
+#~ msgstr "%s already exists"
+
+#~ msgid "Unable to deal with image type"
+#~ msgstr "Unable to deal with image type"
